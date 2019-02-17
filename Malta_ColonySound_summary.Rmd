@@ -1,0 +1,180 @@
+---
+title: "Colony Size of Yelkouan Shearwaters on Malta based on sound recordings"
+author: "Steffen Oppel, Martin Austad, Paulo Lago"
+date: "05 November 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,warning=FALSE,error=FALSE,message=FALSE)
+```
+
+## Can we extrapolate the size of colonies based on acoustic recordings?
+
+The size of the Yelkouan Shearwater breeding population on Malta is estimated around 1500 - 2000 pairs, but the actual size of many colonies is unknown as the birds nest in inaccessible caves and are active only at night. Based on a previous LIFE project in the Azores, we attempted to use sound recordings to improve the colony size estimates for Yelkouan Shearwaters on Malta.
+
+The idea behind this approach is that a larger colony will have more birds calling, hence sound recordings accumulated by autonomous recording units (ARU) over the breeding season should reflect a greater acoustic activity for larger colonies.
+
+We deployed `r length(unique(YESH$ARU))` ARUs around caves and ledges in Maltese shearwater colonies, some of which had a reasonably well known number of pairs, and for some the number of nesting pairs was completely unknown. We used SongMeter 4 ARUs, and set the recording schedule to 5 min every 30 min during the night.
+
+Due to various logistical challenges the recording times of ARUs at different locations was not identical. The following plot shows the number of recordings obtained from different ARUs over the breeding season 2017:
+
+
+```{r, echo=FALSE,warning=FALSE,error=FALSE,message=FALSE, fig.height = 8, fig.width = 8, fig.align = "center"}
+YESH %>% mutate(count=1) %>%
+
+ggplot()+    ## colour=breed_stage looks shit
+  geom_histogram(aes(x=NightStarting), binwidth=10)+                               ##breaks=log(MPAsizes)
+  facet_wrap("ARU", ncol=3, scales = "fixed")+
+  ylab("Number of recordings") +
+  xlab("Date") +
+  theme(panel.background=element_rect(fill="white", colour="black"), 
+        axis.text.y=element_text(size=16, color="black"),
+        axis.text.x=element_text(size=16, color="black", vjust=0.5), 
+        axis.title=element_text(size=16), 
+        strip.text.x=element_text(size=16, color="black"), 
+        strip.background=element_rect(fill="white", colour="black"), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.border = element_blank())
+```
+
+<br>
+Because there is large variation in shearwater calling rates over the course of the season, with moon phase, time of night, and weather, it was necessary to use only data from a period when all ARUs were actively recording. This limited the data we used to  `r difftime(min(AVAILABILITY$end),min(AVAILABILITY$start),'days')` monitoring nights from `r min(AVAILABILITY$start)` to `r min(AVAILABILITY$end)`.
+
+
+<br>
+
+## Processing the recorded sound data
+
+During the 2017 breeding season we recorded `r dim(YESH)[1]` 5-min sound files, and although we eventually only retained `r dim(dat)[1]` for analysis, the manual counting of all bird calls in those files was practically infeasible. Because commercially available software to classify sound recordings is still too inaccurate to quantify the number of Yelkouan Shearwater vocalisations, we used the R 'soundecology' package to calculate two different  bioacoustic diversity indices: (1) the Bioacoustic Index (BIX) from Boelman, et al. 2007, which is calculated as the "area under each curve included all frequency bands associated with the dB value that was greater than the minimum dB value for each curve. The area values are thus a function of both the sound level and the number of frequency bands used by the avifauna" (Boelman, et al. 2007). (2) the Acoustic Diversity (ACD) Index from Villanueva-Rivera et al. 2011, which is calculated by dividing the spectrogram into bins and taking the proportion of the signals in each bin above a threshold (we used -20, -30, and -50 dBFS). The AD is the result of the Shannon index applied to these bins.
+
+These indices were in a small test positively correlated with the manually counted number of shearwater calls, and were therefore judged to be suitable for the large-scale analysis. However, the different indices did not necessarily measure the same properties. The following graph shows the poor correlation between the BIX and ACD at different levels of sensitivity, with ARU locations shown in different colours:
+
+
+```{r, echo=FALSE,warning=FALSE,error=FALSE,message=FALSE, fig.height = 8, fig.width = 8, fig.align = "center"}
+dat %>%
+  gather(ACD20max,ACD30max,ACD50max,key="Index",value="ACT") %>%
+  mutate(Index=ifelse(Index=="ACD20max","threshold 20dB",ifelse(Index=="ACD30max","threshold 30dB","threshold 50dB"))) %>%
+  
+  ggplot(aes(x=BIXmax, y=ACT,colour=as.factor(ARU)))+
+  geom_point(size=0.2) +
+  facet_wrap("Index", scales="free", ncol=3)+
+  xlab("Bioacoustic diversity index (BIX)") +
+  ylab("Acoustic Diversity Index (ACD)") +
+  guides(fill=FALSE)+
+  theme(panel.background=element_rect(fill="white", colour="black"), 
+        axis.text.y=element_text(size=16, color="black"),
+        axis.text.x=element_text(size=16, color="black"), 
+        axis.title=element_text(size=20),
+        strip.text.x=element_text(size=18, color="black"),
+        strip.text.y=element_text(size=18, color="black"),
+        strip.background=element_rect(fill="white", colour="black"),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.border = element_blank(),
+        legend.position="none")
+```
+<br>
+We used the BIX for further analysis, as it showed the best performance when compared with manually counted calls. However, because BIX measures the intensity, the index will be higher for places where birds call closer to the recorder, rather than just increase with an increasing number of calls.
+
+<br>
+<br>
+
+
+## Selecting the appropriate time frame for analysis
+
+Although a previous project had found a distinct nocturnal variation in calling activity, we did not observe this in our data. The following graph shows the distribution of acoustic diversity over the course of nights across the whole season:
+
+```{r, echo=FALSE,warning=FALSE,error=FALSE,message=FALSE, fig.height = 8, fig.width = 8, fig.align = "center"}
+YESH$HRordered <- factor(YESH$hr, levels = c("15","16","17","18","19","20","21","22","23","0","1","2","3","4","5","6"))
+YESH %>%
+  filter(hr %in% c(18,19,20,21,22,23,0,1,2,3,4)) %>%
+  
+  ggplot()+    ## colour=breed_stage looks shit
+  geom_boxplot(aes(x=HRordered, y=BIXmax), width=1)+         
+  ylab("Bioacoustic Diversity Index (BIX)") +
+  xlab("hour of the day (UTC)") +
+  theme(panel.background=element_rect(fill="white", colour="black"), 
+        axis.text.y=element_text(size=16, color="black"),
+        axis.text.x=element_text(size=16, color="black", vjust=0.5), 
+        axis.title=element_text(size=16), 
+        strip.text.x=element_text(size=16, color="black"), 
+        strip.background=element_rect(fill="white", colour="black"), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.border = element_blank())
+```
+<br>
+
+We therefore used all recordings between 20:00 hrs and 03:00 hrs (UTC, which is 2 hrs behind Malta local time during the summer), which resulted in `r dim(dat)[1]` recordings that were ultimately used for analysis. Of those, `r dim(dat[!is.na(dat$col.size),])[1]` were from the `r length(unique(dat$ARU[!is.na(dat$col.size)]))[1]` ARUs where colony size was known. Colony size ranged between `r min(colony$SumOfn_nests, na.rm=T)` and  `r max(colony$SumOfn_nests, na.rm=T)` nests within 30 m of the ARU.
+
+<br>
+<br>
+
+## Is there a relationship between acoustic index and colony size?
+
+We did not find a statistically significant relationship between colony size and the Bioacoustic Index in either the full data set (accounting for variation over time, with moon light, wind, time of night, and ARU location), or when the data were reduced to the mean measured across the season for each ARU.
+
+However, a powerful data mining algorithm (RandomForest) was able to explain 90% of the variation in the full data set, and identified the distance of the ARU to nests and colony size as the most important of `r dim(IMP)[1]` predictor variables:
+
+```{r, echo=FALSE,warning=FALSE,error=FALSE,message=FALSE, fig.height = 6, fig.width = 8, fig.align = "center"}
+par(mar=c(5,10,2,1))
+barplot(IMP$rel_imp[11:1], horiz=T, names.arg=row.names(IMP)[11:1], xlim=c(0,100), las=1,xlab="Relative importance (%)", col='lightgray',main="")
+
+```
+<br>
+Despite the good explanatory power, the algorithm failed in producing accurate predictions and only identified an idiosyncratic relationship between colony size and the bioacoustic index, hence a **prediction of colony size from the recordings was unreliable.** We therefore did not extrapolate colony size based on sound recordings.
+
+<br>
+
+
+```{r, echo=FALSE,warning=FALSE,error=FALSE,message=FALSE}
+kable(PREDICTIONS, caption="Comparison between actual and predicted colony size based on a RandomForest algorithm and the bioacoustic diversity index derived from sound recordings")
+
+```
+<br>
+<br>
+
+
+## Lessons learned
+
+We placed our ARUs in areas where the number of nests in distinct caves could be quantified. This was necessary to calibrate any relationship between colony size and recorded acoustic volume, but led to the unfortunate problem that the relationship was extremely poor. The reason for this failure is very likely that the actually recorded acoustic environment is much larger than the individual caves and ledges where we could quantify the number of nests: Yelkouan Shearwaters fly around their colony many times before accessing caves, and the acoustic intensity of a colony is likely very similar for different ledges and caves in that colony. Because it was not possible to quantify the number of nests that exist in a colony that could be expected to have a unique volume of shearwater calls, we were ultimately unable to extrapolate breeding colony size from the sound recordings we obtained. The acoustic index was more influenced by how close the ARU was to the nearest nest than the actual number of nests in a given cave.
+
+However, the approach may still be useful for long-term monitoring over many years, if ARUs are placed in the centre of a colony and scheduled to record only during certain times of the year to maximise the efficiency of the monitoring. We therefore recommend for future monitoring to:
+
+1. Place ARUS near the top of the cliff in the centre of a colony, spaced apart so far that two adjacent ARUs are unlikely to record the same nesting birds. Locations must be carefully selected to minimize theft and sabotage, and wind and wave noise in the recordings.
+
+2. Schedule recordings from 20:00 hrs to 03:00 hrs (UTC) to reduce ambiguity in twilight periods.
+
+3. Schedule the recordings from 15 January to 15 March, when vocal activity is most intense. Unfortunately only one ARU was operational during that time in 2017 (indicated by red vertical lines in graph below).
+
+<br>
+
+
+```{r, echo=FALSE,warning=FALSE,error=FALSE,message=FALSE, fig.height = 8, fig.width = 8, fig.align = "center"}
+YESH %>% mutate(count=1) %>%
+	group_by(ARU,NightStarting) %>%
+	summarise(BIX=mean(BIXmax)) %>%
+
+ggplot(aes(x=NightStarting, y=BIX))+    
+  geom_point(size=0.2)+                               
+  facet_wrap("ARU", ncol=3, scales = "fixed")+
+  geom_smooth(fill="lightblue", size=1.5, method="loess", se=T)+
+  geom_vline(aes(xintercept = as.numeric(as.Date("2017-01-15"))), colour="red", size=1) +
+  geom_vline(aes(xintercept = as.numeric(as.Date("2017-03-15"))), colour="red", size=1) +
+  ylab("Bioacoustic Diversity Index (BIX)") +
+  xlab("Date") +
+  theme(panel.background=element_rect(fill="white", colour="black"), 
+        axis.text.y=element_text(size=16, color="black"),
+        axis.text.x=element_text(size=16, color="black", vjust=0.5), 
+        axis.title=element_text(size=16), 
+        strip.text.x=element_text(size=16, color="black"), 
+        strip.background=element_rect(fill="white", colour="black"), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.border = element_blank())
+```
+<br>
+<br>
+

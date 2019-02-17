@@ -1,0 +1,197 @@
+---
+title: "Effects of light pollution from bunkering on Yelkouan Shearwater activity at Majjistral, Malta"
+author: "Steffen Oppel, Martin Austad, Paulo Lago"
+date: "June 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,warning=FALSE,error=FALSE,message=FALSE)
+```
+
+## Does the bunkering of large ships in the vicinity of Yelkouan Shearwater colonies affect their activity?
+
+Many seabirds of the family Procellariidae are nocturnal and nest in caves or burrows. These birds avoid predation by returning to their breeding islands during darkness, and human actions that reduce darkness at night might therefore alter the natural activity patterns of such species.
+
+The Yelkouan Shearwater is a globally threatened seabird species that nests in the Maltese islands, primarily on steep inaccessible cliffs where the birds are less at risk from predation by cats and persecution by humans. But human activities such as shipping traffic can change the natural darkness patterns and may indirectly affect the shearwaters.
+
+Here we examine whether one form of shipping activity affects Yelkouan Shearwaters on Malta, the bunkering of large ships. This activity is a welcome economic source of income for Malta, and leads to large commercial vessels anchoring for several hours or days adjacent to known shearwater colonies. The commercial vessels are then attended by smaller supply ships for refuelling, and this process requires intensive lighting to ensure the safety of the working crew.
+
+We addressed three questions in this analysis, namely (1) whether the presence of bunkering ships in designated areas offshore leads to a measurable reduction of darkness at shearwater colonies, (2) whether measured darkness at a colony is related to shearwater activity, and (3) whether there is a noticeable reduction of shearwater activity in nights when ships are bunkering.
+
+## Data used
+
+Data on ship bunkering for the 2017 Yelkouan Shearwater breeding season (February to July) were provided by Transport Malta (Government of Malta). This data consisted of arrival and departure times of ships in bunkering Area 6 situated in front of an important Yelkouan Shearwater colony in Majjistral Nature and History Park. Between February and July 2017, a total of `r length(ships$VesselName)` ships were bunkering in this area.
+
+We deployed a two-antenna RFID system (Oregon RFID, USA) inside the entrance of one of the main caves where Yelkouan Shearwaters breed in Majjistral, and this system was operational for `r length(monitornights$NightStarting)` nights from `r min(monitornights$NightStarting)` to `r max(monitornights$NightStarting)`. We marked a total of `r length(deployments$TagID)` adult Yelkouan Shearwaters with RFID tags, and recorded a total of `r length(RFIDdata_all$Count)` detections at one of the two antennas. We classified a detection of the same individual at the inner antenna (A2) followed by the outer antenna (A1) as a bird leaving the colony, and a detection of the same individual at the outer antenna followed by the inner antenna as a bird entering the colony. In total we recorded `r sum(MOVES_all$move, na.rm=TRUE)` movements of individual shearwaters.
+
+We installed a sky quality meter (SQM-LU-DL, Unihedron, Canada) at Majjistral. This system was operational from  `r min(SQMall$NightStarting)` to  `r max(SQMall$NightStarting)`, measuring the darkness of the cliff face every 10 minutes. We removed all measurements during daytime and twilight periods, and retained only nocturnal measurements before or after astronomical twilight (sun 18 degrees below horizon). This retained a total of  `r length(SQMall$NightStarting)` measurements.
+
+
+## Question 1: does bunkering affect darkness measured at the colony?
+
+During the period when the SQM device was operational `r sum(shipnights$ships)` ships were bunkering in front of Majjistral on `r length(shipnights$ships)` nights.
+
+The following figure shows the patterns of darkness measured on the cliff face at the Yelkouan shearwater colony over the 2017 breeding season, with bunkering events indicated by vertical red lines.
+
+```{r, echo=FALSE,warning=FALSE,error=FALSE,message=FALSE, fig.height = 6, fig.width = 8, fig.align = "center"}
+gg <- ggplot(data=SQMall,aes(x=DateTime, y=MAG))+
+  geom_point(colour="black", size=1.5) +
+  geom_vline(aes(xintercept=shipnights$sunset[1]), color='red', size=shipnights$ships[1]/10) +
+  geom_vline(aes(xintercept=shipnights$sunset[2]), color='red', size=shipnights$ships[2]/10) +
+  geom_vline(aes(xintercept=shipnights$sunset[3]), color='red', size=shipnights$ships[3]/10) +
+  geom_vline(aes(xintercept=shipnights$sunset[4]), color='red', size=shipnights$ships[4]/10) +
+  geom_vline(aes(xintercept=shipnights$sunset[5]), color='red', size=shipnights$ships[5]/10) +
+  geom_vline(aes(xintercept=shipnights$sunset[6]), color='red', size=shipnights$ships[6]/10) +
+  geom_vline(aes(xintercept=shipnights$sunset[7]), color='red', size=shipnights$ships[7]/10) +
+  geom_vline(aes(xintercept=shipnights$sunset[8]), color='red', size=shipnights$ships[8]/10) +
+  geom_vline(aes(xintercept=shipnights$sunset[9]), color='red', size=shipnights$ships[9]/10) +
+  geom_vline(aes(xintercept=shipnights$sunset[10]), color='red', size=shipnights$ships[10]/10) +
+  geom_vline(aes(xintercept=shipnights$sunset[11]), color='red', size=shipnights$ships[11]/10) +
+  geom_vline(aes(xintercept=shipnights$sunset[12]), color='red', size=shipnights$ships[12]/10) +
+  geom_vline(aes(xintercept=shipnights$sunset[13]), color='red', size=shipnights$ships[13]/10) +
+  xlab("Date") +
+  ylab("Darkness of cliff face (magnitude measured by SQM)") +
+  theme(panel.background=element_rect(fill="white", colour="black"), 
+        axis.text=element_text(size=15, color="black"), 
+        axis.title=element_text(size=15), 
+        strip.text.x=element_text(size=15, color="black"), 
+        strip.background=element_rect(fill="white", colour="black"),
+        legend.background = element_rect(colour = NA),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.border = element_blank())
+gg
+```
+
+Because darkness is heavily influenced by the moon phase, a cyclical pattern is apparent with higher darkness levels (greater magnitude) during new moon periods and lower darkness levels during full moon. All bunkering events show lower darkness levels than would be expected at that time.
+
+<br>
+To demonstrate the effect of ships, the next figure shows the darkness of the cliff face against the expected moonlight, plotting all SQM measurements. The size and colour of symbols reflect the number of ships bunkering at a given time when the measurement was taken. It is very obvious that at times when there is no moon above the sky, the presence of ships significantly reduces the darkness. This effect is also visible when there is a bright moon, but the effect is less pronounced as the cliff face is naturally brighter.
+
+
+```{r, echo=FALSE,warning=FALSE,error=FALSE,message=FALSE, fig.height = 6, fig.width = 8, fig.align = "center"}
+gg <- SQMall %>% mutate(ships=ships*2) %>%   ### usually 2 boats operate for a bunkering event
+  ggplot(aes(x=moon.light, y=MAG))+
+  geom_point(aes(size=ships, color=ships)) +
+  scale_color_gradient(low="black", high="yellow")+
+  scale_size(range=c(0,4)) +
+  guides(color=guide_legend(title="Number of ships"), size = guide_legend(title="Number of ships"))+
+  geom_vline(aes(xintercept=0), color='blue', size=1) +
+  annotate("text", x=1, y=22, label= "moon in the sky", size=5) + 
+  annotate("text", x = -0.5, y=22, label = "before moonrise", size=5)+
+  xlab("level of moon light in the sky") +
+  ylab("Darkness of cliff face (magnitude measured by SQM)") +
+
+  theme(panel.background=element_rect(fill="white", colour="black"), 
+        axis.text=element_text(size=15, color="black"), 
+        axis.title=element_text(size=15), 
+        strip.text.x=element_text(size=15, color="black"), 
+        strip.background=element_rect(fill="white", colour="black"), 
+        legend.background = element_rect(fill="white", colour="white"),
+        legend.key = element_rect(fill = "white"),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.border = element_blank())
+gg
+```
+
+<br>
+
+A simple linear model testing for an effect of bunkering ships on the darkness measured at the shearwater colony while accounting for the natural variation due to moon light finds a very strong effect of bunkering (<i>p</i> < 0.001) that is almost as large as the effect of the moon:
+
+```{r, echo=FALSE,warning=FALSE,error=FALSE,message=FALSE}
+SQMall$bunker<-ifelse(SQMall$ships>0,1,0)
+Q1m<-glm(MAG~moon.light*bunker, data=SQMall)
+outQ1m<-summary(Q1m)
+out<-as.data.frame(round(outQ1m$coefficients,2))
+kable(out, caption="Parameter estimates from a linear model testing the effect of bunkering on the measured darkness of the cliff face")
+
+```
+
+<br>
+<br>
+
+
+
+## Question 2: is shearwater activity related to the darkness at the colony?
+
+To address this question we first reduced the data to only consider April and May, because these are the two months with highest Yelkouan shearwater activity coinciding with the chick-rearing period. Moreover April and May are the two months with shearwater activity recorded continously by the RFID system. For this period there were `r sum(MOVES$move, na.rm=TRUE)` movements of individual shearwaters.We then summarised the SQM data for every hour, and counted the number of individual birds entering the colony for every hour.
+
+The following graph shows that the number of birds entering the colony increases when the measured darkness of the cliff face is greater.
+
+```{r, echo=FALSE,warning=FALSE,error=FALSE,message=FALSE, fig.height = 6, fig.width = 6, fig.align = "center"}
+MOVE_SQM %>% #filter(HR %in% c(22,23,0,1))%>%
+ggplot(aes(x=MAG, y=activity))+
+  geom_point(colour="black") +
+  ylab("N individuals entering the cave") +
+  xlab("Darkness of cliff face (magnitude measured by SQM)") +
+  #geom_boxplot(colour="black") +
+  #facet_wrap('HRordered',scales = "fixed", shrink = TRUE, ncol=2)+
+  geom_smooth(fill="lightblue", size=1.5, method='lm', se=T)+
+  theme(panel.background=element_rect(fill="white", colour="black"), 
+        axis.text=element_text(size=15, color="black"), 
+        axis.title=element_text(size=15),
+        axis.title.y=element_text(margin=margin(0,15,0,0)),
+        axis.title.x=element_text(margin=margin(15,0,0,0)), 
+        strip.text.x=element_text(size=18, color="black"),
+        strip.text.y=element_text(size=18, color="black"),
+        strip.background=element_rect(fill="white", colour="black"),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.border = element_blank())
+```
+
+<br>
+
+A generalised linear model testing for an effect of the darkness measured at the shearwater colony on the number of individuals entering the colony while accounting for the natural variation over time (by month, and by hour for each night) finds a positive effect of darkness (<i>p</i> < 0.001) on the number of individuals entering:
+
+```{r, echo=FALSE,warning=FALSE,error=FALSE,message=FALSE}
+Q2m<-glm(activity~-1+HR+MONTH+MAG, data=MOVE_SQM[MOVE_SQM$HR %in% c("20", "21", "22","23","0","1","2","3"),], family=poisson)
+outQ2m<-summary(Q2m)
+out<-as.data.frame(round(outQ2m$coefficients,2))
+kable(out, caption="Parameter estimates from a generalised linear model testing the effect of the measured darkness of the cliff face on number of Yelkouan Shearwaters entering the colony")
+
+```
+
+
+
+## Question 3: is shearwater activity reduced when ships are bunkering?
+
+To address this question we first reduced the data to only focus on days immediately before and after bunkering events. This selection minimizes the large natural variation in attendance patterns over the breeding season and with moon phases. For each bunkering night, we also used the activity data from the previous and the subsequent night, and contrasted activity by hour for nights with and without bunkering ships.
+
+The following graph shows the natural variation over the course of a night in both April and May, but also indicates that on average fewer individuals are entering the colony on nights with bunkering ships:
+
+
+```{r, echo=FALSE,warning=FALSE,error=FALSE,message=FALSE, fig.height = 8, fig.width = 8, fig.align = "center"}
+ ggplot(data=MOVEScc, aes(x=HRordered, y=activity, width=1))+
+  geom_boxplot(colour="black") +
+  facet_grid(MONTH ~ bunker,scales = "fixed", shrink = TRUE)+
+  ylab("N individuals entering the cave") +
+  geom_hline(data=MOVEScc_medians,aes(yintercept=MED), color='red')+
+  scale_x_discrete(name="Hour of day", labels=c(19,20,21,22,23,0,1,2,3,4,5))+ #,4,5 should be removed?
+  theme(panel.background=element_rect(fill="white", colour="black"), 
+        axis.text=element_text(size=18, color="black"), 
+        axis.title=element_text(size=20),
+        axis.title.y=element_text(margin=margin(0,15,0,0)),
+        axis.title.x=element_text(margin=margin(15,0,0,0)), 
+        strip.text.x=element_text(size=18, color="black"),
+        strip.text.y=element_text(size=18, color="black"),
+        strip.background=element_rect(fill="white", colour="black"),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.border = element_blank())
+```
+<br>
+<br>
+This effect is also statistically significant, but of a small biological magnitude. A generalised linear model testing for an effect of bunkering ships on the number of individuals entering the colony while accounting for the natural variation over time (by month, and by hour for each night) finds a negative effect of bunkering (<i>p</i> = 0.001) on the number of individuals entering:
+
+```{r, echo=FALSE,warning=FALSE,error=FALSE,message=FALSE}
+Q3m<-glm(activity~-1+HR+MONTH+bunker, data=MOVEScc, family=poisson)
+outQ3m<-summary(Q3m)
+out<-as.data.frame(round(outQ3m$coefficients,2))
+kable(out, caption="Parameter estimates from a generalised linear model testing the effect of bunkering ships on number of Yelkouan Shearwaters entering the colony")
+
+```
+
+

@@ -1,0 +1,83 @@
+
+    model {
+    
+    # -------------------------------------------------
+    # Parameters:
+    # phi: survival probability, only adults 
+    # p: recapture probability when breeding, depends on colony-occasion-specific effort
+    # -------------------------------------------------
+    
+    
+    ## Priors and constraints
+    
+    ### RECAPTURE PROBABILITY
+    #mean.p ~ dunif(0, 1)                          # Prior for mean recapture
+    #logit.p <- log(mean.p / (1-mean.p))           # Logit transformation
+    beta.effort ~ dnorm(0,0.01)                   # Prior for trapping effort offset on capture probability
+
+
+    ## COLONY-SPECIFIC CAPTURE PROBABILITY 
+    for (col in 1:n.colonies){
+      cap.prob[col] ~ dunif(0, 1)                         # Priors for colony-specific capture probability
+      mu.p[col] <- log(cap.prob[col] / (1-cap.prob[col]))       # Logit transformation
+        for (t in 1:n.occasions){
+          logit(p[col,t]) <- mu.p[col] + beta.effort*effmat[col,t] + capt.raneff[t]
+        }
+    }
+    
+    ### SURVIVAL PROBABILITY
+    beta ~ dunif(0.9, 1)                       # Priors for age-specific DAILY survival - this is the basic survival that is scaled to difference between occasions
+    for (i in 1:nind){
+      for (t in f[i]:(n.occasions-1)){
+        beta.int[i,t] <- pow(beta,periods[colvec[i],t])       ### exponentiates daily survival by the length between capture sessions
+        mu[i,t] <- log(beta.int[i,t] / (1-beta.int[i,t]))       # Logit transformation
+        logit(phi[i,t]) <- mu[i,t] + surv.raneff[t]
+      } #t
+    } #i
+    
+
+    ## RANDOM TIME EFFECT ON SURVIVAL
+    for (t in 1:(n.occasions-1)){
+      surv.raneff[t] ~ dnorm(0, tau.surv)
+    }
+
+    for (t in 1:n.occasions){
+      capt.raneff[t] ~ dnorm(0, tau.capt)
+    }
+
+    
+    ### PRIORS FOR RANDOM EFFECTS
+    sigma.surv ~ dunif(0, 10)                     # Prior for standard deviation of survival
+    tau.surv <- pow(sigma.surv, -2)
+    
+    sigma.capt ~ dunif(0, 10)                     # Prior for standard deviation of capture
+    tau.capt <- pow(sigma.capt, -2)
+    
+
+    # Likelihood 
+    for (i in 1:nind){
+      # Define latent state at first capture
+      z[i,f[i]] <- 1
+        for (t in (f[i]+1):n.occasions){
+          # State process
+          z[i,t] ~ dbern(mu1[i,t])
+          mu1[i,t] <- phi[i,t-1] * z[i,t-1] 
+    
+          # Observation process
+          y[i,t] ~ dbern(mu2[i,t])
+          mu2[i,t] <- p[colvec[i],t] * z[i,t]
+        } #t
+    } #i
+    
+    # DERIVED SURVIVAL PROBABILITIES PER YEAR 
+    #for (t in 1:(n.occasions-1)){
+      #for (age in 1:2){
+        #msurv[t]<-mean(phi[,t])
+        ann.surv <- pow(beta,365)
+        
+      #}
+    #}
+    
+    
+    }
+    

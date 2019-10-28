@@ -1,7 +1,7 @@
 ###############################################################################
-
+##
 ##  YELKOUAN SHEARWATER SURVIVAL AND ABUNDANCE ESTIMATION ON MALTA  ##
-
+##
 ###############################################################################
 
 ## written by steffen.oppel@rspb.org.uk on 19 February 2019
@@ -320,7 +320,7 @@ for (l in 1:nrow(zinit)){
      }else{
             zinit[l,firstocc]<-1
            }
-     zinit[l,1:firstocc]<-0  ## sets everything up to first contact to - - DIFF FROM CJS where this is NA
+     zinit[l,1:firstocc]<-NA #0  ## sets everything up to first contact to - - DIFF FROM CJS where this is NA
      }
 dim(zinit)
                
@@ -476,13 +476,13 @@ parameters <- c("ann.surv","beta.effort","p")
 
 # MCMC settings
 
-ni <- 150000
-nt <- 4
-nb <- 50000
-nc <- 4
+ni <- 15
+nt <- 1
+nb <- 5
+nc <- 1
 
 # Call JAGS from R
-YESHsurv <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_CJS_adult_only.jags", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,parallel=T)
+YESHsurv <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\YESH_survival\\YESH_CJS_adult_only.jags", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,parallel=T)
 
 
                

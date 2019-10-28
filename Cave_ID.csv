@@ -1,0 +1,80 @@
+Cave_ID,LONG,LAT,Island,Site_Code,Colony_Name,Subcolony_Name,Ledge,Cave,Cave_String,Description
+,,,Comino,MT17,Comino,SantaMarijaCaves,,SantaMarija,MT17_Comino_Treasure,South facing burrows with scrambling & abseil access above Treasure cave
+,,,Comino,MT17,Comino,SantaMarijaCaves,,Shelf,MT17_Comino_Shelf,"Horizontal crack with abseiling access in Santa Marija Caves, including both the lower and upper ledges inside the cave"
+,,,Comino,MT17,Comino,SantaMarijaCaves,,Bonsai,MT17_Comino_Bonsai,"Small cave 1m below cliff top, large bush on edge, South of Shelf Cave"
+,,,Comino,MT17,Comino,CominoUnspecified,,,MT17_Comino,unknown place on Comino
+,,,Cominotto,MT17,Cominotto,CominottoEast,,1,MT17_Cominotto_1,"first cave from going down, east"
+,,,Cominotto,MT17,Cominotto,CominottoEast,,2,MT17_Cominotto_2,cave below level of cave 1
+,,,Cominotto,MT17,Cominotto,CominottoEast,,3,MT17_Cominotto_3,cave west of cave 1
+,,,Cominotto,MT17,Cominotto,CominottoEast,,4,MT17_Cominotto_4,"small cave after cave 3, just before tricky step"
+,,,Cominotto,MT17,Cominotto,CominottoEast,,5,MT17_Cominotto_5,large cave just west of tricky step
+,,,Cominotto,MT17,Cominotto,CominottoEast,,6,MT17_Cominotto_6,"small cave after cave 5, very close to cave 7"
+,,,Cominotto,MT17,Cominotto,CominottoEast,,7,MT17_Cominotto_7,most west cave on accessible ledge
+,,,Cominotto,MT17,Cominotto,CominottoWest,,West,MT17_Cominotto_West,"separate ledge than the one with cave 1 to 7, further west but on the same cliff face, wide crack with entrances 8, 9 nd 10"
+,,,Cominotto,MT17,Cominotto,CominottoWest,,8,MT17_Cominotto_8,1st from east on west ledge
+,,,Cominotto,MT17,Cominotto,CominottoWest,,9,MT17_Cominotto_9,2nd from east on west ledge
+,,,Cominotto,MT17,Cominotto,CominottoWest,,10,MT17_Cominotto_10,"3rd from east on west ledge, past boulder "
+,,,Cominotto,MT17,Cominotto,CominottoUnspecified,,,MT17_Cominotto,Unspecified Cominotto
+,,,Gozo,MT19,Gharb,Underworld,,,MT19_Underworld,"Ghar Jahra, big sea cave"
+,,,Gozo,MT19,Gharb,GharbUnspecified,,,MT19_Gharb,
+,,,Gozo,MT30,TaCenc,TaCencSeacaves,,Hourglass,MT30_TaCenc_Hourglass,
+,,,Gozo,MT30,TaCenc,TaCencSeacaves,,Stormpetrel,MT30_TaCenc_Stormpetrel,
+,,,Gozo,MT30,TaCenc,TaCencUnspecified,,,MT30_TaCenc,cliffs
+,,,Gozo,MT30,TaCenc,Benscave,,Benscave,MT30_TaCenc_Benscave,"also called Pipe Cave, accessed from sea and by abseiling on Ras in-Newwiela"
+,,,Gozo,MT31,TaCenc,TaCencJamesledge,,Jamesledge,MT30_TaCenc_Jamesledge,ledge at sealevel accessible from boat west of Hour Glass Cave - several cave entrances with Yelkouan adult at night on 22/06/2019 and chick heard calling on same date 
+,,,Malta,MT09,RdumtalMadonna,RM05,,,MT09_RM05,RM05 unspecified wether Butter cave or Gregale cave (mostly 2013)
+,,,Malta,MT09,RdumtalMadonna,RM05GC,,,MT09_RM05GC,Gregale unspecified section
+,,,Malta,MT09,RdumtalMadonna,RM05GC,South,,MT09_RM05GC_South,
+,,,Malta,MT09,RdumtalMadonna,RM05GC,Central,,MT09_RM05GC_Central,
+,,,Malta,MT09,RdumtalMadonna,RM05GC,North,,MT09_RM05GC_North,
+,,,Malta,MT09,RdumtalMadonna,RM04A,,,MT09_RM04A,
+,,,Malta,MT09,RdumtalMadonna,RM04B,,,MT09_RM04B,
+,,,Malta,MT09,RdumtalMadonna,RM04A,,,MT09_RM04AB,
+,,,Malta,MT09,RdumtalMadonna,RM04C,,,MT09_RM04C,
+,,,Malta,MT09,RdumtalMadonna,RM04D,,,MT09_RM04D,
+,,,Malta,MT09,RdumtalMadonna,RM01,,,MT09_RM01,all sites from abseiling point (fig tree on top) to inside Big Crack
+,,,Malta,MT09,RdumtalMadonna,RM01,Above Big Crack,,MT09_RM01,"cave above big crack in cliff face, level with top of boulder that creates Big Crack roof, on which 12m mist net was set up for 1st time in 2019, cave accessed for the first time in 2019 as well"
+,,,Malta,MT09,RdumtalMadonna,RM03Upper,Upper,,MT09_RM03_Upper,upper ledge accessed a few times by Ben
+,,,Malta,MT09,RdumtalMadonna,RM03,South,,MT09_RM03_South,"low ledge: refering to mistnet site, south part of the ledge"
+,,,Malta,MT09,RdumtalMadonna,RM03,North,,MT09_RM03_North,"low ledge: refering to mistnet site, north part of the ledge inside seacave"
+,,,Malta,MT09,RdumtalMadonna,RM03Spiderman,Spiderman,,MT09_RM03_Spiderman,ledge accessible from sea south of dolphin cave - large sea cave
+,,,Malta,MT09,RdumtalMadonna,RM03,,,MT09_RM03,referring to all dolphin cave lower ledge
+,,,Malta,MT09,RdumtalMadonna,RM03,,18to22,MT09_RM03_18to22,"low ledge: two caves not coverered by South mistnet, south of South mistnet"
+,,,Malta,MT09,RdumtalMadonna,RM02,Upper,,MT09_RM02_Upper,"close to cliff top, accessible site before it collapsed, historical ringing site"
+,,,Malta,MT09,RdumtalMadonna,RM02,Lower,,MT09_RM02_Lower,"close to sea, accessed from RM01 scrambling, below fig tree of upper ledge"
+,,,Malta,MT09,RdumtalMadonna,RM02Caves,Caves,,MT09_RM02_Caves,"two small caves close to sea, further on towards RM03 from RM02_lower (below fig tree)"
+,,,Malta,MT09,RdumtalMadonna,RM01Lower,Lower,,MT09_RM01_Lower,area below Big Crack north opening accessed when scrambling to RM02 
+,,,Malta,MT09,RdumtalMadonna,RM05Lower,Lower,,MT09_RM05L,"area down on the way to Gregale, some nests behind boulders"
+,,,Malta,MT09,RdumtalMadonna,RM05BT,,,MT09_RM05BT,both upper and lower
+,,,Malta,MT09,RdumtalMadonna,RM05BTUpper,Upper,,MT09_RM05BT_Upper,"accessed by crawling west from abseiling landing place, further subdivided into 3 smaller caves and 1 individual nest in cave entrance"
+,,,Malta,MT09,RdumtalMadonna,RM05BTLower,Lower,,MT09_RM05BT_Lower,"lower crack with two entrances, one at landing place from abseil, and one below upper cave"
+,,,Malta,MT09,RdumtalMadonna,RM05BTNorth,North,,MT09_RM05BT_North,"not in butter cave, but ledge just north of it, at least 1 individual nest "
+,,,Malta,MT24,Majjistral,MajjistralUnspecified,,,MT24_Majjistral,"includes an individual nest between wall and main colony (central), only accessed once in 2014"
+,,,Malta,MT24,Majjistral,MajjistralMain,,Eggshell,MT24_Majjistral_Eggshell,
+,,,Malta,MT24,Majjistral,MajjistralMain,,Thomas,MT24_Majjistral_Thomas,
+,,,Malta,MT24,Majjistral,MajjistralMain,,Subt,MT24_Majjistral_Subt,
+,,,Malta,MT24,Majjistral,MajjistralMain,,NS2_NS3,MT24_Majjistral_NS2_NS3,
+,,,Malta,MT24,Majjistral,MajjistralSouth,,,MT24_Majjistral_South,"South of wall, unkown cave (south of subt); accessed either from sea or tricky climbing from close to subt"
+,,,Malta,MT24,Majjistral,MajjistralSouth,,1,MT24_Majjistral_South_1,
+,,,Malta,MT24,Majjistral,MajjistralSouth,,2,MT24_Majjistral_South_2,
+,,,Malta,MT24,Majjistral,MajjistralSouth,,3,MT24_Majjistral_South_3,
+,,,Malta,MT24,Majjistral,MajjistralSouth,,4,MT24_Majjistral_South_4,
+,,,Malta,MT24,Majjistral,MajjistralSouth,,5,MT24_Majjistral_South_5,
+,,,Malta,MT24,Majjistral,Delli,,Lower,MT24_Delli_Lower,"entrance to small cave reached by going down stairs and over boulders, low over ground in cliff"
+,,,Malta,MT24,Majjistral,Delli,,Upper,MT24_Delli_Upper,ledge with 2 to 3 burrow entrances below it. Above nestboxes
+,,,Malta,MT24,Majjistral,MajjistralNorth,,NorthCave,MT24_Majjistral_NorthCave,"Cave only accessible from the sea, where several boulders lie in the sea"
+,,,Malta,MT24,Majjistral,MajjistralTop,ontop,cave,MT24_Majjistral_ontop_cave,small cave found 1-2m down from cliff top in 2019
+,,,Malta,MT24,Cumnija,Cumnija,North,,MT24_Cumnija_North,"refering to MN site, covering central somewhat"
+,,,Malta,MT24,Cumnija,Cumnija,South,,MT24_Cumnija_South,refering to MN site
+,,,Malta,MT24,Cumnija,Cumnija,South,Cave,MT24_Cumnija_South_Cave,"largest cave in colony; NS8 (1st on left) being accessible by hand; NS9; NS10, NS11 not accessible"
+,,,Malta,MT24,Cumnija,Cumnija,South,NS4,MT24_Cumnija_South_NS4,"Individual nest, small burrow on way up to cave"
+,,,Malta,MT26,Migra,Migra,,Seacave,MT26_Migra_Seacave,"cave with long tunnel into cliff, north of second bay from the parking"
+,,,Malta,MT27,Babu,Babu,,,MT27_Babu,"cave accessible from sea, on south side of valley mouth"
+,,,St. Paul's Islands,MT22,St. Paul's Islands,StPauls,WestCave,,MT22_StPauls_WestCave,
+,,,St. Paul's Islands,MT22,St. Paul's Islands,StPauls,MainCave,,MT22_StPauls_MainCave,
+,,,St. Paul's Islands,MT22,St. Paul's Islands,StPauls,Nestboxledge,,MT22_StPauls_Nestboxledge,
+,,,Gozo,G1,Isopu,Isopu,lower,east,G1_Isopu_lower_east,"lower accessible ledge from main abseil point in isopu, eastern cave entrance, accessed for 1st time in 2019"
+,,,Gozo,G1,Isopu,Isopu,Lower,lowercrack,G1_Isopu_lowercrack,"lower accessible ledge from main abseil point in isopu, narrow crack just below E2 trap cave, 1st accessed in 2018"
+,,,Gozo,G1,Isopu,Isopu,eastcrack,,G1_Isopu_eastcrack,"IN 2018 DATA WAS ERRONOUSLY CALLED WESTCRACK! at same level as E2 trap cave but further east, deep cave, first accessed 2017 & 2018"
+,,,Gozo,G1,Isopu,Isopu,middle,hole,G1_Isopu_middle_hole,"small burrow on the way down from the E2 trap cave to lowercrack, on the right (west) of large boulder. Discovered for the first time 2019 - truly a burrow that was taken up again in this year"
+,,,Malta,MT27,Lapsi,Lapsi,,,MT27_Lapsi_boulderscree,

@@ -194,8 +194,7 @@ OCC_lookup<- yesh %>%
       arrange(middate) %>%
       mutate(OCC_NR=seq_along(SEASON))
                
-#length is longer the unique(records$ringnumber) cause some rings are assigned to more than one cavestring but this should not be a problem
-               
+             
                
 YESH<- yesh %>% #mutate(Colony=caves$Subcolony_Name[match(Cave_String,caves$Cave_String)]) %>%
            mutate(Year=year(NightStarting)) %>%
@@ -208,14 +207,35 @@ YESH<- yesh %>% #mutate(Colony=caves$Subcolony_Name[match(Cave_String,caves$Cave
            spread(key=OCC_NR, value=ALIVE) %>%
            replace(is.na(.), 0)
 
+#length is longer the unique(records$ringnumber) cause some rings are assigned to more than one cavestring but this should not be a problem
 ## THESE TWO DIMENSIONS DO NOT MATCH, BECAUSE SOME BIRDS WERE RECORDED IN >1 SITE
 duplicates<-names(table(YESH$ringnumber))[table(YESH$ringnumber)>1]
 transients <- YESH %>% dplyr::filter(ringnumber %in% duplicates) %>%
   arrange(ringnumber,SITE)
 
-fwrite(transients,"YESH_Malta_transients_EncHist.csv")
+#fwrite(transients,"YESH_Malta_transients_EncHist.csv")
                
-               
+          
+     
+## REMOVE DUPLICATES AND TRANSFER ENCOUNTERS INTO OTHER ROWS
+
+transientCH<-transients %>% gather(key='OCC', value='surv',-ringnumber,-SITE) %>%
+  arrange(ringnumber,OCC) %>%
+  group_by(ringnumber,OCC) %>% summarise(surv=max(surv)) %>%
+  spread(key=OCC,value=surv, fill=0)
+
+transientCH<-transients %>% gather(key='OCC', value='surv',-ringnumber,-SITE) %>%
+  dplyr::filter(surv==1) %>%
+  arrange(ringnumber,OCC) %>%
+  group_by(ringnumber) %>% summarise(SITE=last(SITE)) %>%
+  left_join(transientCH, by="ringnumber") %>%
+  dplyr::select(2,1,3:10)
+
+YESH<- YESH %>% dplyr::filter(!(ringnumber %in% duplicates)) %>%
+  bind_rows(transientCH)
+dim(YESH)
+
+
 #########################################################################
 # CREATE MATRIX OF EFFORT DATA AND DIFFERENCES BETWEEN OCCASIONS
 #########################################################################
@@ -287,59 +307,31 @@ n.colonies<-length(unique(YESH$SITE))
                
                
                
-               ## CREATE MATRIX for INITIAL STATE Z
+## CREATE MATRIX for INITIAL STATE Z
                
-               zinit<-CH
-               
-               for (l in 1:nrow(zinit)){
-               
-               firstocc<-get.first(zinit[l,])
-               
-               if(firstocc<n.years){
-               
-               zinit[l,(firstocc):n.years]<-1  ## alive from first contact - DIFF FROM CJS where this is firstocc+1
-               
-               }else{
-               
-               zinit[l,firstocc]<-1
-               
-               }
-               
-               zinit[l,1:firstocc]<-0  ## sets everything up to first contact to - - DIFF FROM CJS where this is NA
-               
-               }
-               
-               dim(zinit)
+zinit<-CH
+for (l in 1:nrow(zinit)){
+     firstocc<-get.first(zinit[l,])
+     if(firstocc<n.years){
+            zinit[l,(firstocc):n.years]<-1  ## alive from first contact - DIFF FROM CJS where this is firstocc+1
+     }else{
+            zinit[l,firstocc]<-1
+           }
+     zinit[l,1:firstocc]<-0  ## sets everything up to first contact to - - DIFF FROM CJS where this is NA
+     }
+dim(zinit)
                
                
+## CREATE MATRIX TO LOOK UP OBSERVATION EFFORT
+## STANDARDISE HOURS TO AVOID INVALID PARENT ERROR IN JAGS
+COLEFF<- eff %>% group_by(SITE, OCC_NR) %>%
+         summarise(effort=sum(effort)) %>%
+         mutate(effort=scale(effort, center=mean(effort))/sd(effort)) %>%
+         spread(key=OCC_NR, value=effort) %>%
+         replace(is.na(.), 0)
+         COLEFF$COL_NR<-1#seq(1:5)
                
-               
-               
-               
-               
-               
-               
-               ## CREATE MATRIX TO LOOK UP OBSERVATION EFFORT
-               
-               ## STANDARDISE HOURS TO AVOID INVALID PARENT ERROR IN JAGS
-               
-               
-               
-               COLEFF<- eff %>% group_by(Colony, OCC_NR) %>%
-               
-               summarise(effort=sum(effort)) %>%
-               
-               mutate(effort=scale(effort, center=mean(effort))/sd(effort)) %>%
-               
-               spread(key=OCC_NR, value=effort) %>%
-               
-               replace(is.na(.), 0)
-               
-               COLEFF$COL_NR<-1#seq(1:5)
-               
-               
-               
-               effmat<-as.matrix(COLEFF[,2:7], dimnames=F)
+effmat<-as.matrix(COLEFF[,2:7], dimnames=F)
                
                
                

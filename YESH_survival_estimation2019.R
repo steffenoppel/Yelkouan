@@ -9,15 +9,11 @@
 
 
 ## updated on 13 March - new data included and model run successfully
-
 ## output alarming: very low adult survival probability
 
 
-
 ## revised and split from YESH_survival_estimation.r on 25 March 2019
-
 ## re-arranged data structure to 1 occasion per year
-
 ## model with 32 occasions yielded consistent invalid parent error
 
 
@@ -25,49 +21,36 @@
 
 
 library(tidyverse)
-
 library(lubridate)
-
 library(data.table)
-
 library(jagsUI)
-
 library(readxl)
 library(tidyr)
 
 
 ################################################################################################################
-
 ###################### LOAD AND MANIPULATE DATA 	  ######################################################
-
 ################################################################################################################
 
 
 
 ##### LOAD RAW DATA       
 
-# #setwd("A:\\RSPB\\Malta\\Raw_data")
-
-#setwd("C:\\STEFFEN\\RSPB\\Malta\\Raw_data")
-setwd("C:\\Users\\Martin\\Documents\\working_folder\\CaptureMarkRecapture\\Analysis_2019\\data")
+setwd("C:\\STEFFEN\\RSPB\\Malta\\Raw_data")
+#setwd("C:\\Users\\Martin\\Documents\\working_folder\\CaptureMarkRecapture\\Analysis_2019\\data")
 #setwd("C:\\Users\\Martin\\Documents\\working_folder\\CaptureMarkRecapture\\Analysis_2019")
 # 
 
 # yesh<-read_excel("YESH_2012_2018_cavestring_replacedrings.xlsx", sheet="with cave string")
-
 # effort<-read_excel("Cave_Activity_complete_2012-2018.xlsx", sheet="Sheet1")
-
 caves<-fread("Cave_ID.csv")
 
 
 #### replaced with Martins CMR cleaning code on 3 March 2019
-
 # to get list of all rings deployed, in the source file only original rings present and not their replacements
-
 rings <- fread("2012_2019_replacement_and_tags.csv")
 
 #to update "2012_2018_replacement_and_tags.csv" with rings placed in 2019, "new" birds of 2019 were added in excel
-
 #fwrite(unique_rings, "2012_2018_uniquerings.csv")
 
 #####IMP. NOTE: All times in records and effort are in Malta time.
@@ -75,55 +58,31 @@ rings <- fread("2012_2019_replacement_and_tags.csv")
 
 
 #to create Nightstarting for both ringing records and cave activity (Effort) to match effort on nightstarting
-
-
-
 midday<-as.POSIXct("12:00:00", format="%H:%M:%S",tz = "UTC")   # create a reference time to split the day
-
 midday<-format(midday, format="%H:%M:%S",tz = "UTC") 
 
 
 
 #since ringing database extract for 2012-2016 gave time in hour only, :00:00 CONCATENATED onto hour value in excel
-
 records <- fread("2012_2019_cavestring_ringingrecords.csv")
 
-
-
 records <- records %>%
-  
-  mutate(DateTime=dmy_hms(paste(ringingDate,paste(HourTime, sep=":"), sep=" "),tz="Europe/Berlin")) 
-
-colnames(records)[colnames(records) == "Cave_string"] <- "Cave_String"
-
-records <- records %>%
-  
+  mutate(DateTime=dmy_hms(paste(ringingDate,paste(HourTime, sep=":"), sep=" "),tz="Europe/Berlin")) %>%
+  dplyr::rename(Cave_String=Cave_string) %>%
   mutate(DateTime=with_tz(DateTime,tz="UTC")) %>% #does not work if using EuropeBerlin tz here
-  
   mutate(Time=format(DateTime, format="%H:%M:%S",tz = "UTC")) %>%
-  
   mutate(NightStarting=if_else(Time>midday,as.Date(DateTime),as.Date(DateTime-(24*3600))))%>%
-  
-  filter(Cave_String!="Office") %>% #"Office" refers to birds stranded or otherwise rescued for which there is no respective effort
- filter(Errors!=1) #handful of records remain. these have been checked but could not be resolved. most likely are errors and should therefore not be included in analysis
+  dplyr::filter(!(Cave_String=="Office")) %>% #"Office" refers to birds stranded or otherwise rescued for which there is no respective effort
+  dplyr::filter(Errors!=1) #handful of records remain. these have been checked but could not be resolved. most likely are errors and should therefore not be included in analysis
 
 
 effort <- fread("Cave_Activity_complete_2012-2019.csv")
 
-
-
 effort <- effort %>%
-  
-  mutate(DateTime=dmy_hm(paste(Date,paste(start_time, sep=":"), sep=" "),tz="Europe/Berlin"))
-
-effort[is.na(effort$DateTime),]
-
-effort <- effort %>%
-  
+  mutate(DateTime=dmy_hm(paste(Date,paste(start_time, sep=":"), sep=" "),tz="Europe/Berlin")) %>%
+  dplyr::filter(!is.na(DateTime)) %>%
   mutate(DateTime=with_tz(DateTime,tz="UTC")) %>%
-  
   mutate(Time=format(DateTime, format="%H:%M:%S",tz = "UTC")) %>%
-  
   mutate(NightStarting=if_else(Time>midday,as.Date(DateTime),as.Date(DateTime-(24*3600))))
 
 
@@ -131,14 +90,9 @@ effort <- effort %>%
 
 head(records)
 
-
-
 misseff<-records %>% dplyr::select(Cave_String,NightStarting, ringnumber, ringer) %>%
-  
   left_join(effort[,c(2,18,8,13)],by=c("Cave_String","NightStarting")) %>%
-  
   mutate(hours=as.numeric(hours)) %>%
-  
   dplyr::filter(is.na(hours))
 
 #fwrite(misseff,"YESH_ring_records_missing_effort_CHECK.csv") #none with missing effort after cleaning Oct 2019
@@ -171,227 +125,165 @@ Majjistral_south <- c("MT24_Majjistral_South_1", 	"MT24_Majjistral_South", "MT24
 
 adults <- c("6", "4", "2")
                
-     
-               
-               effort <- effort %>%
-               
-               dplyr::filter(Cave_String %in% initialsites)
-               
-               
-               
-               records <- records %>%
-               
-               dplyr::filter(Cave_string %in% initialsites) %>%
-               
-               dplyr::filter(age %in% adults)%>%
-               
-               dplyr::filter(Errors!= 1)
-               
-               
-               
-               
-               
-               
-               
-               
-               
-               #########################################################################
-               
-               # CREATE MATRIX OF ENCOUNTER DATA (0/1)
-               
-               #########################################################################
-               
-               yesh<-records
-               
-               
-               
-               ### FIRST WE NEED TO CREATE A LIST OF OCCASIONS AND NUMBER THEM SEQUENTIALLY
-               
-               ## ANALYSE AT SEASON LEVEL
-               
-               names(yesh)
-               
-               OCC_lookup<- yesh %>%
-               
-               mutate(Year=year(NightStarting)) %>%
-               
-               mutate(month=month(NightStarting)) %>%
-               
-               #mutate(Occ=paste(Year,month,sep="_")) %>%
-               
-               mutate(SEASON=ifelse(month<10,(Year-1),Year)) %>% ###define a breeding season from Oct to Jul
-               
-               group_by(SEASON) %>%
-               
-               summarise(middate=median(NightStarting)) %>%
-               
-               arrange(middate) %>%
-               
-               mutate(OCC_NR=seq_along(SEASON))
-               
-               #length is longer the unique(records$ringnumber) cause some rings are assigned to more than one cavestring but this should not be a problem
-               
-               
-               YESH<- yesh %>% mutate(Colony=caves$Subcolony_Name[match(Cave_String,caves$Cave_String)]) %>%
-               
-               mutate(Year=year(NightStarting)) %>%
-               
-               mutate(month=month(NightStarting), seen=1) %>%
-               
-               #mutate(Occ=paste(Year,month,sep="_")) %>%
-               
-               mutate(SEASON=ifelse(month<10,(Year-1),Year)) %>% ###define a breeding season from Oct to Jul
-               
-               mutate(OCC_NR=OCC_lookup$OCC_NR[match(SEASON,OCC_lookup$SEASON)]) %>%
-               
-               group_by(Colony, OCC_NR,ringnumber) %>%
-               
-               summarise(ALIVE=max(seen,na.rm=T)) %>%
-               
-               spread(key=OCC_NR, value=ALIVE) %>%
-               
-               replace(is.na(.), 0)
-               
-               
-               #replacement rings is not considered?
-               
-               
-               
-               
-               
-               
-               
-               
-               #########################################################################
-               
-               # CREATE MATRIX OF EFFORT DATA AND DIFFERENCES BETWEEN OCCASIONS
-               
-               #########################################################################
-               
-               
-               
-               ### FORMAT EFFORT DATA ###
-               
-               head(effort)
-               
-               min(effort$Date)
-               
-               eff<- effort %>% mutate(Colony=caves$Subcolony_Name[match(Cave_String,caves$Cave_String)]) %>%
-               
-               #mutate(Colony=Cave_String) %>%  ### this does not work unless the 'periods' are somehow adjusted'
-               
-               mutate(Year=year(NightStarting)) %>%   ## needs to be done due to conflicts between year=2017 for dates from 2015
-               
-               #mutate(NightStarting=dmy(Date)) %>%
-               
-               mutate(month=month(NightStarting)) %>%
-               
-               mutate(SEASON=ifelse(month<10,(Year-1),Year)) %>% ###define a breeding season from Oct to Jul
-               
-               mutate(OCC_NR=OCC_lookup$OCC_NR[match(SEASON,OCC_lookup$SEASON)]) %>%
-               
-               mutate(hours=as.numeric(hours)) %>%
-               
-               group_by(Colony, SEASON,OCC_NR) %>%
-               
-               summarise(effort=sum(hours,na.rm=T))
-               
-               
-               ### MATRIX OF EFFORT BY Cave_String ###
-               
-               
-              
-               ### CALCULATE INTERVAL BETWEEN OCCASIONS ###
-               
-               
-               
-               survPeriods<-effort %>% mutate(Colony=caves$Colony_Name[match(Cave_String,caves$Cave_String)]) %>%
-               
-               mutate(Year=year(NightStarting)) %>%   ## needs to be done due to conflicts between year=2017 for dates from 2015
-               
-               mutate(month=month(NightStarting)) %>%
-               
-               mutate(SEASON=ifelse(month<10,(Year-1),Year)) %>% ###define a breeding season from Oct to Jul
-               
-               mutate(OCC_NR=OCC_lookup$OCC_NR[match(SEASON,OCC_lookup$SEASON)]) %>%
-               
-               group_by(Colony, SEASON,OCC_NR) %>%
-               
-               summarise(first=min(NightStarting,na.rm=T), last=max(NightStarting,na.rm=T), mid=median(NightStarting, na.rm=T)) %>%
-               
-               arrange(Colony, SEASON,OCC_NR) %>%
-               
-               mutate(surv_int=as.numeric(difftime(dplyr::lag(mid), mid,unit="days")))  
-               
-               
-               
-               
-               
-               ## calculate the difference in days between the mid days of subsequent sessions
-               
-               ## some how the lead/lag does not work in: mutate(surv_int=as.numeric(difftime(lead(first), last,unit="days")))  ## calculates the difference in days between end of current session and beginning of next session
-               
-               for (l in 1:(dim(survPeriods)[1]-1)){
-               
-               survPeriods$surv_int[l]=as.numeric(difftime(survPeriods$mid[l+1], survPeriods$mid[l],unit="days"))
-               
-               }
-               
-               
-               
-               #fwrite(survPeriods,"Malta_intervals_sessions.csv")
-               
-               
-               
-               
-               
-               #########################################################################
-               
-               # PREPARE DATA FOR INPUT INTO JAGS
-               
-               #########################################################################
-               
-               
-               
-               names(YESH)
-               
-               CH<-as.matrix(YESH[,3:8], dimnames=F)
-               
-               dim(CH)
-               
-               
-               
-               ### check that there are contacts in every season
-               
-               apply(CH,2,sum)
-               
-               
-               
-               
-               
-               # Compute vector with occasion of first capture
-               
-               get.first <- function(x) min(which(x==1))
-               
-               f <- apply(CH, 1, get.first)
-               
-               n.occ<-ncol(CH)
-               
-               
-               
-               ### CHECK WHETHER IT LOOKS OK ###
-               
-               head(CH)
-               
-               
-               
-               ## PREPARE CONSTANTS
-               
-               n.ind<-dim(CH)[1]		## defines the number of individuals
-               
-               n.years<-dim(CH)[2]  ## defines the number of years
-               
-               n.colonies<-length(unique(YESH$Colony))
+
+### REPLACE ORIGINAL CAVE STRING WITH POOLED SITES
+## added on 28 Oct 2019 by steffen oppel based on Martin Austad's suggestion how to pool sites
+
+## create lookup-table
+## Making LUT
+all_lut<-data.frame(orig=as.character(c(RM01,RM03,RM04,RM05,Cominotto,StPauls,Majjistral_main,Majjistral_south)),
+                poolloc=as.character(c("RM01",rep("RM03",4),rep("RM04",4),rep("RM05",8),rep("Cominotto",8),rep("StPauls",2),rep("Majjistral_main",4),rep("Majjistral_south",4))))
+
+
+               
+effort <- effort %>%
+            mutate(SITE=all_lut$poolloc[match(as.character(Cave_String),all_lut$orig)]) %>%
+            dplyr::filter(!is.na(SITE))
+            
+records <- records %>%
+              mutate(SITE=all_lut$poolloc[match(as.character(Cave_String),all_lut$orig)]) %>%
+              dplyr::filter(!is.na(SITE)) %>%
+              dplyr::filter(age %in% adults)%>%
+              dplyr::filter(Errors!= 1)
+               
+               
+
+
+#########################################################################
+# ENSURE THAT RING REPLACEMENTS ARE INCORPORATED INTO RECORDS
+#########################################################################
+names(records)
+length(unique(records$ringnumber))
+
+## CREATE REPLACEMENT LIST
+replist<-rings %>% #dplyr::filter(Replacement_ring!="") %>%
+  rename(orig=Origninal_ring, repl=Replacement_ring) %>%
+  select(orig,repl)
+
+## FIND DOUBLE REPLACEMENTS AND UPDATE LIST
+doublerep<-unique(rings$Replacement_ring)[unique(rings$Replacement_ring) %in% rings$Origninal_ring]
+replist$orig[replist$orig %in% doublerep]<-replist$orig[replist$repl %in% doublerep]
+replist[replist$orig %in% doublerep,] ### this should be empty
+replist[replist$repl %in% doublerep,] ### this should have two records
+
+
+## UPDATE RECORDS
+yesh<- records %>%
+  mutate(ringnumber=ifelse(ringnumber %in% replist$repl,replist$orig[match(ringnumber,replist$repl)],ringnumber))
+length(unique(yesh$ringnumber))  ## reduces number of individuals from 1619 to 1572
+
+
+        
+               
+#########################################################################
+# CREATE MATRIX OF ENCOUNTER DATA (0/1)
+#########################################################################
+   
+
+### FIRST WE NEED TO CREATE A LIST OF OCCASIONS AND NUMBER THEM SEQUENTIALLY
+## ANALYSE AT SEASON LEVEL
+names(yesh)
+               
+OCC_lookup<- yesh %>%
+      mutate(Year=year(NightStarting)) %>%
+      mutate(month=month(NightStarting)) %>%
+      #mutate(Occ=paste(Year,month,sep="_")) %>%
+      mutate(SEASON=ifelse(month<10,(Year-1),Year)) %>% ###define a breeding season from Oct to Jul
+      group_by(SEASON) %>%
+      summarise(middate=median(NightStarting)) %>%
+      arrange(middate) %>%
+      mutate(OCC_NR=seq_along(SEASON))
+               
+#length is longer the unique(records$ringnumber) cause some rings are assigned to more than one cavestring but this should not be a problem
+               
+               
+YESH<- yesh %>% #mutate(Colony=caves$Subcolony_Name[match(Cave_String,caves$Cave_String)]) %>%
+           mutate(Year=year(NightStarting)) %>%
+           mutate(month=month(NightStarting), seen=1) %>%
+           #mutate(Occ=paste(Year,month,sep="_")) %>%
+           mutate(SEASON=ifelse(month<10,(Year-1),Year)) %>% ###define a breeding season from Oct to Jul
+           mutate(OCC_NR=OCC_lookup$OCC_NR[match(SEASON,OCC_lookup$SEASON)]) %>%
+           group_by(SITE, OCC_NR,ringnumber) %>%   ## REPLACED Colony with SITE based on Martin's grouping in October 2019
+           summarise(ALIVE=max(seen,na.rm=T)) %>%
+           spread(key=OCC_NR, value=ALIVE) %>%
+           replace(is.na(.), 0)
+
+## THESE TWO DIMENSIONS DO NOT MATCH, BECAUSE SOME BIRDS WERE RECORDED IN >1 SITE
+duplicates<-names(table(YESH$ringnumber))[table(YESH$ringnumber)>1]
+transients <- YESH %>% dplyr::filter(ringnumber %in% duplicates) %>%
+  arrange(ringnumber,SITE)
+
+fwrite(transients,"YESH_Malta_transients_EncHist.csv")
+               
+               
+#########################################################################
+# CREATE MATRIX OF EFFORT DATA AND DIFFERENCES BETWEEN OCCASIONS
+#########################################################################
+               
+### FORMAT EFFORT DATA ###
+head(effort)
+min(effort$Date)
+               
+eff<- effort %>% #mutate(Colony=caves$Subcolony_Name[match(Cave_String,caves$Cave_String)]) %>% ### REPLACED WITH THE GROUPING MARTIN PROVIDED IN OCTOBER 2019
+         #mutate(Colony=Cave_String) %>%  ### this does not work unless the 'periods' are somehow adjusted'
+         mutate(Year=year(NightStarting)) %>%   ## needs to be done due to conflicts between year=2017 for dates from 2015
+         #mutate(NightStarting=dmy(Date)) %>%
+         mutate(month=month(NightStarting)) %>%
+         mutate(SEASON=ifelse(month<10,(Year-1),Year)) %>% ###define a breeding season from Oct to Jul
+         mutate(OCC_NR=OCC_lookup$OCC_NR[match(SEASON,OCC_lookup$SEASON)]) %>%
+         mutate(hours=as.numeric(hours)) %>%
+         group_by(SITE, SEASON,OCC_NR) %>%  ## REPLACED Colony with SITE based on Martin's grouping in October 2019
+         summarise(effort=sum(hours,na.rm=T))
+               
+               
+### MATRIX OF EFFORT BY Cave_String ###
+### CALCULATE INTERVAL BETWEEN OCCASIONS ###
+survPeriods<-effort %>% 
+              mutate(Year=year(NightStarting)) %>%   ## needs to be done due to conflicts between year=2017 for dates from 2015
+              mutate(month=month(NightStarting)) %>%
+              mutate(SEASON=ifelse(month<10,(Year-1),Year)) %>% ###define a breeding season from Oct to Jul
+              mutate(OCC_NR=OCC_lookup$OCC_NR[match(SEASON,OCC_lookup$SEASON)]) %>%
+              group_by(SITE, SEASON,OCC_NR) %>%  ## REPLACED Colony with SITE based on Martin's grouping in October 2019
+              summarise(first=min(NightStarting,na.rm=T), last=max(NightStarting,na.rm=T), mid=median(NightStarting, na.rm=T)) %>%
+              arrange(SITE, SEASON,OCC_NR) %>%  ## REPLACED Colony with SITE based on Martin's grouping in October 2019
+              mutate(surv_int=as.numeric(difftime(dplyr::lead(mid,1), mid,unit="days")))  
+
+## calculate the difference in days between the mid days of subsequent sessions
+## somehow the lead/lag does not work in: mutate(surv_int=as.numeric(difftime(lead(first), last,unit="days")))  ## calculates the difference in days between end of current session and beginning of next session
+
+survPeriods$surv_int<-as.numeric(difftime(dplyr::lead(survPeriods$mid,1), survPeriods$mid,unit="days"))            
+survPeriods$surv_int[survPeriods$surv_int<0]<-NA               
+               
+#fwrite(survPeriods,"Malta_intervals_sessions.csv")
+               
+               
+               
+#########################################################################
+# PREPARE DATA FOR INPUT INTO JAGS
+#########################################################################
+               
+names(YESH)
+CH<-as.matrix(YESH[,3:10], dimnames=F)
+dim(CH)
+               
+### check that there are contacts in every season
+apply(CH,2,sum)
+               
+               
+# Compute vector with occasion of first capture
+get.first <- function(x) min(which(x==1))
+f <- apply(CH, 1, get.first)
+n.occ<-ncol(CH)
+               
+               
+               
+### CHECK WHETHER IT LOOKS OK ###
+head(CH)
+               
+## PREPARE CONSTANTS
+n.ind<-dim(CH)[1]		## defines the number of individuals
+n.years<-dim(CH)[2]  ## defines the number of years
+n.colonies<-length(unique(YESH$SITE))
                
                
                

@@ -355,9 +355,151 @@ DURMAT<- survPeriods %>% group_by(SITE, OCC_NR) %>%
                
 periods<-as.matrix(DURMAT[,2:9], dimnames=F)
                
+
+
+
+
+
+##########################################################################################################
+# Specify basic CJS model with colony-occasion-specific recapture probability and random time effects
+##########################################################################################################
+
+setwd("C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\YESH_survival")
+sink("YESH_CJS_adult_only.jags")
+cat("
+    model {
+    
+    # -------------------------------------------------
+    # Parameters:
+    # phi: survival probability, only adults 
+    # p: recapture probability when breeding, depends on colony-occasion-specific effort
+    # -------------------------------------------------
+    
+    
+    ## Priors and constraints
+    
+    ### RECAPTURE PROBABILITY
+    #mean.p ~ dunif(0, 1)                          # Prior for mean recapture
+    #logit.p <- log(mean.p / (1-mean.p))           # Logit transformation
+    beta.effort ~ dnorm(0,0.01)                   # Prior for trapping effort offset on capture probability
+    
+    
+    ## COLONY-SPECIFIC CAPTURE PROBABILITY 
+    for (col in 1:n.colonies){
+      cap.prob[col] ~ dunif(0, 1)                         # Priors for colony-specific capture probability
+      mu.p[col] <- log(cap.prob[col] / (1-cap.prob[col]))       # Logit transformation
+      for (t in 1:n.occasions){
+        logit(p[col,t]) <- mu.p[col] + beta.effort*effmat[col,t] + capt.raneff[t]
+      }
+    }
+    
+    ### SURVIVAL PROBABILITY
+    beta ~ dunif(0.9, 1)                       # Priors for age-specific DAILY survival - this is the basic survival that is scaled to difference between occasions
+    for (i in 1:nind){
+      for (t in f[i]:(n.occasions-1)){
+        beta.int[i,t] <- pow(beta,periods[colvec[i],t])       ### exponentiates daily survival by the length between capture sessions
+        mu[i,t] <- log(beta.int[i,t] / (1-beta.int[i,t]))       # Logit transformation
+        logit(phi[i,t]) <- mu[i,t] + surv.raneff[t]
+      } #t
+    } #i
+    
+    
+    ## RANDOM TIME EFFECT ON SURVIVAL
+    for (t in 1:(n.occasions-1)){
+      surv.raneff[t] ~ dnorm(0, tau.surv)
+    }
+    
+    for (t in 1:n.occasions){
+      capt.raneff[t] ~ dnorm(0, tau.capt)
+    }
+    
+    
+    ### PRIORS FOR RANDOM EFFECTS
+    sigma.surv ~ dunif(0, 10)                     # Prior for standard deviation of survival
+    tau.surv <- pow(sigma.surv, -2)
+    
+    sigma.capt ~ dunif(0, 10)                     # Prior for standard deviation of capture
+    tau.capt <- pow(sigma.capt, -2)
+    
+    
+    # Likelihood 
+    for (i in 1:nind){
+      # Define latent state at first capture
+      z[i,f[i]] <- 1
+        for (t in (f[i]+1):n.occasions){
+          # State process
+          z[i,t] ~ dbern(mu1[i,t])
+          mu1[i,t] <- phi[i,t-1] * z[i,t-1] 
+    
+          # Observation process
+          y[i,t] ~ dbern(mu2[i,t])
+          mu2[i,t] <- p[colvec[i],t] * z[i,t]
+        } #t
+    } #i
+    
+    # DERIVED SURVIVAL PROBABILITIES PER YEAR 
+    #for (t in 1:(n.occasions-1)){
+    #for (age in 1:2){
+    #msurv[t]<-mean(phi[,t])
+    ann.surv <- pow(beta,365)
+    
+    #}
+    #}
+    
+    
+    }
+    ",fill = TRUE)
+sink()
+
+
+
+
+
+#########################################################################
+# PREPARE DATA FOR MODEL
+#########################################################################
+
+# Bundle data
+jags.data <- list(y = CH, f = f, n.occasions = n.years, n.colonies=n.colonies,
+                  nind = n.ind, #FULLAGEMAT=FULLAGEMAT,
+                  periods=periods, colvec=colvec, effmat=effmat)
+
+# Initial values 
+inits <- function(){list(beta = runif(1, 0.9, 1),
+                         cap.prob = runif(n.colonies, 0, 1),
+                         z = zinit,
+                         beta.effort = rnorm(1, 0, 10))}
+
+
+# Parameters monitored
+parameters <- c("ann.surv","beta.effort","p")
+
+# MCMC settings
+
+ni <- 150000
+nt <- 4
+nb <- 50000
+nc <- 4
+
+# Call JAGS from R
+YESHsurv <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_CJS_adult_only.jags", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,parallel=T)
+
+
                
                
-               
+
+
+
+
+
+
+
+
+
+
+
+
+
                
 ##########################################################################################################
 # Specify JS model with colony-occasion-specific recapture probability and random time effects
@@ -480,40 +622,105 @@ sink()
                
                
                
+#########################################################################
+# PREPARE DATA FOR MODEL - INCLUDING DATA AUGMENTATION
+#########################################################################
                
+# Augment data set by potYESH potential individuals
+# the JS model works by estimating the probability that these individuals exist
+# if you make the number too small, the model will hit the ceiling and report the number you specified
+# the larger you make the number the longer the model will run
                
+potYESH<-15
+CHpot.ind<-matrix(0,ncol=ncol(CH), nrow=potYESH)
+CHaug<-rbind(CH,CHpot.ind)
+dim(CHaug)
                
-               
-               
-               
-               
-               #########################################################################
-               
-               # PREPARE DATA FOR MODEL - INCLUDING DATA AUGMENTATION
-               
-               #########################################################################
-               
-               
-               
-               # Augment data set by potYESH potential individuals
-               
-               # the JS model works by estimating the probability that these individuals exist
-               
-               # if you make the number too small, the model will hit the ceiling and report the number you specified
-               
-               # the larger you make the number the longer the model will run
-               
-               
-               
-               potYESH<-15
-               
-               CHpot.ind<-matrix(0,ncol=ncol(CH), nrow=potYESH)
-               
-               CHaug<-rbind(CH,CHpot.ind)
-               
-               dim(CHaug)
-               
-               
-               
-               Zpot.ind<-matrix(0,ncol=ncol(CH), nrow=potYESH)
+Zpot.ind<-matrix(NA,ncol=ncol(CH), nrow=potYESH)
+zinit.aug<-rbind(zinit,Zpot.ind)
+
+## change zinit from NA to 0
+zinit.aug[is.na(zinit.aug)]<-0
+
+# Bundle data
+jags.data <- list(y = CHaug, n.years = n.years, 
+                  M = n.ind+potYESH, 
+                  periods=as.numeric(periods[1,]), effort=as.numeric(effmat[1,]))
+
+# Initial values 
+inits <- function(){list(mean.phi = runif(1, 0.95, 1),
+                         mean.p = rbeta(1, 1.5, 4),
+                         z = zinit.aug,
+                         beta.effort = rnorm(1, 0, 10))}
+
+
+# Parameters monitored
+parameters <- c("beta.effort","mean.p","ann.surv","N","phi")
+
+# MCMC settings
+# no convergence with ni=50,000, which took 760 minutes
+
+ni <- 150000
+nt <- 2
+nb <- 75000
+nc <- 4
+
+# Call JAGS from R
+YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\YESH_survival\\YESH_JS_abundance_survival_v3.jags", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,parallel=T)
+
+
+
+#########################################################################
+# PRODUCE OUTPUT TABLE
+#########################################################################
+## model converged with 150000 iterations in 270 minutes
+
+out<-as.data.frame(YESHabund$summary)
+out$parameter<-row.names(YESHabund$summary)
+export<-out %>% select(c(12,1,5,2,3,7)) %>%
+  setNames(c('Parameter','Mean', 'Median','SD','lcl', 'ucl'))
+fwrite(export,"YESH_Malta_Abundance_estimates2019.csv")
+
+
+### plot output ###
+
+ggplot(data=export[8:13,],aes(y=Mean, x=seq(2013,2018,1))) + geom_point(size=2)+
+  geom_errorbar(aes(ymin=lcl, ymax=ucl), width=.1)+
+  geom_point(aes(y=apply(CHaug,2,sum), x=seq(2013,2018,1)), col='darkred',size=2, pch=3)+
+  scale_x_continuous(name="Year", limits=c(2012.5,2018.5), breaks=seq(2013,2018,1), labels=seq(2013,2018,1))+
+  scale_y_continuous(name="N Yelkouan Shearwaters", limits=c(0,400), breaks=seq(0,400,100), labels=seq(0,400,100))+
+  ggtitle(COLEFF$Colony)+
+  theme(panel.background=element_rect(fill="white", colour="black"), 
+        axis.text=element_text(size=20, color="black", margin=6), 
+        axis.title=element_text(size=22),
+        plot.title=element_text(size=22), 
+        strip.text.x=element_text(size=20, color="black", margin=6), 
+        strip.background=element_rect(fill="white", colour="black"), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.border = element_blank())
+
+ggsave("YESH_abundance_Majjistral_2013_2018.pdf", device = "pdf")
+
+
+
+
+ggplot(data=export[3:7,],aes(y=Mean, x=seq(2013.5,2017.5,1))) + geom_point(size=2)+
+  geom_errorbar(aes(ymin=lcl, ymax=ucl), width=.1)+
+  scale_x_continuous(name="Year", limits=c(2012.5,2018.5), breaks=seq(2013,2018,1), labels=seq(2013,2018,1))+
+  scale_y_continuous(name="Annual survival probability", limits=c(0.5,1), breaks=seq(0.5,1,0.1), labels=seq(0.5,1,0.1))+
+  ggtitle(COLEFF$Colony)+
+  theme(panel.background=element_rect(fill="white", colour="black"), 
+        axis.text=element_text(size=20, color="black", margin=6), 
+        axis.title=element_text(size=22),
+        plot.title=element_text(size=22), 
+        strip.text.x=element_text(size=20, color="black", margin=6), 
+        strip.background=element_rect(fill="white", colour="black"), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.border = element_blank())
+
+ggsave("YESH_survival_Majjistral_2013_2018.pdf", device = "pdf")
+
+
                

@@ -188,6 +188,7 @@ noringdepl<- yesh %>% group_by(ringnumber,type) %>%
 
 fwrite(noringdepl,"YESH_recaptures_only.csv")
 
+
                
 #########################################################################
 # CREATE MATRIX OF ENCOUNTER DATA (0/1)
@@ -250,6 +251,7 @@ transientCH<-transients %>% gather(key='OCC', value='surv',-ringnumber,-SITE) %>
 YESH<- YESH %>% dplyr::filter(!(ringnumber %in% duplicates)) %>%
   bind_rows(transientCH)
 dim(YESH)
+
 
 
 
@@ -470,7 +472,7 @@ sink()
 
 
 #########################################################################
-# PREPARE DATA FOR MODEL
+# PREPARE DATA FOR SIMPLE CJS MODEL
 #########################################################################
 
 # Bundle data
@@ -499,147 +501,133 @@ nc <- 1
 YESHsurv <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\YESH_survival\\YESH_CJS_adult_only.jags", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,parallel=T)
 
 
-               
-               
-
-
-
-
-
-
-
-
-
-
 
 
 
                
 ##########################################################################################################
-# Specify JS model with colony-occasion-specific recapture probability and random time effects
+# Specify JS model with colony-occasion-specific recapture probability and random individual effects for recapture
 ##########################################################################################################
+## GOAL IS TO CALCULATE ABUNDANCE PER COLONY
                
 setwd("C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan")
-sink("YESH_JS_abundance_survival_simp.jags")
+sink("YESH_JS_abundance_survival_v4.jags")
 cat("
- model
-   {
-   # Priors and constraints
-                 
-   ### SURVIVAL PROBABILITY
-   mean.phi ~ dunif(0.95, 1)                      # Priors for age-specific DAILY survival - this is the basic survival that is scaled to difference between occasions
-   #mean.p ~ dbeta(1.5, 4)                          # Prior for mean recapture switched to beta from unif
-   #logit.p <- log(mean.p / (1-mean.p))           # Logit transformation
-   #beta.effort ~ dnorm(0,0.01)                   # Prior for trapping effort offset on capture probability
-                 
-   for (i in 1:M){
-      for (t in 1:(n.years-1)){
-          beta.int[i,t] <- pow(mean.phi,periods[t])       ### exponentiates daily survival by the length between capture sessions
-          mu[i,t] <- log(beta.int[i,t] / (1-beta.int[i,t]))       # Logit transformation
-          logit(phi[i,t]) <- mu[i,t] + surv.raneff[t]
-      } #t
-                   
-                   
-                   
-       ### RECAPTURE PROBABILITY
-                   
-       for (t in 1:n.years){
-           #logit(p[i,t]) <- logit.p + capt.raneff[i] ###beta.effort*effort[t] + 
-           p[i,t] ~ dbeta(1.5, 4) 
-       }
-    } #i
-                 
-                 
-    ## RANDOM TIME EFFECT ON SURVIVAL
-                 
+    
+    model
+    {
+    
+    ##################### Priors and constraints #################################
+    
+    ### SURVIVAL PROBABILITY
     for (t in 1:(n.years-1)){
-        surv.raneff[t] ~ dnorm(0, tau.surv)
-        }
-                 
-    #for (i in 1:M){
-    #  capt.raneff[i] ~ dnorm(0, tau.capt)
-    #}
-                 
-                 
-    ### PRIORS FOR RANDOM EFFECTS
-                 
-    sigma.surv ~ dunif(0, 10)                     # Prior for standard deviation of survival
-    tau.surv <- pow(sigma.surv, -2)
-    #sigma.capt ~ dunif(0, 10)                     # Prior for standard deviation of capture
-    #tau.capt <- pow(sigma.capt, -2)
-     
-
-
-
-            
-    ####### LIKELIHOOD #############
-                 
-    for (t in 1:n.years){
-         gamma[t] ~ dunif(0, 1)
+      phi[t] ~ dunif(0.7, 1)                      # Priors for age-specific DAILY survival - this is the basic survival that is scaled to difference between occasions
     } #t
-                 
-                 
-    # Likelihood
-                 
-     for (i in 1:M){
-                   
-          # First occasion
-          # State process
-          z[i,1] ~ dbern(gamma[1])
-                   
-          # Observation process
-          mu1[i,1] <- z[i,1] * p[i,1]
-          y[i,1] ~ dbern(mu1[i,1])
-                   
-          # Subsequent occasions
-          for (t in 2:n.years){
-                   # State process
-                   #q[i,t-1] <- 1-z[i,t-1]		# Availability for recruitment
-                   recru[i,t-1] <- max(z[i,1:(t-1)])		# Availability for recruitment - this will be 0 if the bird has never been observed before and 1 otherwise
-                   pot.alive[i,t] <- phi[i,t-1] * z[i,t-1] + gamma[t] * (1-recru[i,t-1])
-                   z[i,t] ~ dbern(pot.alive[i,t])
-                     
-                   # Observation process
-                   mu1[i,t] <- z[i,t] * p[i,t]	
-                   y[i,t] ~ dbern(mu1[i,t])
-                     
-           } #t
-                   
-     } #i 
-                 
-                 
-                 
-                 
-    # DERIVED PARAMETERS TO REPORT POPULATION SIZE
-                 
-    for (t in 1:n.years){
-           N[t] <- sum(z[1:M,t])        # Actual population size
-    } #t
-                 
-                 
-                 
-    for (i in 1:M){
-           Nind[i] <- sum(z[i,1:n.years])
-           Nalive[i] <- 1-equals(Nind[i], 0)
+    
+    ### RECAPTURE PROBABILITY
+    mean.p ~ dbeta(1.5, 4)                        # Prior for mean recapture switched to beta from unif
+    logit.p <- log(mean.p / (1-mean.p))           # Logit transformation
+    beta.effort ~ dnorm(0,0.01)                   # Prior for trapping effort offset on capture probability
+    for (i in 1:M){  
+      for (t in 1:n.years){
+        logit(p[i,t]) <- logit.p + beta.effort*effmat[colvec[i],t] + capt.raneff[i,t]   ## includes colony-specific effort and random effect for time and individual
+      } # close t
     } #i
-                 
-                 
-                 
-    # DERIVED SURVIVAL PROBABILITIES PER YEAR 
-    ann.surv <- pow(mean.phi,365)
-                 
-}								#### END OF THE FUNCTION LOOP
-               
-",fill = TRUE)
+
+
+    ## RANDOM INDIVIDUAL EFFECT ON CAPTURE PROBABILITY  
+    for (i in 1:M){
+      for (t in 1:n.years){
+        capt.raneff[i,t] ~ dnorm(0, tau.capt)
+      }
+    }
+    
+    
+    ### PRIORS FOR RANDOM EFFECTS
+    sigma.capt ~ dunif(0, 10)                     # Prior for standard deviation of capture
+    tau.capt <- pow(sigma.capt, -2)
+ 
+   
+    ### RECRUITMENT PROBABILITY INTO THE MARKED POPULATION
+    for (t in 1:n.years){
+      gamma[t] ~ dunif(0, 1)
+    } #t
+    
+
+    ##################### LIKELIHOOD #################################
+    
+
+    for (i in 1:M){
+    
+      # First occasion
+      # State process
+      z[i,1] ~ dbern(gamma[1])
+    
+      # Observation process
+      mu1[i,1] <- z[i,1] * p[i,1]
+      y[i,1] ~ dbern(mu1[i,1])
+    
+    
+      # Subsequent occasions
+      for (t in 2:n.years){
+    
+          # State process
+          recru[i,t-1] <- max(z[i,1:(t-1)])		# Availability for recruitment - this will be 0 if the bird has never been observed before and 1 otherwise
+          pot.alive[i,t] <- phi[t-1] * z[i,t-1] + gamma[t] * (1-recru[i,t-1])
+          z[i,t] ~ dbern(pot.alive[i,t])
+    
+          # Observation process
+          mu1[i,t] <- z[i,t] * p[i,t]	
+          y[i,t] ~ dbern(mu1[i,t])
+      } #t
+    } #i 
+    
+    
+    ##################### DERIVED PARAMETERS #################################
+    
+    # POPULATION SIZE
+    for (t in 1:n.years){
+      for (col in 1:n.colonies){
+        N[t,col] <- sum(z[1:M,t])        # Actual population size
+      } #col
+    } #t
+    
+    
+    # SURVIVAL PROBABILITIES PER YEAR
+    for (t in 1:(n.years-1)){
+      ann.surv[t] <- pow(pow(phi[t],(1/periods[t])),365) ## converts period survival into annual survival
+    }
+    
+    
+    
+    }								#### END OF THE FUNCTION LOOP
+    
+    
+    
+    ",fill = TRUE)
 sink()
-               
-               
+
+           
                
                
 #########################################################################
 # PREPARE DATA FOR MODEL - INCLUDING DATA AUGMENTATION
 #########################################################################
-               
+
+## CREATE MATRIX for INITIAL STATE Z - THIS DIFFERS FROM THE CJS MODEL init MATRIX!
+zinit<-CH
+for (l in 1:nrow(zinit)){
+  firstocc<-get.first(zinit[l,])
+  if(firstocc<n.years){
+    zinit[l,(firstocc):n.years]<-1  ## alive from first contact - DIFF FROM CJS where this is firstocc+1
+  }else{
+    zinit[l,firstocc]<-1
+  }
+  if(firstocc>1){zinit[l,1:(firstocc-1)]<-0}  ## sets everything up to first contact to - - DIFF FROM CJS where this is NA
+}
+dim(zinit)
+
+
 # Augment data set by potYESH potential individuals
 # the JS model works by estimating the probability that these individuals exist
 # if you make the number too small, the model will hit the ceiling and report the number you specified

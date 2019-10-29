@@ -173,7 +173,21 @@ yesh<- records %>%
 length(unique(yesh$ringnumber))  ## reduces number of individuals from 1619 to 1572
 
 
-        
+
+
+
+#########################################################################
+# MAKE SURE THAT EACH Resighting is preceded by a New capture
+#########################################################################
+noringdepl<- yesh %>% group_by(ringnumber,type) %>%
+  summarise(first=min(DateTime)) %>%
+  spread(key=type, value=first) %>%
+  mutate(tdiff=as.numeric(difftime(R,N,'days'))) %>%
+  dplyr::filter(!is.na(R)) %>%
+  dplyr::filter(tdiff<0 | is.na(tdiff))
+
+fwrite(noringdepl,"YESH_recaptures_only.csv")
+
                
 #########################################################################
 # CREATE MATRIX OF ENCOUNTER DATA (0/1)

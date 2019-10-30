@@ -1,0 +1,92 @@
+
+    
+    model
+    {
+    
+    ##################### Priors and constraints #################################
+    
+    ### SURVIVAL PROBABILITY
+    for (t in 1:(n.years-1)){
+      phi[t] ~ dunif(0.7, 1)                      # Priors for age-specific DAILY survival - this is the basic survival that is scaled to difference between occasions
+    } #t
+    
+    ### RECAPTURE PROBABILITY
+    mean.p ~ dbeta(1.5, 4)                        # Prior for mean recapture switched to beta from unif
+    logit.p <- log(mean.p / (1-mean.p))           # Logit transformation
+    beta.effort ~ dnorm(0,0.01)                   # Prior for trapping effort offset on capture probability
+    for (i in 1:M){  
+      for (t in 1:n.years){
+        logit(p[i,t]) <- logit.p + beta.effort*effmat[colvec[i],t] + capt.raneff[i,t]   ## includes colony-specific effort and random effect for time and individual
+      } # close t
+    } #i
+
+
+    ## RANDOM INDIVIDUAL EFFECT ON CAPTURE PROBABILITY  
+    for (i in 1:M){
+      for (t in 1:n.years){
+        capt.raneff[i,t] ~ dnorm(0, tau.capt)
+      }
+    }
+    
+    
+    ### PRIORS FOR RANDOM EFFECTS
+    sigma.capt ~ dunif(0, 10)                     # Prior for standard deviation of capture
+    tau.capt <- pow(sigma.capt, -2)
+ 
+   
+    ### RECRUITMENT PROBABILITY INTO THE MARKED POPULATION
+    for (t in 1:n.years){
+      gamma[t] ~ dunif(0, 1)
+    } #t
+    
+
+    ##################### LIKELIHOOD #################################
+    
+
+    for (i in 1:M){
+    
+      # First occasion
+      # State process
+      z[i,1] ~ dbern(gamma[1])
+    
+      # Observation process
+      mu1[i,1] <- z[i,1] * p[i,1]
+      y[i,1] ~ dbern(mu1[i,1])
+    
+    
+      # Subsequent occasions
+      for (t in 2:n.years){
+    
+          # State process
+          recru[i,t-1] <- max(z[i,1:(t-1)])		# Availability for recruitment - this will be 0 if the bird has never been observed before and 1 otherwise
+          pot.alive[i,t] <- phi[t-1] * z[i,t-1] + gamma[t] * (1-recru[i,t-1])
+          z[i,t] ~ dbern(pot.alive[i,t])
+    
+          # Observation process
+          mu1[i,t] <- z[i,t] * p[i,t]	
+          y[i,t] ~ dbern(mu1[i,t])
+      } #t
+    } #i 
+    
+    
+    ##################### DERIVED PARAMETERS #################################
+    
+    # POPULATION SIZE
+    for (t in 1:n.years){
+      #for (col in 1:n.colonies){
+        N[t] <- sum(z[1:M,t])        # Actual population size OVERALL - not per colony
+      #} #col
+    } #t
+    
+    
+    # SURVIVAL PROBABILITIES PER YEAR
+    for (t in 1:(n.years-1)){
+      ann.surv[t] <- pow(pow(phi[t],(1/periods[t])),365) ## converts period survival into annual survival
+    }
+    
+    
+ }								#### END OF THE MODEL STATEMENT
+    
+    
+    
+    

@@ -464,14 +464,11 @@ inits <- function(){list(beta = runif(1, 0.9, 1),
 parameters <- c("ann.surv","beta.effort","p")
 
 # MCMC settings
-
-ni <- 15
 nt <- 1
 nb <- 5
 nc <- 4
 
 # Call JAGS from R
-YESHsurv <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_CJS_simpletest.jags", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,parallel=T)
 YESHsurv <- autojags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_CJS_simpletest.jags", n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T)
 
 
@@ -561,9 +558,9 @@ cat("
     
     # POPULATION SIZE
     for (t in 1:n.years){
-      for (col in 1:n.colonies){
-        N[t,col] <- sum(z[1:M,t])        # Actual population size
-      } #col
+      #for (col in 1:n.colonies){
+        N[t] <- sum(z[1:M,t])        # Actual population size OVERALL - not per colony
+      #} #col
     } #t
     
     
@@ -614,13 +611,18 @@ dim(CHaug)
 Zpot.ind<-matrix(NA,ncol=ncol(CH), nrow=potYESH)
 zinit.aug<-rbind(zinit,Zpot.ind)
 
+colvec.aug<-c(colvec, rep(1,potYESH))
+
 ## change zinit from NA to 0
 zinit.aug[is.na(zinit.aug)]<-0
 
+## because JS model loops over all occasions, periods=0 causes invalid parent error (division by 0)
+periods[periods==0]<-365   ## nominally the period should be 1 year = 365 days
+
 # Bundle data
 jags.data <- list(y = CHaug, n.years = n.years, 
-                  M = n.ind+potYESH, 
-                  periods=as.numeric(periods[1,]), effort=as.numeric(effmat[1,]))
+                  M = n.ind+potYESH, colvec=colvec.aug, 
+                  periods=as.numeric(periods), effmat=effmat)
 
 # Initial values 
 inits <- function(){list(mean.phi = runif(1, 0.95, 1),
@@ -635,13 +637,13 @@ parameters <- c("beta.effort","mean.p","ann.surv","N","phi")
 # MCMC settings
 # no convergence with ni=50,000, which took 760 minutes
 
-ni <- 150000
+ni <- 150
 nt <- 2
-nb <- 75000
+nb <- 75
 nc <- 4
 
 # Call JAGS from R
-YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\YESH_survival\\YESH_JS_abundance_survival_v3.jags", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,parallel=T)
+YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_survival_v4.jags", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,parallel=T)
 
 
 

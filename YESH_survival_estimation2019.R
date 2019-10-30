@@ -132,7 +132,8 @@ adults <- c("6", "4", "2")
 ## create lookup-table
 ## Making LUT
 all_lut<-data.frame(orig=as.character(c(RM01,RM03,RM04,RM05,Cominotto,StPauls,Majjistral_main,Majjistral_south)),
-                poolloc=as.character(c("RM01",rep("RM03",4),rep("RM04",4),rep("RM05",8),rep("Cominotto",8),rep("StPauls",2),rep("Majjistral_main",4),rep("Majjistral_south",4))))
+                poolloc=as.character(c("RM01",rep("RM03",4),rep("RM04",4),rep("RM05",8),rep("Cominotto",8),rep("StPauls",2),rep("Majjistral_main",4),rep("Majjistral_south",4))),
+                maincol=as.character(c(rep("RdumTalMadonna",17),rep("Cominotto",8),rep("StPauls",2),rep("Majjistral",8))))
 
 
                
@@ -142,6 +143,7 @@ effort <- effort %>%
             
 records <- records %>%
               mutate(SITE=all_lut$poolloc[match(as.character(Cave_String),all_lut$orig)]) %>%
+              mutate(COLO=all_lut$maincol[match(as.character(Cave_String),all_lut$orig)]) %>%
               dplyr::filter(!is.na(SITE)) %>%
               dplyr::filter(age %in% adults)%>%
               dplyr::filter(Errors!= 1)
@@ -186,7 +188,7 @@ noringdepl<- yesh %>% group_by(ringnumber,type) %>%
   dplyr::filter(!is.na(R)) %>%
   dplyr::filter(tdiff<0 | is.na(tdiff))
 
-fwrite(noringdepl,"YESH_recaptures_only.csv")
+#fwrite(noringdepl,"YESH_recaptures_only.csv")
 
 
                
@@ -217,12 +219,12 @@ YESH<- yesh %>% #mutate(Colony=caves$Subcolony_Name[match(Cave_String,caves$Cave
            #mutate(Occ=paste(Year,month,sep="_")) %>%
            mutate(SEASON=ifelse(month<10,(Year-1),Year)) %>% ###define a breeding season from Oct to Jul
            mutate(OCC_NR=OCC_lookup$OCC_NR[match(SEASON,OCC_lookup$SEASON)]) %>%
-           group_by(SITE, OCC_NR,ringnumber) %>%   ## REPLACED Colony with SITE based on Martin's grouping in October 2019
+           group_by(COLO,SITE, OCC_NR,ringnumber) %>%   ## REPLACED Colony with SITE based on Martin's grouping in October 2019
            summarise(ALIVE=max(seen,na.rm=T)) %>%
            spread(key=OCC_NR, value=ALIVE) %>%
            replace(is.na(.), 0) %>%
            ungroup() %>%
-           mutate(SITE=as.character(SITE))
+           mutate(COLO=as.character(COLO),SITE=as.character(SITE))
 
 #length is longer the unique(records$ringnumber) cause some rings are assigned to more than one cavestring but this should not be a problem
 ## THESE TWO DIMENSIONS DO NOT MATCH, BECAUSE SOME BIRDS WERE RECORDED IN >1 SITE
@@ -236,17 +238,17 @@ transients <- YESH %>% dplyr::filter(ringnumber %in% duplicates) %>%
      
 ## REMOVE DUPLICATES AND TRANSFER ENCOUNTERS INTO OTHER ROWS
 
-transientCH<-transients %>% gather(key='OCC', value='surv',-ringnumber,-SITE) %>%
+transientCH<-transients %>% gather(key='OCC', value='surv',-ringnumber,-SITE,-COLO) %>%
   arrange(ringnumber,OCC) %>%
   group_by(ringnumber,OCC) %>% summarise(surv=max(surv)) %>%
   spread(key=OCC,value=surv, fill=0)
 
-transientCH<-transients %>% gather(key='OCC', value='surv',-ringnumber,-SITE) %>%
+transientCH<-transients %>% gather(key='OCC', value='surv',-ringnumber,-SITE,-COLO) %>%
   dplyr::filter(surv==1) %>%
   arrange(ringnumber,OCC) %>%
-  group_by(ringnumber) %>% summarise(SITE=last(SITE)) %>%
+  group_by(ringnumber) %>% summarise(COLO=last(COLO),SITE=last(SITE)) %>%
   left_join(transientCH, by="ringnumber") %>%
-  dplyr::select(2,1,3:10)
+  dplyr::select(2,3,1,4:11)
 
 YESH<- YESH %>% dplyr::filter(!(ringnumber %in% duplicates)) %>%
   bind_rows(transientCH)
@@ -302,7 +304,7 @@ survPeriods$surv_int[survPeriods$surv_int<0]<-NA
 #########################################################################
                
 names(YESH)
-CH<-as.matrix(YESH[,3:10], dimnames=F)
+CH<-as.matrix(YESH[,4:11], dimnames=F)
 dim(CH)
                
 ### check that there are contacts in every season
@@ -322,8 +324,8 @@ head(CH)
 ## PREPARE CONSTANTS
 n.ind<-dim(CH)[1]		## defines the number of individuals
 n.years<-dim(CH)[2]  ## defines the number of years
-n.colonies<-length(unique(YESH$SITE))
-               
+n.sites<-length(unique(YESH$SITE))
+n.colonies<-length(unique(YESH$COLO))              
                
                
 ## CREATE MATRIX for INITIAL STATE Z
@@ -354,14 +356,14 @@ COLEFF<- eff %>% group_by(SITE, OCC_NR) %>%
 effmat<-as.matrix(COLEFF[,2:9], dimnames=F)
                
                
-               
-               
 ## CREATE LOOKUP VECTOR FOR WHICH COLONY BIRDS WERE CAUGHT IN
 head(YESH)
-colvec<-COLEFF$COL_NR[match(YESH$SITE,COLEFF$SITE)]
+sitevec<-COLEFF$COL_NR[match(YESH$SITE,COLEFF$SITE)]
+colvec<-match(YESH$COLO,unique(YESH$COLO))
                
 length(f)
 length(colvec)
+length(sitevec)
                
 ## CREATE LOOKUP VECTOR FOR WHICH COLONY BIRDS WERE CAUGHT IN
 DURMAT<- survPeriods %>% group_by(SITE, OCC_NR) %>%
@@ -603,7 +605,7 @@ dim(zinit)
 # if you make the number too small, the model will hit the ceiling and report the number you specified
 # the larger you make the number the longer the model will run
                
-potYESH<-15
+potYESH<-150
 CHpot.ind<-matrix(0,ncol=ncol(CH), nrow=potYESH)
 CHaug<-rbind(CH,CHpot.ind)
 dim(CHaug)
@@ -644,6 +646,173 @@ nc <- 4
 
 # Call JAGS from R
 YESHabund <- autojags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_survival_v4.jags", n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T)
+
+
+
+
+
+
+
+
+##########################################################################################################
+# Specify JS model with colony-occasion-specific ABUNDANCE
+##########################################################################################################
+## GOAL IS TO CALCULATE ABUNDANCE FOR FOUR MAIN COLONIES
+#Cominotto
+#StPauls
+#Majjistral: Majjistral_main & Majjistral_south
+#Rdum tal-Madonna: RM01 & RM03 & RM04 & RM05
+
+
+sink("YESH_JS_abundance_survival_v5.jags")
+cat("
+    
+    model
+    {
+    
+    ##################### Priors and constraints #################################
+    
+    ### SURVIVAL PROBABILITY
+    for (t in 1:(n.years-1)){
+    phi[t] ~ dunif(0.7, 1)                      # Priors for age-specific DAILY survival - this is the basic survival that is scaled to difference between occasions
+    } #t
+    
+    ### RECAPTURE PROBABILITY
+    mean.p ~ dbeta(1.5, 4)                        # Prior for mean recapture switched to beta from unif
+    logit.p <- log(mean.p / (1-mean.p))           # Logit transformation
+    beta.effort ~ dnorm(0,0.01)                   # Prior for trapping effort offset on capture probability
+    for (i in 1:M){  
+    for (t in 1:n.years){
+    logit(p[i,t]) <- logit.p + beta.effort*effmat[colvec[i],t] + capt.raneff[i,t]   ## includes colony-specific effort and random effect for time and individual
+    } # close t
+    } #i
+    
+    
+    ## RANDOM INDIVIDUAL EFFECT ON CAPTURE PROBABILITY  
+    for (i in 1:M){
+    for (t in 1:n.years){
+    capt.raneff[i,t] ~ dnorm(0, tau.capt)
+    }
+    }
+    
+    
+    ### PRIORS FOR RANDOM EFFECTS
+    sigma.capt ~ dunif(0, 10)                     # Prior for standard deviation of capture
+    tau.capt <- pow(sigma.capt, -2)
+    
+    
+    ### RECRUITMENT PROBABILITY INTO THE MARKED POPULATION
+    for (t in 1:n.years){
+    gamma[t] ~ dunif(0, 1)
+    } #t
+    
+    
+    ##################### LIKELIHOOD #################################
+    
+    
+    for (i in 1:M){
+    
+    # First occasion
+    # State process
+    z[i,1] ~ dbern(gamma[1])
+    
+    # Observation process
+    mu1[i,1] <- z[i,1] * p[i,1]
+    y[i,1] ~ dbern(mu1[i,1])
+    
+    
+    # Subsequent occasions
+    for (t in 2:n.years){
+    
+    # State process
+    recru[i,t-1] <- max(z[i,1:(t-1)])		# Availability for recruitment - this will be 0 if the bird has never been observed before and 1 otherwise
+    pot.alive[i,t] <- phi[t-1] * z[i,t-1] + gamma[t] * (1-recru[i,t-1])
+    z[i,t] ~ dbern(pot.alive[i,t])
+    
+    # Observation process
+    mu1[i,t] <- z[i,t] * p[i,t]	
+    y[i,t] ~ dbern(mu1[i,t])
+    } #t
+    } #i 
+    
+    
+    ##################### DERIVED PARAMETERS #################################
+    
+    # POPULATION SIZE
+    for (t in 1:n.years){
+    #for (col in 1:n.colonies){
+    N[t] <- sum(z[1:M,t])        # Actual population size OVERALL - not per colony
+    #} #col
+    } #t
+    
+    
+    # SURVIVAL PROBABILITIES PER YEAR
+    for (t in 1:(n.years-1)){
+    ann.surv[t] <- pow(pow(phi[t],(1/periods[t])),365) ## converts period survival into annual survival
+    }
+    
+    
+    }								#### END OF THE MODEL STATEMENT
+    
+    
+    
+    ",fill = TRUE)
+sink()
+
+
+
+
+#########################################################################
+# PREPARE DATA FOR MODEL - INCLUDING DATA AUGMENTATION
+#########################################################################
+
+
+potYESH<-150
+CHpot.ind<-matrix(0,ncol=ncol(CH), nrow=potYESH)
+CHaug<-rbind(CH,CHpot.ind)
+dim(CHaug)
+
+Zpot.ind<-matrix(NA,ncol=ncol(CH), nrow=potYESH)
+zinit.aug<-rbind(zinit,Zpot.ind)
+
+colvec.aug<-c(colvec, rep(1,potYESH))
+
+## change zinit from NA to 0
+zinit.aug[is.na(zinit.aug)]<-0
+
+## because JS model loops over all occasions, periods=0 causes invalid parent error (division by 0)
+periods[periods==0]<-365   ## nominally the period should be 1 year = 365 days
+
+# Bundle data
+jags.data <- list(y = CHaug, n.years = n.years, 
+                  M = n.ind+potYESH, colvec=colvec.aug, 
+                  periods=as.numeric(periods), effmat=effmat)
+
+# Initial values 
+inits <- function(){list(mean.phi = runif(1, 0.95, 1),
+                         mean.p = rbeta(1, 1.5, 4),
+                         z = zinit.aug,
+                         beta.effort = rnorm(1, 0, 10))}
+
+
+# Parameters monitored
+parameters <- c("beta.effort","mean.p","ann.surv","N","phi")
+
+# MCMC settings
+# no convergence with ni=50,000, which took 760 minutes
+
+ni <- 150
+nt <- 2
+nb <- 75
+nc <- 4
+
+# Call JAGS from R
+YESHabund <- autojags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_survival_v4.jags", n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T)
+
+
+
+
+
 
 
 

@@ -643,7 +643,7 @@ nb <- 75
 nc <- 4
 
 # Call JAGS from R
-YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_survival_v4.jags", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,parallel=T)
+YESHabund <- autojags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_survival_v4.jags", n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T)
 
 
 

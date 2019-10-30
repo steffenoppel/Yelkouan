@@ -1,0 +1,55 @@
+
+    model {
+    
+    # -------------------------------------------------
+    # Parameters:
+    # phi: survival probability, only adults 
+    # p: recapture probability when breeding, depends on colony-occasion-specific effort
+    # -------------------------------------------------
+    
+    
+    ## Priors and constraints
+    
+    ### RECAPTURE PROBABILITY
+    beta.effort ~ dnorm(0,0.01)                   # Prior for trapping effort offset on capture probability
+    
+    
+    ## COLONY-SPECIFIC CAPTURE PROBABILITY 
+    for (col in 1:n.colonies){
+      cap.prob[col] ~ dunif(0, 1)                         # Priors for colony-specific capture probability
+      mu.p[col] <- log(cap.prob[col] / (1-cap.prob[col]))       # Logit transformation
+      for (t in 1:n.occasions){
+        logit(p[col,t]) <- mu.p[col] + beta.effort*effmat[col,t]
+      }
+    }
+    
+    ### SURVIVAL PROBABILITY
+    beta ~ dunif(0.9, 1)                       # Priors for age-specific DAILY survival - this is the basic survival that is scaled to difference between occasions
+    for (i in 1:nind){
+      for (t in f[i]:(n.occasions-1)){
+        beta.int[i,t] <- pow(beta,periods[colvec[i],t])       ### exponentiates daily survival by the length between capture sessions
+        mu[i,t] <- log(beta.int[i,t] / (1-beta.int[i,t]))       # Logit transformation
+        logit(phi[i,t]) <- mu[i,t]
+      } #t
+    } #i
+    
+    # Likelihood 
+    for (i in 1:nind){
+      # Define latent state at first capture
+      z[i,f[i]] <- 1
+        for (t in (f[i]+1):n.occasions){
+          # State process
+          z[i,t] ~ dbern(mu1[i,t])
+          mu1[i,t] <- phi[i,t-1] * z[i,t-1] 
+    
+          # Observation process
+          y[i,t] ~ dbern(mu2[i,t])
+          mu2[i,t] <- p[colvec[i],t] * z[i,t]
+        } #t
+    } #i
+    
+    # DERIVED SURVIVAL PROBABILITIES PER YEAR 
+    ann.surv <- pow(beta,365)
+    
+    }
+    

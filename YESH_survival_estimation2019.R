@@ -371,8 +371,9 @@ DURMAT<- survPeriods %>% group_by(SITE, OCC_NR) %>%
                
 periods<-as.matrix(DURMAT[,2:9], dimnames=F)
                
-
-
+### JAGS CRASHES WHEN period==0, so we need to remove intermittent 0 and split survival interval over two years
+periods[1,4]<-periods[1,3]/2
+periods[1,3]<-periods[1,3]/2
 
 
 
@@ -380,8 +381,8 @@ periods<-as.matrix(DURMAT[,2:9], dimnames=F)
 # Specify basic CJS model with colony-occasion-specific recapture probability and random time effects
 ##########################################################################################################
 
-setwd("C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\YESH_survival")
-sink("YESH_CJS_adult_only.jags")
+setwd("C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan")
+sink("YESH_CJS_simpletest.jags")
 cat("
     model {
     
@@ -395,8 +396,6 @@ cat("
     ## Priors and constraints
     
     ### RECAPTURE PROBABILITY
-    #mean.p ~ dunif(0, 1)                          # Prior for mean recapture
-    #logit.p <- log(mean.p / (1-mean.p))           # Logit transformation
     beta.effort ~ dnorm(0,0.01)                   # Prior for trapping effort offset on capture probability
     
     
@@ -405,7 +404,7 @@ cat("
       cap.prob[col] ~ dunif(0, 1)                         # Priors for colony-specific capture probability
       mu.p[col] <- log(cap.prob[col] / (1-cap.prob[col]))       # Logit transformation
       for (t in 1:n.occasions){
-        logit(p[col,t]) <- mu.p[col] + beta.effort*effmat[col,t] + capt.raneff[t]
+        logit(p[col,t]) <- mu.p[col] + beta.effort*effmat[col,t]
       }
     }
     
@@ -415,28 +414,9 @@ cat("
       for (t in f[i]:(n.occasions-1)){
         beta.int[i,t] <- pow(beta,periods[colvec[i],t])       ### exponentiates daily survival by the length between capture sessions
         mu[i,t] <- log(beta.int[i,t] / (1-beta.int[i,t]))       # Logit transformation
-        logit(phi[i,t]) <- mu[i,t] + surv.raneff[t]
+        logit(phi[i,t]) <- mu[i,t]
       } #t
     } #i
-    
-    
-    ## RANDOM TIME EFFECT ON SURVIVAL
-    for (t in 1:(n.occasions-1)){
-      surv.raneff[t] ~ dnorm(0, tau.surv)
-    }
-    
-    for (t in 1:n.occasions){
-      capt.raneff[t] ~ dnorm(0, tau.capt)
-    }
-    
-    
-    ### PRIORS FOR RANDOM EFFECTS
-    sigma.surv ~ dunif(0, 10)                     # Prior for standard deviation of survival
-    tau.surv <- pow(sigma.surv, -2)
-    
-    sigma.capt ~ dunif(0, 10)                     # Prior for standard deviation of capture
-    tau.capt <- pow(sigma.capt, -2)
-    
     
     # Likelihood 
     for (i in 1:nind){
@@ -454,14 +434,7 @@ cat("
     } #i
     
     # DERIVED SURVIVAL PROBABILITIES PER YEAR 
-    #for (t in 1:(n.occasions-1)){
-    #for (age in 1:2){
-    #msurv[t]<-mean(phi[,t])
     ann.surv <- pow(beta,365)
-    
-    #}
-    #}
-    
     
     }
     ",fill = TRUE)
@@ -495,10 +468,11 @@ parameters <- c("ann.surv","beta.effort","p")
 ni <- 15
 nt <- 1
 nb <- 5
-nc <- 1
+nc <- 4
 
 # Call JAGS from R
-YESHsurv <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\YESH_survival\\YESH_CJS_adult_only.jags", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,parallel=T)
+YESHsurv <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_CJS_simpletest.jags", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,parallel=T)
+YESHsurv <- autojags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_CJS_simpletest.jags", n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T)
 
 
 
@@ -599,8 +573,7 @@ cat("
     }
     
     
-    
-    }								#### END OF THE FUNCTION LOOP
+ }								#### END OF THE MODEL STATEMENT
     
     
     

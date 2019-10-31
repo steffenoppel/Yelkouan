@@ -6,18 +6,16 @@
 
 ## written by steffen.oppel@rspb.org.uk on 19 February 2019
 
-
-
 ## updated on 13 March - new data included and model run successfully
 ## output alarming: very low adult survival probability
-
 
 ## revised and split from YESH_survival_estimation.r on 25 March 2019
 ## re-arranged data structure to 1 occasion per year
 ## model with 32 occasions yielded consistent invalid parent error
 
-
 ## data cleaning section updated on 02 Oct by MA to include other sub-sites
+
+## ABUNDANCE JS MODEL for 4 major colonies introduced on 31 OCT 2019
 
 
 library(tidyverse)
@@ -139,6 +137,7 @@ all_lut<-data.frame(orig=as.character(c(RM01,RM03,RM04,RM05,Cominotto,StPauls,Ma
                
 effort <- effort %>%
             mutate(SITE=all_lut$poolloc[match(as.character(Cave_String),all_lut$orig)]) %>%
+            mutate(COLO=all_lut$maincol[match(as.character(Cave_String),all_lut$orig)]) %>%
             dplyr::filter(!is.na(SITE))
             
 records <- records %>%
@@ -273,7 +272,7 @@ eff<- effort %>% #mutate(Colony=caves$Subcolony_Name[match(Cave_String,caves$Cav
          mutate(SEASON=ifelse(month<10,(Year-1),Year)) %>% ###define a breeding season from Oct to Jul
          mutate(OCC_NR=OCC_lookup$OCC_NR[match(SEASON,OCC_lookup$SEASON)]) %>%
          mutate(hours=as.numeric(hours)) %>%
-         group_by(SITE, SEASON,OCC_NR) %>%  ## REPLACED Colony with SITE based on Martin's grouping in October 2019
+         group_by(COLO,SITE, SEASON,OCC_NR) %>%  ## REPLACED Colony with SITE based on Martin's grouping in October 2019
          summarise(effort=sum(hours,na.rm=T))
                
                
@@ -284,7 +283,7 @@ survPeriods<-effort %>%
               mutate(month=month(NightStarting)) %>%
               mutate(SEASON=ifelse(month<10,(Year-1),Year)) %>% ###define a breeding season from Oct to Jul
               mutate(OCC_NR=OCC_lookup$OCC_NR[match(SEASON,OCC_lookup$SEASON)]) %>%
-              group_by(SITE, SEASON,OCC_NR) %>%  ## REPLACED Colony with SITE based on Martin's grouping in October 2019
+              group_by(COLO,SITE, SEASON,OCC_NR) %>%  ## REPLACED Colony with SITE based on Martin's grouping in October 2019
               summarise(first=min(NightStarting,na.rm=T), last=max(NightStarting,na.rm=T), mid=median(NightStarting, na.rm=T)) %>%
               arrange(SITE, SEASON,OCC_NR) %>%  ## REPLACED Colony with SITE based on Martin's grouping in October 2019
               mutate(surv_int=as.numeric(difftime(dplyr::lead(mid,1), mid,unit="days")))  
@@ -345,15 +344,16 @@ dim(zinit)
                
 ## CREATE MATRIX TO LOOK UP OBSERVATION EFFORT
 ## STANDARDISE HOURS TO AVOID INVALID PARENT ERROR IN JAGS
-COLEFF<- eff %>% group_by(SITE, OCC_NR) %>%
+COLEFF<- eff %>% group_by(COLO,SITE, OCC_NR) %>%
          summarise(effort=sum(effort)) %>%
          mutate(effort=scale(effort, center=T, scale=T)) %>% #mean(effort))/sd(effort)) %>%
          spread(key=OCC_NR, value=effort) %>%
          replace(is.na(.), 0) %>%
          ungroup() %>%
-         mutate(COL_NR=seq_along(SITE))
+         #mutate(COL_NR=seq_along(COLO),SITE_NR=row_number())
+        mutate(COL_NR=c(1,2,2,3,3,3,3,4),SITE_NR=c(1,1,2,1,2,3,4,1))
                
-effmat<-as.matrix(COLEFF[,2:9], dimnames=F)
+effmat<-as.matrix(COLEFF[,3:10], dimnames=F)
                
                
 ## CREATE LOOKUP VECTOR FOR WHICH COLONY BIRDS WERE CAUGHT IN
@@ -366,12 +366,14 @@ length(colvec)
 length(sitevec)
                
 ## CREATE LOOKUP VECTOR FOR WHICH COLONY BIRDS WERE CAUGHT IN
-DURMAT<- survPeriods %>% group_by(SITE, OCC_NR) %>%
+DURMAT<- survPeriods %>% group_by(COLO,SITE, OCC_NR) %>%
          summarise(int=sum(surv_int)) %>%
          spread(key=OCC_NR, value=int) %>%
-         replace(is.na(.), 0)
+         replace(is.na(.), 0) %>%
+         ungroup() %>%
+         mutate(COL_NR=c(1,2,2,3,3,3,3,4),SITE_NR=c(1,1,2,1,2,3,4,1))
                
-periods<-as.matrix(DURMAT[,2:9], dimnames=F)
+periods<-as.matrix(DURMAT[,3:10], dimnames=F)
                
 ### JAGS CRASHES WHEN period==0, so we need to remove intermittent 0 and split survival interval over two years
 periods[1,4]<-periods[1,3]/2
@@ -663,7 +665,7 @@ YESHabund <- autojags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\A
 #Majjistral: Majjistral_main & Majjistral_south
 #Rdum tal-Madonna: RM01 & RM03 & RM04 & RM05
 
-
+### NEEDS TO BE MODIFIED TO ESTIMATE SURVIVAL PROPERLY
 sink("YESH_JS_abundance_survival_v5.jags")
 cat("
     
@@ -674,27 +676,39 @@ cat("
     
     ### SURVIVAL PROBABILITY
     for (t in 1:(n.years-1)){
-    phi[t] ~ dunif(0.7, 1)                      # Priors for age-specific DAILY survival - this is the basic survival that is scaled to difference between occasions
+      ann.surv[t] ~ dunif(0.7, 1)                      # Priors for age-specific ANNUAL survival - this is the basic survival that is scaled to difference between occasions
+        for (col in 1:n.cols) {
+          for (s in 1:n.sites){
+            phi[s,t,col] <- pow(pow(ann.surv[t],(1/365)),effmat[s,t,col]) 
+          } #s
+        } #col
     } #t
-    
+
+
     ### RECAPTURE PROBABILITY
     mean.p ~ dbeta(1.5, 4)                        # Prior for mean recapture switched to beta from unif
     logit.p <- log(mean.p / (1-mean.p))           # Logit transformation
-    beta.effort ~ dnorm(0,0.01)                   # Prior for trapping effort offset on capture probability
-    for (i in 1:M){  
-    for (t in 1:n.years){
-    logit(p[i,t]) <- logit.p + beta.effort*effmat[colvec[i],t] + capt.raneff[i,t]   ## includes colony-specific effort and random effect for time and individual
-    } # close t
-    } #i
-    
-    
-    ## RANDOM INDIVIDUAL EFFECT ON CAPTURE PROBABILITY  
-    for (i in 1:M){
-    for (t in 1:n.years){
-    capt.raneff[i,t] ~ dnorm(0, tau.capt)
+
+    for (col in 1:n.cols){
+      beta.effort[col] ~ dnorm(0,0.01)                   # Prior for trapping effort offset on capture probability
     }
-    }
+
+    for (col in 1:n.cols) {
+      for (i in 1:M){  
+        for (t in 1:n.years){
+          logit(p[i,t,col]) <- logit.p + beta.effort[col]*effmat[sitevec[i,col],t,col] + capt.raneff[i,t,col]   ## includes colony-specific effort and random effect for time and individual
+        } # close t
+      } #i
+    } #col
     
+    ## RANDOM INDIVIDUAL EFFECT ON CAPTURE PROBABILITY
+    for (col in 1:n.cols) {
+      for (i in 1:M){
+        for (t in 1:n.years){
+          capt.raneff[i,t,col] ~ dnorm(0, tau.capt)
+        }
+      }
+    }
     
     ### PRIORS FOR RANDOM EFFECTS
     sigma.capt ~ dunif(0, 10)                     # Prior for standard deviation of capture
@@ -702,57 +716,54 @@ cat("
     
     
     ### RECRUITMENT PROBABILITY INTO THE MARKED POPULATION
-    for (t in 1:n.years){
-    gamma[t] ~ dunif(0, 1)
-    } #t
+    for (col in 1:n.cols){    
+      for (t in 1:n.years){
+        gamma[t,col] ~ dunif(0, 1)
+      } #t
+    } #col
     
     
     ##################### LIKELIHOOD #################################
     
+    for (col in 1:n.cols) {
+      for (i in 1:M[col]){
     
-    for (i in 1:M){
+        # First occasion
+        # State process
+        z[i,1,col] ~ dbern(gamma[1,col])
     
-    # First occasion
-    # State process
-    z[i,1] ~ dbern(gamma[1])
-    
-    # Observation process
-    mu1[i,1] <- z[i,1] * p[i,1]
-    y[i,1] ~ dbern(mu1[i,1])
+        # Observation process
+        mu1[i,1,col] <- z[i,1,col] * p[i,1]
+        y[i,1,col] ~ dbern(mu1[i,1,col])
     
     
-    # Subsequent occasions
-    for (t in 2:n.years){
+        # Subsequent occasions
+        for (t in 2:n.years){
     
-    # State process
-    recru[i,t-1] <- max(z[i,1:(t-1)])		# Availability for recruitment - this will be 0 if the bird has never been observed before and 1 otherwise
-    pot.alive[i,t] <- phi[t-1] * z[i,t-1] + gamma[t] * (1-recru[i,t-1])
-    z[i,t] ~ dbern(pot.alive[i,t])
+            # State process
+            recru[i,t-1,col] <- max(z[i,1:(t-1),col])		# Availability for recruitment - this will be 0 if the bird has never been observed before and 1 otherwise
+            pot.alive[i,t,col] <- phi[sitevec[i,col],t-1,col] * z[i,t-1,col] + gamma[t,col] * (1-recru[i,t-1,col])
+            z[i,t] ~ dbern(pot.alive[i,t,col])
     
-    # Observation process
-    mu1[i,t] <- z[i,t] * p[i,t]	
-    y[i,t] ~ dbern(mu1[i,t])
-    } #t
-    } #i 
+            # Observation process
+            mu1[i,t,col] <- z[i,t,col] * p[i,t,col]	
+            y[i,t,col] ~ dbern(mu1[i,t,col])
+        } #t
+      } #i
+    } #col
     
     
     ##################### DERIVED PARAMETERS #################################
     
     # POPULATION SIZE
     for (t in 1:n.years){
-    #for (col in 1:n.colonies){
-    N[t] <- sum(z[1:M,t])        # Actual population size OVERALL - not per colony
-    #} #col
+      for (col in 1:n.cols){
+        N[t,col] <- sum(z[1:M[col],t,col])        # Actual population size per colony
+      } #col
     } #t
     
     
-    # SURVIVAL PROBABILITIES PER YEAR
-    for (t in 1:(n.years-1)){
-    ann.surv[t] <- pow(pow(phi[t],(1/periods[t])),365) ## converts period survival into annual survival
-    }
-    
-    
-    }								#### END OF THE MODEL STATEMENT
+}								#### END OF THE MODEL STATEMENT
     
     
     
@@ -766,33 +777,57 @@ sink()
 # PREPARE DATA FOR MODEL - INCLUDING DATA AUGMENTATION
 #########################################################################
 
+### NEED TO CREATE 3-DIMENSIONAL ARRAY FOR y FOR EACH COLONY
+### AUGMENT DATA TO HAVE 1000 INDIVIDUALS PER COLONY
+### ARRAY must have identical dimensions
+col.n<-as.numeric(table(colvec))
+potYESH<-1500
+#CHcol<- simplify2array(by(YESH[,4:11], YESH$COLO, as.matrix),USE.NAMES==F)
+#CHcol<- split(YESH[,4:11],f=YESH$COLO)
 
-potYESH<-150
-CHpot.ind<-matrix(0,ncol=ncol(CH), nrow=potYESH)
-CHaug<-rbind(CH,CHpot.ind)
-dim(CHaug)
+YESH$COL_NR<-COLEFF$COL_NR[match(YESH$SITE,COLEFF$SITE)]
+YESH$SITE_NR<-COLEFF$SITE_NR[match(YESH$SITE,COLEFF$SITE)]
 
-Zpot.ind<-matrix(NA,ncol=ncol(CH), nrow=potYESH)
-zinit.aug<-rbind(zinit,Zpot.ind)
 
-colvec.aug<-c(colvec, rep(1,potYESH))
+CHcol<-array(0,dim=c(potYESH,n.years,max(COLEFF$COL_NR)))   ## CAPTURE HISTORY FOR EACH INDIVIDUAL IN EACH COLONY
+zinit.arr<-array(0,dim=c(potYESH,n.years,max(COLEFF$COL_NR)))                       # array for the initial values for z states for each individual in each colony
+per.arr<-array(365,dim=c(max(DURMAT$SITE_NR),n.years,max(DURMAT$COL_NR)))						# array for the survival periods between recapture episodes
+eff.arr<-array(0,dim=c(max(COLEFF$SITE_NR),n.years,max(COLEFF$COL_NR)))						# array for the trapping effort
+site.arr<-array(1,dim=c(potYESH,max(COLEFF$COL_NR)))						                  # array for the colony-specific site at which each bird was captured
 
-## change zinit from NA to 0
-zinit.aug[is.na(zinit.aug)]<-0
 
-## because JS model loops over all occasions, periods=0 causes invalid parent error (division by 0)
-periods[periods==0]<-365   ## nominally the period should be 1 year = 365 days
+for (col in 1:max(COLEFF$COL_NR)) {
+  
+  ## populate capture history
+  CHcol[1:col.n[col],,col]<-as.matrix(YESH[YESH$COL_NR==col,4:11])
+  
+  ## populate capture effort
+  sitespercol<-max(COLEFF$SITE_NR[COLEFF$COL_NR==col])
+  eff.arr[1:sitespercol,,col]<-as.matrix(COLEFF[COLEFF$COL_NR==col,3:10])
+  
+  ## populate period array for length of survival periods between occasions
+  per.arr[1:sitespercol,,col]<-as.matrix(DURMAT[DURMAT$COL_NR==col,3:10])
+  
+  ## populate array for individual-specific vectors
+  site.arr[1:col.n[col],col]<-as.vector(YESH$SITE_NR[YESH$COL_NR==col])
+  
+  ## populate array for initial states
+  zinit.arr[1:col.n[col],,col]<-zinit[YESH$COL_NR==col,]
+  
+}
+
 
 # Bundle data
-jags.data <- list(y = CHaug, n.years = n.years, 
-                  M = n.ind+potYESH, colvec=colvec.aug, 
-                  periods=as.numeric(periods), effmat=effmat)
+jags.data <- list(y = CHcol, n.years = n.years, 
+                  M = potYESH, sitevec=site.arr, 
+                  periods=per.arr, effmat=eff.arr,
+                  n.sites=max(COLEFF$COL_NR),n.cols=max(DURMAT$SITE_NR))
 
 # Initial values 
 inits <- function(){list(mean.phi = runif(1, 0.95, 1),
                          mean.p = rbeta(1, 1.5, 4),
-                         z = zinit.aug,
-                         beta.effort = rnorm(1, 0, 10))}
+                         z = zinit.arr,
+                         beta.effort = rnorm(4, 0, 10))}
 
 
 # Parameters monitored
@@ -807,7 +842,7 @@ nb <- 75
 nc <- 4
 
 # Call JAGS from R
-YESHabund <- autojags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_survival_v4.jags", n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T)
+YESHabund <- autojags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_survival_v5.jags", n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T)
 
 
 

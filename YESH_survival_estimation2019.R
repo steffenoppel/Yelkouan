@@ -381,273 +381,8 @@ periods[1,3]<-periods[1,3]/2
 
 
 
-##########################################################################################################
-# Specify basic CJS model with colony-occasion-specific recapture probability and random time effects
-##########################################################################################################
-
-setwd("C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan")
-sink("YESH_CJS_simpletest.jags")
-cat("
-    model {
-    
-    # -------------------------------------------------
-    # Parameters:
-    # phi: survival probability, only adults 
-    # p: recapture probability when breeding, depends on colony-occasion-specific effort
-    # -------------------------------------------------
-    
-    
-    ## Priors and constraints
-    
-    ### RECAPTURE PROBABILITY
-    beta.effort ~ dnorm(0,0.01)                   # Prior for trapping effort offset on capture probability
-    
-    
-    ## COLONY-SPECIFIC CAPTURE PROBABILITY 
-    for (col in 1:n.colonies){
-      cap.prob[col] ~ dunif(0, 1)                         # Priors for colony-specific capture probability
-      mu.p[col] <- log(cap.prob[col] / (1-cap.prob[col]))       # Logit transformation
-      for (t in 1:n.occasions){
-        logit(p[col,t]) <- mu.p[col] + beta.effort*effmat[col,t]
-      }
-    }
-    
-    ### SURVIVAL PROBABILITY
-    beta ~ dunif(0.9, 1)                       # Priors for age-specific DAILY survival - this is the basic survival that is scaled to difference between occasions
-    for (i in 1:nind){
-      for (t in f[i]:(n.occasions-1)){
-        beta.int[i,t] <- pow(beta,periods[colvec[i],t])       ### exponentiates daily survival by the length between capture sessions
-        mu[i,t] <- log(beta.int[i,t] / (1-beta.int[i,t]))       # Logit transformation
-        logit(phi[i,t]) <- mu[i,t]
-      } #t
-    } #i
-    
-    # Likelihood 
-    for (i in 1:nind){
-      # Define latent state at first capture
-      z[i,f[i]] <- 1
-        for (t in (f[i]+1):n.occasions){
-          # State process
-          z[i,t] ~ dbern(mu1[i,t])
-          mu1[i,t] <- phi[i,t-1] * z[i,t-1] 
-    
-          # Observation process
-          y[i,t] ~ dbern(mu2[i,t])
-          mu2[i,t] <- p[colvec[i],t] * z[i,t]
-        } #t
-    } #i
-    
-    # DERIVED SURVIVAL PROBABILITIES PER YEAR 
-    ann.surv <- pow(beta,365)
-    
-    }
-    ",fill = TRUE)
-sink()
 
 
-
-
-
-#########################################################################
-# PREPARE DATA FOR SIMPLE CJS MODEL
-#########################################################################
-
-# Bundle data
-jags.data <- list(y = CH, f = f, n.occasions = n.years, n.colonies=n.colonies,
-                  nind = n.ind, #FULLAGEMAT=FULLAGEMAT,
-                  periods=periods, colvec=colvec, effmat=effmat)
-
-# Initial values 
-inits <- function(){list(beta = runif(1, 0.9, 1),
-                         cap.prob = runif(n.colonies, 0, 1),
-                         z = zinit,
-                         beta.effort = rnorm(1, 0, 10))}
-
-
-# Parameters monitored
-parameters <- c("ann.surv","beta.effort","p")
-
-# MCMC settings
-nt <- 1
-nb <- 5
-nc <- 4
-
-# Call JAGS from R
-YESHsurv <- autojags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_CJS_simpletest.jags", n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T)
-
-
-
-
-
-               
-##########################################################################################################
-# Specify JS model with colony-occasion-specific recapture probability and random individual effects for recapture
-##########################################################################################################
-## GOAL IS TO CALCULATE ABUNDANCE PER COLONY
-               
-setwd("C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan")
-sink("YESH_JS_abundance_survival_v4.jags")
-cat("
-    
-    model
-    {
-    
-    ##################### Priors and constraints #################################
-    
-    ### SURVIVAL PROBABILITY
-    for (t in 1:(n.years-1)){
-      phi[t] ~ dunif(0.7, 1)                      # Priors for age-specific DAILY survival - this is the basic survival that is scaled to difference between occasions
-    } #t
-    
-    ### RECAPTURE PROBABILITY
-    mean.p ~ dbeta(1.5, 4)                        # Prior for mean recapture switched to beta from unif
-    logit.p <- log(mean.p / (1-mean.p))           # Logit transformation
-    beta.effort ~ dnorm(0,0.01)                   # Prior for trapping effort offset on capture probability
-    for (i in 1:M){  
-      for (t in 1:n.years){
-        logit(p[i,t]) <- logit.p + beta.effort*effmat[colvec[i],t] + capt.raneff[i,t]   ## includes colony-specific effort and random effect for time and individual
-      } # close t
-    } #i
-
-
-    ## RANDOM INDIVIDUAL EFFECT ON CAPTURE PROBABILITY  
-    for (i in 1:M){
-      for (t in 1:n.years){
-        capt.raneff[i,t] ~ dnorm(0, tau.capt)
-      }
-    }
-    
-    
-    ### PRIORS FOR RANDOM EFFECTS
-    sigma.capt ~ dunif(0, 10)                     # Prior for standard deviation of capture
-    tau.capt <- pow(sigma.capt, -2)
- 
-   
-    ### RECRUITMENT PROBABILITY INTO THE MARKED POPULATION
-    for (t in 1:n.years){
-      gamma[t] ~ dunif(0, 1)
-    } #t
-    
-
-    ##################### LIKELIHOOD #################################
-    
-
-    for (i in 1:M){
-    
-      # First occasion
-      # State process
-      z[i,1] ~ dbern(gamma[1])
-    
-      # Observation process
-      mu1[i,1] <- z[i,1] * p[i,1]
-      y[i,1] ~ dbern(mu1[i,1])
-    
-    
-      # Subsequent occasions
-      for (t in 2:n.years){
-    
-          # State process
-          recru[i,t-1] <- max(z[i,1:(t-1)])		# Availability for recruitment - this will be 0 if the bird has never been observed before and 1 otherwise
-          pot.alive[i,t] <- phi[t-1] * z[i,t-1] + gamma[t] * (1-recru[i,t-1])
-          z[i,t] ~ dbern(pot.alive[i,t])
-    
-          # Observation process
-          mu1[i,t] <- z[i,t] * p[i,t]	
-          y[i,t] ~ dbern(mu1[i,t])
-      } #t
-    } #i 
-    
-    
-    ##################### DERIVED PARAMETERS #################################
-    
-    # POPULATION SIZE
-    for (t in 1:n.years){
-      #for (col in 1:n.colonies){
-        N[t] <- sum(z[1:M,t])        # Actual population size OVERALL - not per colony
-      #} #col
-    } #t
-    
-    
-    # SURVIVAL PROBABILITIES PER YEAR
-    for (t in 1:(n.years-1)){
-      ann.surv[t] <- pow(pow(phi[t],(1/periods[t])),365) ## converts period survival into annual survival
-    }
-    
-    
- }								#### END OF THE MODEL STATEMENT
-    
-    
-    
-    ",fill = TRUE)
-sink()
-
-           
-               
-               
-#########################################################################
-# PREPARE DATA FOR MODEL - INCLUDING DATA AUGMENTATION
-#########################################################################
-
-## CREATE MATRIX for INITIAL STATE Z - THIS DIFFERS FROM THE CJS MODEL init MATRIX!
-zinit<-CH
-for (l in 1:nrow(zinit)){
-  firstocc<-get.first(zinit[l,])
-  if(firstocc<n.years){
-    zinit[l,(firstocc):n.years]<-1  ## alive from first contact - DIFF FROM CJS where this is firstocc+1
-  }else{
-    zinit[l,firstocc]<-1
-  }
-  if(firstocc>1){zinit[l,1:(firstocc-1)]<-0}  ## sets everything up to first contact to - - DIFF FROM CJS where this is NA
-}
-dim(zinit)
-
-
-# Augment data set by potYESH potential individuals
-# the JS model works by estimating the probability that these individuals exist
-# if you make the number too small, the model will hit the ceiling and report the number you specified
-# the larger you make the number the longer the model will run
-               
-potYESH<-150
-CHpot.ind<-matrix(0,ncol=ncol(CH), nrow=potYESH)
-CHaug<-rbind(CH,CHpot.ind)
-dim(CHaug)
-               
-Zpot.ind<-matrix(NA,ncol=ncol(CH), nrow=potYESH)
-zinit.aug<-rbind(zinit,Zpot.ind)
-
-colvec.aug<-c(colvec, rep(1,potYESH))
-
-## change zinit from NA to 0
-zinit.aug[is.na(zinit.aug)]<-0
-
-## because JS model loops over all occasions, periods=0 causes invalid parent error (division by 0)
-periods[periods==0]<-365   ## nominally the period should be 1 year = 365 days
-
-# Bundle data
-jags.data <- list(y = CHaug, n.years = n.years, 
-                  M = n.ind+potYESH, colvec=colvec.aug, 
-                  periods=as.numeric(periods), effmat=effmat)
-
-# Initial values 
-inits <- function(){list(mean.phi = runif(1, 0.95, 1),
-                         mean.p = rbeta(1, 1.5, 4),
-                         z = zinit.aug,
-                         beta.effort = rnorm(1, 0, 10))}
-
-
-# Parameters monitored
-parameters <- c("beta.effort","mean.p","ann.surv","N","phi")
-
-# MCMC settings
-# no convergence with ni=50,000, which took 760 minutes
-
-ni <- 150
-nt <- 2
-nb <- 75
-nc <- 4
-
-# Call JAGS from R
-YESHabund <- autojags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_survival_v4.jags", n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T)
 
 
 
@@ -665,7 +400,6 @@ YESHabund <- autojags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\A
 #Majjistral: Majjistral_main & Majjistral_south
 #Rdum tal-Madonna: RM01 & RM03 & RM04 & RM05
 
-### NEEDS TO BE MODIFIED TO ESTIMATE SURVIVAL PROPERLY
 sink("YESH_JS_abundance_survival_v5.jags")
 cat("
     
@@ -776,6 +510,23 @@ sink()
 #########################################################################
 # PREPARE DATA FOR MODEL - INCLUDING DATA AUGMENTATION
 #########################################################################
+
+
+## CREATE MATRIX for INITIAL STATE Z (MATRIX WITH 0 and 1)
+zinit<-CH
+for (l in 1:nrow(zinit)){
+  firstocc<-get.first(zinit[l,])
+  if(firstocc<n.years){
+    zinit[l,(firstocc):n.years]<-1  ## alive from first contact - DIFF FROM CJS where this is firstocc+1
+  }else{
+    zinit[l,firstocc]<-1
+  }
+  if(firstocc>1){zinit[l,1:(firstocc-1)]<-0}  ## sets everything up to first contact to - - DIFF FROM CJS where this is NA
+}
+dim(zinit)
+
+
+
 
 ### NEED TO CREATE 3-DIMENSIONAL ARRAY FOR y FOR EACH COLONY
 ### AUGMENT DATA TO HAVE 1000 INDIVIDUALS PER COLONY
@@ -903,6 +654,113 @@ ggplot(data=export[3:7,],aes(y=Mean, x=seq(2013.5,2017.5,1))) + geom_point(size=
         panel.border = element_blank())
 
 ggsave("YESH_survival_Majjistral_2013_2018.pdf", device = "pdf")
+
+
+
+
+
+
+
+
+
+##########################~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~########################################
+#
+# Specify CJS model to compare survival between 4 main colonies
+#
+##########################~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~########################################
+
+
+setwd("C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan")
+sink("YESH_CJS_simpletest.jags")
+cat("
+    model {
+    
+    # -------------------------------------------------
+    # Parameters:
+    # phi: survival probability, only adults 
+    # p: recapture probability when breeding, depends on colony-occasion-specific effort
+    # -------------------------------------------------
+    
+    
+    ## Priors and constraints
+    
+    ### RECAPTURE PROBABILITY
+    beta.effort ~ dnorm(0,0.01)                   # Prior for trapping effort offset on capture probability
+    
+    
+    ## COLONY-SPECIFIC CAPTURE PROBABILITY 
+    for (col in 1:n.colonies){
+    cap.prob[col] ~ dunif(0, 1)                         # Priors for colony-specific capture probability
+    mu.p[col] <- log(cap.prob[col] / (1-cap.prob[col]))       # Logit transformation
+    for (t in 1:n.occasions){
+    logit(p[col,t]) <- mu.p[col] + beta.effort*effmat[col,t]
+    }
+    }
+    
+    ### SURVIVAL PROBABILITY
+    beta ~ dunif(0.9, 1)                       # Priors for age-specific DAILY survival - this is the basic survival that is scaled to difference between occasions
+    for (i in 1:nind){
+    for (t in f[i]:(n.occasions-1)){
+    beta.int[i,t] <- pow(beta,periods[colvec[i],t])       ### exponentiates daily survival by the length between capture sessions
+    mu[i,t] <- log(beta.int[i,t] / (1-beta.int[i,t]))       # Logit transformation
+    logit(phi[i,t]) <- mu[i,t]
+    } #t
+    } #i
+    
+    # Likelihood 
+    for (i in 1:nind){
+    # Define latent state at first capture
+    z[i,f[i]] <- 1
+    for (t in (f[i]+1):n.occasions){
+    # State process
+    z[i,t] ~ dbern(mu1[i,t])
+    mu1[i,t] <- phi[i,t-1] * z[i,t-1] 
+    
+    # Observation process
+    y[i,t] ~ dbern(mu2[i,t])
+    mu2[i,t] <- p[colvec[i],t] * z[i,t]
+    } #t
+    } #i
+    
+    # DERIVED SURVIVAL PROBABILITIES PER YEAR 
+    ann.surv <- pow(beta,365)
+    
+    }
+    ",fill = TRUE)
+sink()
+
+
+
+
+
+#########################################################################
+# PREPARE DATA FOR SIMPLE CJS MODEL
+#########################################################################
+
+# Bundle data
+jags.data <- list(y = CH, f = f, n.occasions = n.years, n.colonies=n.colonies,
+                  nind = n.ind, #FULLAGEMAT=FULLAGEMAT,
+                  periods=periods, colvec=colvec, effmat=effmat)
+
+# Initial values 
+inits <- function(){list(beta = runif(1, 0.9, 1),
+                         cap.prob = runif(n.colonies, 0, 1),
+                         z = zinit,
+                         beta.effort = rnorm(1, 0, 10))}
+
+
+# Parameters monitored
+parameters <- c("ann.surv","beta.effort","p")
+
+# MCMC settings
+nt <- 1
+nb <- 5
+nc <- 4
+
+# Call JAGS from R
+YESHsurv <- autojags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_CJS_simpletest.jags", n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T)
+
+
 
 
                

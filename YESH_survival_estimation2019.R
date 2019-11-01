@@ -309,13 +309,10 @@ dim(CH)
 ### check that there are contacts in every season
 apply(CH,2,sum)
                
-               
 # Compute vector with occasion of first capture
 get.first <- function(x) min(which(x==1))
 f <- apply(CH, 1, get.first)
 n.occ<-ncol(CH)
-               
-               
                
 ### CHECK WHETHER IT LOOKS OK ###
 head(CH)
@@ -325,21 +322,6 @@ n.ind<-dim(CH)[1]		## defines the number of individuals
 n.years<-dim(CH)[2]  ## defines the number of years
 n.sites<-length(unique(YESH$SITE))
 n.colonies<-length(unique(YESH$COLO))              
-               
-               
-## CREATE MATRIX for INITIAL STATE Z
-               
-zinit<-CH
-for (l in 1:nrow(zinit)){
-     firstocc<-get.first(zinit[l,])
-     if(firstocc<n.years){
-            zinit[l,(firstocc):n.years]<-1  ## alive from first contact - DIFF FROM CJS where this is firstocc+1
-     }else{
-            zinit[l,firstocc]<-1
-           }
-     zinit[l,1:firstocc]<-NA #0  ## sets everything up to first contact to - - DIFF FROM CJS where this is NA
-     }
-dim(zinit)
                
                
 ## CREATE MATRIX TO LOOK UP OBSERVATION EFFORT
@@ -671,7 +653,7 @@ ggsave("YESH_survival_Majjistral_2013_2018.pdf", device = "pdf")
 
 
 setwd("C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan")
-sink("YESH_CJS_simpletest.jags")
+sink("YESH_CJS_colony_surv.jags")
 cat("
     model {
     
@@ -690,40 +672,40 @@ cat("
     
     ## COLONY-SPECIFIC CAPTURE PROBABILITY 
     for (col in 1:n.colonies){
-    cap.prob[col] ~ dunif(0, 1)                         # Priors for colony-specific capture probability
-    mu.p[col] <- log(cap.prob[col] / (1-cap.prob[col]))       # Logit transformation
-    for (t in 1:n.occasions){
-    logit(p[col,t]) <- mu.p[col] + beta.effort*effmat[col,t]
-    }
+      cap.prob[col] ~ dunif(0, 1)                         # Priors for colony-specific capture probability
+      mu.p[col] <- log(cap.prob[col] / (1-cap.prob[col]))       # Logit transformation
+        for (t in 1:n.occasions){
+          logit(p[col,t]) <- mu.p[col] + beta.effort*effmat[col,t]
+        }
     }
     
     ### SURVIVAL PROBABILITY
-    beta ~ dunif(0.9, 1)                       # Priors for age-specific DAILY survival - this is the basic survival that is scaled to difference between occasions
-    for (i in 1:nind){
-    for (t in f[i]:(n.occasions-1)){
-    beta.int[i,t] <- pow(beta,periods[colvec[i],t])       ### exponentiates daily survival by the length between capture sessions
-    mu[i,t] <- log(beta.int[i,t] / (1-beta.int[i,t]))       # Logit transformation
-    logit(phi[i,t]) <- mu[i,t]
+    for (t in 1:(n.years-1)){
+      for (col in 1:n.cols) {
+        ann.surv[t,col] ~ dunif(0.7, 1)                      # Priors for age-specific ANNUAL survival - this is the basic survival that is scaled to difference between occasions
+        for (s in 1:n.sites){
+          phi[s,t,col] <- pow(pow(ann.surv[t,col],(1/365)),periods[s,t,col]) 
+        } #s
+      } #col
     } #t
-    } #i
+    
     
     # Likelihood 
     for (i in 1:nind){
-    # Define latent state at first capture
-    z[i,f[i]] <- 1
-    for (t in (f[i]+1):n.occasions){
-    # State process
-    z[i,t] ~ dbern(mu1[i,t])
-    mu1[i,t] <- phi[i,t-1] * z[i,t-1] 
+
+        # Define latent state at first capture
+        z[i,f[i]] <- 1
+          for (t in (f[i]+1):n.occasions){
+
+          # State process
+            z[i,t] ~ dbern(mu1[i,t])
+            mu1[i,t] <- phi[sitevec[i],t-1,colvec[i]] * z[i,t-1] 
     
-    # Observation process
-    y[i,t] ~ dbern(mu2[i,t])
-    mu2[i,t] <- p[colvec[i],t] * z[i,t]
-    } #t
+          # Observation process
+            y[i,t] ~ dbern(mu2[i,t])
+            mu2[i,t] <- p[colvec[i],t] * z[i,t]
+          } #t
     } #i
-    
-    # DERIVED SURVIVAL PROBABILITIES PER YEAR 
-    ann.surv <- pow(beta,365)
     
     }
     ",fill = TRUE)
@@ -734,12 +716,45 @@ sink()
 
 
 #########################################################################
-# PREPARE DATA FOR SIMPLE CJS MODEL
+# PREPARE DATA FOR CJS MODEL TO COMPARE COLONY-SPECIFIC SURVIVAL
 #########################################################################
+
+names(YESH)
+CH<-as.matrix(YESH[,4:11], dimnames=F)
+dim(CH)
+
+# Compute vector with occasion of first capture
+get.first <- function(x) min(which(x==1))
+f <- apply(CH, 1, get.first)
+n.occ<-ncol(CH)
+
+## PREPARE CONSTANTS
+n.ind<-dim(CH)[1]		## defines the number of individuals
+n.years<-dim(CH)[2]  ## defines the number of years
+n.sites<-length(unique(YESH$SITE))
+n.colonies<-length(unique(YESH$COLO))              
+sitevec<-COLEFF$COL_NR[match(YESH$SITE,COLEFF$SITE)]
+colvec<-match(YESH$COLO,unique(YESH$COLO))
+
+
+## CREATE MATRIX for INITIAL STATE Z
+zinit<-CH
+for (l in 1:nrow(zinit)){
+  firstocc<-get.first(zinit[l,])
+  if(firstocc<n.years){
+    zinit[l,(firstocc):n.years]<-1  ## alive from first contact - DIFF FROM CJS where this is firstocc+1
+  }else{
+    zinit[l,firstocc]<-1
+  }
+  zinit[l,1:firstocc]<-NA #0  ## sets everything up to first contact to - - DIFF FROM CJS where this is NA
+}
+dim(zinit)
+
+
 
 # Bundle data
 jags.data <- list(y = CH, f = f, n.occasions = n.years, n.colonies=n.colonies,
-                  nind = n.ind, #FULLAGEMAT=FULLAGEMAT,
+                  nind = n.ind, sitevec=sitevec,
                   periods=periods, colvec=colvec, effmat=effmat)
 
 # Initial values 

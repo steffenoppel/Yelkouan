@@ -679,7 +679,7 @@ cat("
       ann.surv[t] ~ dunif(0.7, 1)                      # Priors for age-specific ANNUAL survival - this is the basic survival that is scaled to difference between occasions
         for (col in 1:n.cols) {
           for (s in 1:n.sites){
-            phi[s,t,col] <- pow(pow(ann.surv[t],(1/365)),effmat[s,t,col]) 
+            phi[s,t,col] <- pow(pow(ann.surv[t],(1/365)),periods[s,t,col]) 
           } #s
         } #col
     } #t
@@ -726,14 +726,14 @@ cat("
     ##################### LIKELIHOOD #################################
     
     for (col in 1:n.cols) {
-      for (i in 1:M[col]){
+      for (i in 1:M){
     
         # First occasion
         # State process
         z[i,1,col] ~ dbern(gamma[1,col])
     
         # Observation process
-        mu1[i,1,col] <- z[i,1,col] * p[i,1]
+        mu1[i,1,col] <- z[i,1,col] * p[i,1,col]
         y[i,1,col] ~ dbern(mu1[i,1,col])
     
     
@@ -743,7 +743,7 @@ cat("
             # State process
             recru[i,t-1,col] <- max(z[i,1:(t-1),col])		# Availability for recruitment - this will be 0 if the bird has never been observed before and 1 otherwise
             pot.alive[i,t,col] <- phi[sitevec[i,col],t-1,col] * z[i,t-1,col] + gamma[t,col] * (1-recru[i,t-1,col])
-            z[i,t] ~ dbern(pot.alive[i,t,col])
+            z[i,t,col] ~ dbern(pot.alive[i,t,col])
     
             # Observation process
             mu1[i,t,col] <- z[i,t,col] * p[i,t,col]	
@@ -758,7 +758,7 @@ cat("
     # POPULATION SIZE
     for (t in 1:n.years){
       for (col in 1:n.cols){
-        N[t,col] <- sum(z[1:M[col],t,col])        # Actual population size per colony
+        N[t,col] <- sum(z[1:M,t,col])        # Actual population size per colony
       } #col
     } #t
     
@@ -831,18 +831,19 @@ inits <- function(){list(mean.phi = runif(1, 0.95, 1),
 
 
 # Parameters monitored
-parameters <- c("beta.effort","mean.p","ann.surv","N","phi")
+parameters <- c("beta.effort","mean.p","ann.surv","N")
 
 # MCMC settings
 # no convergence with ni=50,000, which took 760 minutes
 
 ni <- 150
 nt <- 2
-nb <- 75
+nb <- 70
 nc <- 4
 
 # Call JAGS from R
-YESHabund <- autojags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_survival_v5.jags", n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T)
+YESHabund <- autojags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_survival_v5.jags",
+                  n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T)
 
 
 

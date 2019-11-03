@@ -446,15 +446,15 @@ cat("
     
         # First occasion
         # State process
-        z[i,1,col] ~ dbern(gamma[1,col])
+        z[i,col.first[col],col] ~ dbern(gamma[1,col])
     
         # Observation process
-        mu1[i,1,col] <- z[i,1,col] * p[i,1,col]
-        y[i,1,col] ~ dbern(mu1[i,1,col])
+        mu1[i,col.first[col],col] <- z[i,col.first[col],col] * p[i,col.first[col],col]
+        y[i,col.first[col],col] ~ dbern(mu1[i,col.first[col],col])
     
     
         # Subsequent occasions
-        for (t in 2:n.years){
+        for (t in (col.first[col]+1):n.years){
     
             # State process
             recru[i,t-1,col] <- max(z[i,1:(t-1),col])		# Availability for recruitment - this will be 0 if the bird has never been observed before and 1 otherwise
@@ -509,7 +509,6 @@ dim(zinit)
 
 
 
-
 ### NEED TO CREATE 3-DIMENSIONAL ARRAY FOR y FOR EACH COLONY
 ### AUGMENT DATA TO HAVE 1000 INDIVIDUALS PER COLONY
 ### ARRAY must have identical dimensions
@@ -550,8 +549,18 @@ for (col in 1:max(COLEFF$COL_NR)) {
 }
 
 
+### TO AVOID LOOPING OVER PARAMETER SPACE WITH NO DATA, WE CREATE A VECTOR THAT SPECIFIES WHEN DATA ARE AVAILABLE
+## FOR EACH COLONY
+col.first<- COLEFF %>% dplyr::select(-SITE, -SITE_NR) %>%
+  gather(key="OCC", value="effort",-COLO,-COL_NR) %>%
+  dplyr::filter(effort!=0) %>%
+  group_by(COLO,COL_NR) %>%
+  summarise(first=min(OCC)) %>%
+  arrange(COL_NR)
+
+
 # Bundle data
-jags.data <- list(y = CHcol, n.years = n.years, 
+jags.data <- list(y = CHcol, n.years = n.years,col.first=as.numeric(col.first$first),
                   M = potYESH, sitevec=site.arr, 
                   periods=per.arr, effmat=eff.arr,
                   n.sites=max(COLEFF$COL_NR),n.cols=max(DURMAT$SITE_NR))
@@ -575,8 +584,8 @@ nb <- 70
 nc <- 4
 
 # Call JAGS from R
-YESHabund <- autojags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_survival_v5.jags",
-                  n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T)
+YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_survival_v5.jags",
+                  n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T,n.iter=150)
 
 
 

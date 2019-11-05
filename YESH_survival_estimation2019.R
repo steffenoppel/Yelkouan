@@ -406,25 +406,27 @@ cat("
     logit.p <- log(mean.p / (1-mean.p))           # Logit transformation
 
     for (col in 1:n.cols){
-      beta.effort[col] ~ dnorm(0,0.01)                   # Prior for trapping effort offset on capture probability
+      for (s in 1:n.sites){
+        beta.effort[s,col] ~ dnorm(0,0.01)                   # Prior for trapping effort offset on capture probability
+      }
     }
 
     for (col in 1:n.cols) {
       for (i in 1:M){  
         for (t in 1:n.years){
-          logit(p[i,t,col]) <- logit.p + beta.effort[col]*effmat[sitevec[i,col],t,col] + capt.raneff[i,t,col]   ## includes colony-specific effort and random effect for time and individual
+          logit(p[i,t,col]) <- logit.p + beta.effort[sitevec[i,col],col]*effmat[sitevec[i,col],t,col] + capt.raneff[i,t]   ## includes site-specific effort and random effect for time and individual
         } # close t
       } #i
     } #col
     
     ## RANDOM INDIVIDUAL EFFECT ON CAPTURE PROBABILITY
-    for (col in 1:n.cols) {
+    #for (col in 1:n.cols) {
       for (i in 1:M){
         for (t in 1:n.years){
-          capt.raneff[i,t,col] ~ dnorm(0, tau.capt)
+          capt.raneff[i,t] ~ dnorm(0, tau.capt)
         }
       }
-    }
+    #}
     
     ### PRIORS FOR RANDOM EFFECTS
     sigma.capt ~ dunif(0, 10)                     # Prior for standard deviation of capture
@@ -585,7 +587,8 @@ nc <- 4
 
 # Call JAGS from R
 YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_survival_v5.jags",
-                  n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T,n.iter=150)
+                  n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T,n.iter=ni)
+                  max.iter=250000,Rhat.limit=1.2)
 
 
 

@@ -575,19 +575,19 @@ inits <- function(){list(mean.phi = runif(1, 0.95, 1),
 
 
 # Parameters monitored
-parameters <- c("beta.effort","mean.p","ann.surv","N")
+parameters <- c("ann.surv","N")
 
 # MCMC settings
 # no convergence with ni=50,000, which took 760 minutes
 
 ni <- 150
 nt <- 2
-nb <- 70
-nc <- 4
+nb <- 100
+nc <- 3
 
 # Call JAGS from R
-YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_survival_v5.jags",
-                  n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T,n.iter=ni)
+YESHabund <- autojags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_survival_v5.jags",
+                  n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T, #n.iter=ni)
                   max.iter=250000,Rhat.limit=1.2)
 
 

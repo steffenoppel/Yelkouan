@@ -627,7 +627,7 @@ ggplot(data=export[1:7,],aes(y=Mean, x=seq(2012.5,2018.5,1))) + geom_point(size=
         panel.grid.minor = element_blank(), 
         panel.border = element_blank())
 
-ggsave("YESH_survival_Majjistral_2012_2019.pdf", device = "pdf", width=12, height=9)
+ggsave("YESH_survival_2012_2019.pdf", device = "pdf", width=12, height=9)
 
 
 

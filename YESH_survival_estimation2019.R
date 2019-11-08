@@ -14,8 +14,8 @@
 ## model with 32 occasions yielded consistent invalid parent error
 
 ## data cleaning section updated on 02 Oct by MA to include other sub-sites
-
 ## ABUNDANCE JS MODEL for 4 major colonies introduced on 31 OCT 2019
+## first abundance output produced on 8 Nov 2019
 
 
 library(tidyverse)
@@ -340,7 +340,7 @@ effmat<-as.matrix(COLEFF[,3:10], dimnames=F)
                
 ## CREATE LOOKUP VECTOR FOR WHICH COLONY BIRDS WERE CAUGHT IN
 head(YESH)
-sitevec<-COLEFF$COL_NR[match(YESH$SITE,COLEFF$SITE)]
+sitevec<-COLEFF$SITE_NR[match(YESH$SITE,COLEFF$SITE)]
 colvec<-match(YESH$COLO,unique(YESH$COLO))
                
 length(f)
@@ -580,19 +580,15 @@ parameters <- c("ann.surv","N")
 # MCMC settings
 # no convergence with ni=50,000, which took 760 minutes
 
-ni <- 150
-nt <- 2
-nb <- 100
+ni <- 75000
+nt <- 6
+nb <- 15000
 nc <- 3
 
 # Call JAGS from R
-YESHabund <- autojags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_survival_v5.jags",
-                  n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T, #n.iter=ni)
-                  max.iter=250000,Rhat.limit=1.2)
-
-
-
-
+YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_survival_v5.jags",
+                  n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T, n.iter=ni)
+                  #max.iter=250000,Rhat.limit=1.2) ### useful for autojags, but deviance never converges
 
 
 
@@ -600,7 +596,8 @@ YESHabund <- autojags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\A
 #########################################################################
 # PRODUCE OUTPUT TABLE
 #########################################################################
-## model converged with 150000 iterations in 270 minutes
+setwd("C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan")
+save.image("YESH_JS_model_output.RData")
 
 out<-as.data.frame(YESHabund$summary)
 out$parameter<-row.names(YESHabund$summary)
@@ -609,183 +606,61 @@ export<-out %>% select(c(12,1,5,2,3,7)) %>%
 fwrite(export,"YESH_Malta_Abundance_estimates2019.csv")
 
 
+
+
+#########################################################################
+# PRODUCE SURVIVAL GRAPH 
+#########################################################################
+
+ggplot(data=export[1:7,],aes(y=Mean, x=seq(2012.5,2018.5,1))) + geom_point(size=2)+
+  geom_errorbar(aes(ymin=lcl, ymax=ucl), width=.1)+
+  scale_x_continuous(name="Year", limits=c(2012,2019), breaks=seq(2012,2019,1), labels=seq(2012,2019,1))+
+  scale_y_continuous(name="Annual survival probability", limits=c(0.5,1), breaks=seq(0.5,1,0.1), labels=seq(0.5,1,0.1))+
+  #ggtitle(COLEFF$Colony)+
+  theme(panel.background=element_rect(fill="white", colour="black"), 
+        axis.text=element_text(size=20, color="black", margin=6), 
+        axis.title=element_text(size=22),
+        plot.title=element_text(size=22), 
+        strip.text.x=element_text(size=20, color="black", margin=6), 
+        strip.background=element_rect(fill="white", colour="black"), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.border = element_blank())
+
+ggsave("YESH_survival_Majjistral_2012_2019.pdf", device = "pdf", width=12, height=9)
+
+
+
+
+#########################################################################
+# PRODUCE ABUNDANCE GRAPH 
+#########################################################################
+
+abund<-out %>% select(c(12,1,5,2,3,7)) %>%
+  setNames(c('Parameter','Mean', 'Median','SD','lcl', 'ucl')) %>%
+  dplyr::filter(grepl("N",Parameter)) %>%
+  mutate(Colony=substr(Parameter,5,5),Year=as.numeric(substr(Parameter,3,3))+2011) %>%
+  mutate(Colony=COLEFF$COLO[match(Colony,COLEFF$COL_NR)]) %>%
+  dplyr::filter(Year>2012)
+  
+
 ### plot output ###
 
-ggplot(data=export[8:13,],aes(y=Mean, x=seq(2013,2018,1))) + geom_point(size=2)+
+ggplot(data=abund,aes(y=Mean, x=Year)) + geom_point(size=2)+
   geom_errorbar(aes(ymin=lcl, ymax=ucl), width=.1)+
-  geom_point(aes(y=apply(CHaug,2,sum), x=seq(2013,2018,1)), col='darkred',size=2, pch=3)+
-  scale_x_continuous(name="Year", limits=c(2012.5,2018.5), breaks=seq(2013,2018,1), labels=seq(2013,2018,1))+
-  scale_y_continuous(name="N Yelkouan Shearwaters", limits=c(0,400), breaks=seq(0,400,100), labels=seq(0,400,100))+
-  ggtitle(COLEFF$Colony)+
+  facet_wrap(~Colony,ncol=2,scales="free_y") +
+  ylab("N of adult Yelkouan Shearwaters") +
   theme(panel.background=element_rect(fill="white", colour="black"), 
-        axis.text=element_text(size=20, color="black", margin=6), 
+        axis.text=element_text(size=20, color="black"), 
         axis.title=element_text(size=22),
-        plot.title=element_text(size=22), 
-        strip.text.x=element_text(size=20, color="black", margin=6), 
+        strip.text.x=element_text(size=20, color="black"), 
         strip.background=element_rect(fill="white", colour="black"), 
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(), 
         panel.border = element_blank())
 
-ggsave("YESH_abundance_Majjistral_2013_2018.pdf", device = "pdf")
+ggsave("YESH_abundance_2013_2019.pdf", device = "pdf", width=9, height=9)
 
-
-
-
-ggplot(data=export[3:7,],aes(y=Mean, x=seq(2013.5,2017.5,1))) + geom_point(size=2)+
-  geom_errorbar(aes(ymin=lcl, ymax=ucl), width=.1)+
-  scale_x_continuous(name="Year", limits=c(2012.5,2018.5), breaks=seq(2013,2018,1), labels=seq(2013,2018,1))+
-  scale_y_continuous(name="Annual survival probability", limits=c(0.5,1), breaks=seq(0.5,1,0.1), labels=seq(0.5,1,0.1))+
-  ggtitle(COLEFF$Colony)+
-  theme(panel.background=element_rect(fill="white", colour="black"), 
-        axis.text=element_text(size=20, color="black", margin=6), 
-        axis.title=element_text(size=22),
-        plot.title=element_text(size=22), 
-        strip.text.x=element_text(size=20, color="black", margin=6), 
-        strip.background=element_rect(fill="white", colour="black"), 
-        panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(), 
-        panel.border = element_blank())
-
-ggsave("YESH_survival_Majjistral_2013_2018.pdf", device = "pdf")
-
-
-
-
-
-
-
-
-
-##########################~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~########################################
-#
-# Specify CJS model to compare survival between 4 main colonies
-#
-##########################~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~########################################
-
-
-setwd("C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan")
-sink("YESH_CJS_colony_surv.jags")
-cat("
-    model {
-    
-    # -------------------------------------------------
-    # Parameters:
-    # phi: survival probability, only adults 
-    # p: recapture probability when breeding, depends on colony-occasion-specific effort
-    # -------------------------------------------------
-    
-    
-    ## Priors and constraints
-    
-    ### RECAPTURE PROBABILITY
-    beta.effort ~ dnorm(0,0.01)                   # Prior for trapping effort offset on capture probability
-    
-    
-    ## COLONY-SPECIFIC CAPTURE PROBABILITY 
-    for (col in 1:n.colonies){
-      cap.prob[col] ~ dunif(0, 1)                         # Priors for colony-specific capture probability
-      mu.p[col] <- log(cap.prob[col] / (1-cap.prob[col]))       # Logit transformation
-        for (t in 1:n.occasions){
-          logit(p[col,t]) <- mu.p[col] + beta.effort*effmat[col,t]
-        }
-    }
-    
-    ### SURVIVAL PROBABILITY
-    for (t in 1:(n.years-1)){
-      for (col in 1:n.cols) {
-        ann.surv[t,col] ~ dunif(0.7, 1)                      # Priors for age-specific ANNUAL survival - this is the basic survival that is scaled to difference between occasions
-        for (s in 1:n.sites){
-          phi[s,t,col] <- pow(pow(ann.surv[t,col],(1/365)),periods[s,t,col]) 
-        } #s
-      } #col
-    } #t
-    
-    
-    # Likelihood 
-    for (i in 1:nind){
-
-        # Define latent state at first capture
-        z[i,f[i]] <- 1
-          for (t in (f[i]+1):n.occasions){
-
-          # State process
-            z[i,t] ~ dbern(mu1[i,t])
-            mu1[i,t] <- phi[sitevec[i],t-1,colvec[i]] * z[i,t-1] 
-    
-          # Observation process
-            y[i,t] ~ dbern(mu2[i,t])
-            mu2[i,t] <- p[colvec[i],t] * z[i,t]
-          } #t
-    } #i
-    
-    }
-    ",fill = TRUE)
-sink()
-
-
-
-
-
-#########################################################################
-# PREPARE DATA FOR CJS MODEL TO COMPARE COLONY-SPECIFIC SURVIVAL
-#########################################################################
-
-names(YESH)
-CH<-as.matrix(YESH[,4:11], dimnames=F)
-dim(CH)
-
-# Compute vector with occasion of first capture
-get.first <- function(x) min(which(x==1))
-f <- apply(CH, 1, get.first)
-n.occ<-ncol(CH)
-
-## PREPARE CONSTANTS
-n.ind<-dim(CH)[1]		## defines the number of individuals
-n.years<-dim(CH)[2]  ## defines the number of years
-n.sites<-length(unique(YESH$SITE))
-n.colonies<-length(unique(YESH$COLO))              
-sitevec<-COLEFF$COL_NR[match(YESH$SITE,COLEFF$SITE)]
-colvec<-match(YESH$COLO,unique(YESH$COLO))
-
-
-## CREATE MATRIX for INITIAL STATE Z
-zinit<-CH
-for (l in 1:nrow(zinit)){
-  firstocc<-get.first(zinit[l,])
-  if(firstocc<n.years){
-    zinit[l,(firstocc):n.years]<-1  ## alive from first contact - DIFF FROM CJS where this is firstocc+1
-  }else{
-    zinit[l,firstocc]<-1
-  }
-  zinit[l,1:firstocc]<-NA #0  ## sets everything up to first contact to - - DIFF FROM CJS where this is NA
-}
-dim(zinit)
-
-
-
-# Bundle data
-jags.data <- list(y = CH, f = f, n.occasions = n.years, n.colonies=n.colonies,
-                  nind = n.ind, sitevec=sitevec,
-                  periods=periods, colvec=colvec, effmat=effmat)
-
-# Initial values 
-inits <- function(){list(beta = runif(1, 0.9, 1),
-                         cap.prob = runif(n.colonies, 0, 1),
-                         z = zinit,
-                         beta.effort = rnorm(1, 0, 10))}
-
-
-# Parameters monitored
-parameters <- c("ann.surv","beta.effort","p")
-
-# MCMC settings
-nt <- 1
-nb <- 5
-nc <- 4
-
-# Call JAGS from R
-YESHsurv <- autojags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_CJS_simpletest.jags", n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T)
 
 
 

@@ -328,7 +328,7 @@ n.colonies<-length(unique(YESH$COLO))
 ## STANDARDISE HOURS TO AVOID INVALID PARENT ERROR IN JAGS
 COLEFF<- eff %>% group_by(COLO,SITE, OCC_NR) %>%
          summarise(effort=sum(effort)) %>%
-         mutate(effort=scale(effort, center=T, scale=T)) %>% #mean(effort))/sd(effort)) %>%
+         mutate(effort=scale(effort, center=F, scale=T)) %>% #mean(effort))/sd(effort)) %>%  ## invalid parent error when center=T
          spread(key=OCC_NR, value=effort) %>%
          replace(is.na(.), 0) %>%
          ungroup() %>%
@@ -390,17 +390,6 @@ cat("
     
     
     ## Priors and constraints
-    
-    ## SITE-SPECIFIC CAPTURE PROBABILITY 
-    for (col in 1:n.sites){
-      cap.prob[col] ~ dunif(0, 1)                         # Priors for colony-specific capture probability
-      mu.p[col] <- log(cap.prob[col] / (1-cap.prob[col]))       # Logit transformation
-        for (t in 1:n.years){
-          logit(p[col,t]) <- mu.p[col] + beta.effort*effmat[col,t]
-        }
-    }
-
-
 
     ### SITE-SPECIFIC CAPTURE PROBABILITY
     mean.p ~ dbeta(1.5, 4)                        # Prior for mean recapture switched to beta from unif
@@ -408,7 +397,7 @@ cat("
 
     for (col in 1:n.cols) {
       for (s in 1:n.sites){
-        beta.effort[s,col] ~ dnorm(0,0.01)                   # Prior for trapping effort offset on capture probability
+        beta.effort[s,col] ~ dunif(0,10)                   # Prior for trapping effort offset on capture probability
         for (t in 1:n.years){
           logit(p[s,t,col]) <- logit.p + beta.effort[s,col]*effmat[s,t,col] + capt.raneff[col,t]   ## includes site-specific effort and random effect for time and individual
         } # close t
@@ -528,57 +517,67 @@ inits <- function(){list(ann.surv = matrix(runif(1, 0.7, 1),ncol=max(DURMAT$COL_
                          mean.p = rbeta(1, 1.5, 4),
 				sigma.capt = runif(1, 0, 10),
                          z = zinit,
-                         beta.effort = matrix(rnorm(1, 0, 10),ncol=max(DURMAT$COL_NR),nrow=max(DURMAT$SITE_NR)))}
+                         beta.effort = matrix(runif(1, 0, 10),ncol=max(DURMAT$COL_NR),nrow=max(DURMAT$SITE_NR)))}
 
 # Parameters monitored
 parameters <- c("ann.surv","mean.p")
 
 # MCMC settings
+ni<-5000
 nt <- 2
-nb <- 5000
+nb <- 500
 nc <- 4
 
 # Call JAGS from R
-YESHsurv <- autojags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_CJS_colony_surv.jags",
-			n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T)
+YESHsurv <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_CJS_colony_surv.jags",
+			n.chains = nc, n.thin = nt, n.burnin = nb,n.iter=ni,parallel=T)
 
+
+
+
+#########################################################################
+# PRODUCE OUTPUT TABLE
+#########################################################################
+setwd("C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan")
+save.image("YESH_CJS_model_output.RData")
+
+out<-as.data.frame(YESHsurv$summary)
+out$parameter<-row.names(YESHsurv$summary)
+
+surv<-out %>% select(c(12,1,5,2,3,7)) %>%
+  setNames(c('Parameter','Mean', 'Median','SD','lcl', 'ucl')) %>%
+  dplyr::filter(grepl("ann.surv",Parameter)) %>%
+  mutate(Colony=substr(Parameter,12,12),Year=as.numeric(substr(Parameter,10,10))+2011) %>%
+  mutate(Colony=COLEFF$COLO[match(Colony,COLEFF$COL_NR)]) 
+  
+fwrite(surv,"YESH_Malta_Colony_specific_survival2019.csv")
 
 
 
 
 
 #########################################################################
-# PRODUCE OUTPUT TABLES AND FIGURES
+# PRODUCE ABUNDANCE GRAPH 
 #########################################################################
-## model converged with 150000 iterations in 270 minutes
-
-out<-as.data.frame(YESHabund$summary)
-out$parameter<-row.names(YESHabund$summary)
-export<-out %>% select(c(12,1,5,2,3,7)) %>%
-  setNames(c('Parameter','Mean', 'Median','SD','lcl', 'ucl'))
-fwrite(export,"YESH_Malta_Abundance_estimates2019.csv")
 
 
 ### plot output ###
 
-
-
-ggplot(data=export[3:7,],aes(y=Mean, x=seq(2013.5,2017.5,1))) + geom_point(size=2)+
+ggplot(data=surv,aes(y=Mean, x=Year)) + geom_point(size=2)+
   geom_errorbar(aes(ymin=lcl, ymax=ucl), width=.1)+
-  scale_x_continuous(name="Year", limits=c(2012.5,2018.5), breaks=seq(2013,2018,1), labels=seq(2013,2018,1))+
-  scale_y_continuous(name="Annual survival probability", limits=c(0.5,1), breaks=seq(0.5,1,0.1), labels=seq(0.5,1,0.1))+
-  ggtitle(COLEFF$Colony)+
+  facet_wrap(~Colony,ncol=2,scales="fixed") +
+  ylab("Annual survival probability") +
   theme(panel.background=element_rect(fill="white", colour="black"), 
-        axis.text=element_text(size=20, color="black", margin=6), 
+        axis.text=element_text(size=20, color="black"), 
         axis.title=element_text(size=22),
-        plot.title=element_text(size=22), 
-        strip.text.x=element_text(size=20, color="black", margin=6), 
+        strip.text.x=element_text(size=20, color="black"), 
         strip.background=element_rect(fill="white", colour="black"), 
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(), 
         panel.border = element_blank())
 
-ggsave("YESH_survival_Majjistral_2013_2018.pdf", device = "pdf")
+ggsave("YESH_Malta_Colony_specific_survival2019.pdf", device = "pdf", width=9, height=9)
+
 
 
 

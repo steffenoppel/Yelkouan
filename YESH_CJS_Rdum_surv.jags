@@ -1,0 +1,63 @@
+
+    model {
+    
+    # -------------------------------------------------
+    # Parameters:
+    # phi: survival probability, only adults 
+    # p: recapture probability when breeding, depends on colony-occasion-specific effort
+    # -------------------------------------------------
+    
+    
+    ## Priors and constraints
+
+    ### SITE-SPECIFIC CAPTURE PROBABILITY
+    mean.p ~ dbeta(1.5, 4)                        # Prior for mean recapture switched to beta from unif
+    logit.p <- log(mean.p / (1-mean.p))           # Logit transformation
+
+      for (s in 1:n.sites){
+        beta.effort[s] ~ dunif(0,10)                   # Prior for trapping effort offset on capture probability
+        for (t in 1:n.years){
+          logit(p[s,t]) <- logit.p + beta.effort[s]*effmat[s,t] + capt.raneff[s,t]   ## includes site-specific effort and random effect for time and individual
+        } # close t
+      } #s
+    
+    ## RANDOM INDIVIDUAL EFFECT ON CAPTURE PROBABILITY
+      for (s in 1:n.sites){
+       for (t in 1:n.years){
+          capt.raneff[s,t] ~ dnorm(0, tau.capt)
+        }
+      }
+    
+    ### PRIORS FOR RANDOM EFFECTS
+    sigma.capt ~ dunif(0, 10)                     # Prior for standard deviation of capture
+    tau.capt <- pow(sigma.capt, -2)
+
+    
+    ### YEAR-SPECIFIC SURVIVAL PROBABILITY
+    for (t in 1:(n.years-1)){
+        ann.surv[t] ~ dunif(0.7, 1)                      # Priors for colony-specific ANNUAL survival - this is the basic survival that is scaled to difference between occasions which are site-specific
+        for (s in 1:n.sites){
+          phi[s,t] <- pow(pow(ann.surv[t],(1/365)),periods[s,t]) 
+        } #s
+    } #t
+    
+    
+    # Likelihood 
+    for (i in 1:n.ind){
+
+        # Define latent state at first capture
+        z[i,f[i]] <- 1
+          for (t in (f[i]+1):n.years){
+
+          # State process
+            z[i,t] ~ dbern(mu1[i,t])
+            mu1[i,t] <- phi[sitevec[i],t-1] * z[i,t-1] 
+    
+          # Observation process
+            y[i,t] ~ dbern(mu2[i,t])
+            mu2[i,t] <- p[sitevec[i],t] * z[i,t]
+          } #t
+    } #i
+    
+    }
+    

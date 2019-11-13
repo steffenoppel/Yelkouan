@@ -17,20 +17,20 @@
       for (s in 1:n.sites){
         beta.effort[s] ~ dunif(0,10)                   # Prior for trapping effort offset on capture probability
         for (t in 1:n.years){
-          logit(p[s,t]) <- logit.p + beta.effort[s]*effmat[s,t] + capt.raneff[s,t]   ## includes site-specific effort and random effect for time and individual
+          logit(p[s,t]) <- logit.p + beta.effort[s]*effmat[s,t] #+ capt.raneff[s,t]   ## includes site-specific effort and random effect for time and individual
         } # close t
       } #s
     
-    ## RANDOM INDIVIDUAL EFFECT ON CAPTURE PROBABILITY
-      for (s in 1:n.sites){
-       for (t in 1:n.years){
-          capt.raneff[s,t] ~ dnorm(0, tau.capt)
-        }
-      }
-    
-    ### PRIORS FOR RANDOM EFFECTS
-    sigma.capt ~ dunif(0, 10)                     # Prior for standard deviation of capture
-    tau.capt <- pow(sigma.capt, -2)
+    # ## RANDOM INDIVIDUAL EFFECT ON CAPTURE PROBABILITY
+    #   for (s in 1:n.sites){
+    #    for (t in 1:n.years){
+    #       capt.raneff[s,t] ~ dnorm(0, tau.capt)
+    #     }
+    #   }
+    # 
+    # ### PRIORS FOR RANDOM EFFECTS
+    # sigma.capt ~ dunif(0, 10)                     # Prior for standard deviation of capture
+    # tau.capt <- pow(sigma.capt, -2)
 
     
     ### YEAR-SPECIFIC SURVIVAL PROBABILITY

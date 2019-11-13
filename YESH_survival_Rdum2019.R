@@ -354,20 +354,20 @@ cat("
       for (s in 1:n.sites){
         beta.effort[s] ~ dunif(0,10)                   # Prior for trapping effort offset on capture probability
         for (t in 1:n.years){
-          logit(p[s,t]) <- logit.p + beta.effort[s]*effmat[s,t] + capt.raneff[s,t]   ## includes site-specific effort and random effect for time and individual
+          logit(p[s,t]) <- logit.p + beta.effort[s]*effmat[s,t] #+ capt.raneff[s,t]   ## includes site-specific effort and random effect for time and individual
         } # close t
       } #s
     
-    ## RANDOM INDIVIDUAL EFFECT ON CAPTURE PROBABILITY
-      for (s in 1:n.sites){
-       for (t in 1:n.years){
-          capt.raneff[s,t] ~ dnorm(0, tau.capt)
-        }
-      }
-    
-    ### PRIORS FOR RANDOM EFFECTS
-    sigma.capt ~ dunif(0, 10)                     # Prior for standard deviation of capture
-    tau.capt <- pow(sigma.capt, -2)
+    # ## RANDOM INDIVIDUAL EFFECT ON CAPTURE PROBABILITY
+    #   for (s in 1:n.sites){
+    #    for (t in 1:n.years){
+    #       capt.raneff[s,t] ~ dnorm(0, tau.capt)
+    #     }
+    #   }
+    # 
+    # ### PRIORS FOR RANDOM EFFECTS
+    # sigma.capt ~ dunif(0, 10)                     # Prior for standard deviation of capture
+    # tau.capt <- pow(sigma.capt, -2)
 
     
     ### YEAR-SPECIFIC SURVIVAL PROBABILITY
@@ -444,12 +444,12 @@ jags.data <- list(y = CH, n.years = n.years,n.ind=n.ind,f=f,
 # Initial values 
 inits <- function(){list(ann.surv = runif(n.years-1, 0.7, 1),
                          mean.p = rbeta(1, 1.5, 4),
-				                sigma.capt = runif(1, 0, 10),
+				                #sigma.capt = runif(1, 0, 10),
                          z = zinit,
                          beta.effort = runif(n.sites, 0, 10))}
 
 # Parameters monitored
-parameters <- c("ann.surv","mean.p")
+parameters <- c("ann.surv","p")
 
 # MCMC settings
 ni<-5000
@@ -468,7 +468,6 @@ YESHsurv <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analys
 # PRODUCE OUTPUT TABLE
 #########################################################################
 setwd("C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan")
-save.image("YESH_CJS_model_output.RData")
 
 out<-as.data.frame(YESHsurv$summary)
 out$parameter<-row.names(YESHsurv$summary)
@@ -479,7 +478,7 @@ surv<-out %>% select(c(12,1,5,2,3,7)) %>%
   mutate(Colony=substr(Parameter,12,12),Year=as.numeric(substr(Parameter,10,10))+2011) %>%
   mutate(Colony=COLEFF$COLO[match(Colony,COLEFF$COL_NR)]) 
   
-fwrite(surv,"YESH_Malta_Colony_specific_survival2019.csv")
+fwrite(surv,"YESH_Malta_Rdum_survival2019.csv")
 
 
 
@@ -494,8 +493,8 @@ fwrite(surv,"YESH_Malta_Colony_specific_survival2019.csv")
 
 ggplot(data=surv,aes(y=Mean, x=Year)) + geom_point(size=2)+
   geom_errorbar(aes(ymin=lcl, ymax=ucl), width=.1)+
-  facet_wrap(~Colony,ncol=2,scales="fixed") +
   ylab("Annual survival probability") +
+  scale_y_continuous(limits=c(0.5,1), breaks=seq(0.5,1,0.1)) +
   theme(panel.background=element_rect(fill="white", colour="black"), 
         axis.text=element_text(size=20, color="black"), 
         axis.title=element_text(size=22),
@@ -505,7 +504,7 @@ ggplot(data=surv,aes(y=Mean, x=Year)) + geom_point(size=2)+
         panel.grid.minor = element_blank(), 
         panel.border = element_blank())
 
-ggsave("YESH_Malta_Colony_specific_survival2019.pdf", device = "pdf", width=9, height=9)
+ggsave("YESH_Malta_Rdum_survival2019.pdf", device = "pdf", width=9, height=9)
 
 
 

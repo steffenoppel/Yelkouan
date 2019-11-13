@@ -557,7 +557,7 @@ fwrite(surv,"YESH_Malta_Colony_specific_survival2019.csv")
 
 
 #########################################################################
-# PRODUCE ABUNDANCE GRAPH 
+# PRODUCE SURVIVAL ESTIMATES GRAPH 
 #########################################################################
 
 

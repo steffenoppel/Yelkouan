@@ -593,7 +593,6 @@ nc <- 3
 # Call JAGS from R
 YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_survival_v5.jags",
                   n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T, n.iter=ni)
-                  #max.iter=250000,Rhat.limit=1.2) ### useful for autojags, but deviance never converges
 
 
 
@@ -602,13 +601,13 @@ YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analy
 # PRODUCE OUTPUT TABLE
 #########################################################################
 setwd("C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan")
-save.image("YESH_JS_model_output.RData")
+save.image("YESH_JS_trendmodel_output.RData")
 
 out<-as.data.frame(YESHabund$summary)
 out$parameter<-row.names(YESHabund$summary)
 export<-out %>% select(c(12,1,5,2,3,7)) %>%
   setNames(c('Parameter','Mean', 'Median','SD','lcl', 'ucl'))
-fwrite(export,"YESH_Malta_Abundance_estimates2019.csv")
+fwrite(export,"YESH_Malta_Abundance_trend_estimates2019.csv")
 
 
 
@@ -664,7 +663,7 @@ ggplot(data=abund,aes(y=Mean, x=Year)) + geom_point(size=2)+
         panel.grid.minor = element_blank(), 
         panel.border = element_blank())
 
-ggsave("YESH_abundance_2013_2019.pdf", device = "pdf", width=9, height=9)
+ggsave("YESH_abundance_trend_2013_2019.pdf", device = "pdf", width=9, height=9)
 
 
 

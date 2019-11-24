@@ -124,7 +124,7 @@ RM04 <- c("MT09_RM04A", "MT09_RM04B", "MT09_RM04D", "MT09_RM04C") #RM04C lowest 
 Cominotto <- c("MT17_Cominotto_2", "MT17_Cominotto_1", "MT17_Cominotto_3", "MT17_Cominotto", "MT17_Cominotto_7", "MT17_Cominotto_4") # 4 only since 2017; #8 & 9 only since 2018 so better to remove these caves?
 StPauls <- c("MT22_StPauls_MainCave", "MT22_StPauls_WestCave")
 Majjistral_main <- c("MT24_Majjistral_Eggshell", "MT24_Majjistral_Thomas", "MT24_Majjistral_Subt", "MT24_Majjistral_NS2_NS3")             
-Majjistral_south <- c("MT24_Majjistral_South") #probably too little effort           
+#Majjistral_south <- c("MT24_Majjistral_South") #probably too little effort           
 
 adults <- c("6", "4", "2")
                
@@ -134,9 +134,9 @@ adults <- c("6", "4", "2")
 
 ## create lookup-table
 ## Making LUT
-all_lut<-data.frame(orig=as.character(c(RM01,RM03,RM04,RM05,Cominotto,StPauls,Majjistral_main,Majjistral_south)),
-                poolloc=as.character(c("RM01",rep("RM03",4),rep("RM04",4),rep("RM05",8),rep("Cominotto",6),rep("StPauls",2),rep("Majjistral_main",4),rep("Majjistral_south",1))),
-                maincol=as.character(c(rep("RdumTalMadonna",17),rep("Cominotto",6),rep("StPauls",2),rep("Majjistral",5))))
+all_lut<-data.frame(orig=as.character(c(RM01,RM03,RM04,RM05,Cominotto,StPauls,Majjistral_main)),
+                poolloc=as.character(c("RM01",rep("RM03",4),rep("RM04",4),rep("RM05",8),rep("Cominotto",6),rep("StPauls",2),rep("Majjistral_main",4))),
+                maincol=as.character(c(rep("RdumTalMadonna",17),rep("Cominotto",6),rep("StPauls",2),rep("Majjistral",4))))
 
 
                
@@ -338,7 +338,7 @@ COLEFF<- eff %>% group_by(COLO,SITE, OCC_NR) %>%
          replace(is.na(.), 0) %>%
          ungroup() %>%
          #mutate(COL_NR=seq_along(COLO),SITE_NR=row_number())
-        mutate(COL_NR=c(1,2,2,3,3,3,3,4),SITE_NR=c(1,1,2,1,2,3,4,1))
+        mutate(COL_NR=c(1,2,3,3,3,3,4),SITE_NR=c(1,1,1,2,3,4,1))
                
 effmat<-as.matrix(COLEFF[,3:10], dimnames=F)
                
@@ -358,7 +358,7 @@ DURMAT<- survPeriods %>% group_by(COLO,SITE, OCC_NR) %>%
          spread(key=OCC_NR, value=int) %>%
          replace(is.na(.), 0) %>%
          ungroup() %>%
-         mutate(COL_NR=c(1,2,2,3,3,3,3,4),SITE_NR=c(1,1,2,1,2,3,4,1))
+         mutate(COL_NR=c(1,2,3,3,3,3,4),SITE_NR=c(1,1,1,2,3,4,1))
                
 periods<-as.matrix(DURMAT[,3:10], dimnames=F)
                

@@ -1,6 +1,6 @@
 ###############################################################################
 ##
-##  YELKOUAN SHEARWATER SURVIVAL AND ABUNDANCE ESTIMATION ON MALTA  ##
+##  YELKOUAN SHEARWATER SURVIVAL AND ABUNDANCE TREND ESTIMATION ON MALTA  ##
 ##
 ###############################################################################
 
@@ -16,6 +16,8 @@
 ## data cleaning section updated on 02 Oct by MA to include other sub-sites
 ## ABUNDANCE JS MODEL for 4 major colonies introduced on 31 OCT 2019
 ## first abundance output produced on 8 Nov 2019
+
+## REMOVED CAVES ONLY MONITORED IN 2018-2019 TO ESTIMATE LONGER TREND
 
 
 library(tidyverse)
@@ -112,14 +114,17 @@ misseff<-records %>% dplyr::select(Cave_String,NightStarting, ringnumber, ringer
 #initialsites <- c("MT24_Majjistral_Eggshell", "MT24_Majjistral_Thomas", "MT24_Majjistral_Thomas_NS1", "MT24_Majjistral_Subt", "MT24_Majjistral_NS2_NS3")
 #Majjistral_main <- initialsites
 
+
+### CHANGED ON 22 NOV 2019 TO REMOVE THE COLONIES VISITED ONLY IN 2017-2019
+
 RM01 <- c("MT09_RM01")
 RM03 <- c("MT09_RM03_18to22", "MT09_RM03", "MT09_RM03_North", "MT09_RM03_South") #if high transcience to remove "MT09_RM03_18to22" - lower effort than other sites
 RM05 <- c("MT09_RM05", "MT09_RM05BT", "MT09_RM05GC_Central", "MT09_RM05GC", "MT09_RM05GC_South", "MT09_RM05GC_North", "MT09_RM05BT_Lower", "MT09_RM05BT_Upper") #if high transcience to remove "MT09_RM05BT_Upper" - lower effort than other sites in last years but probably a lot of the effort made at MT09_RM05BT in 2013 was actually at lower
 RM04 <- c("MT09_RM04A", "MT09_RM04B", "MT09_RM04D", "MT09_RM04C") #RM04C lowest effort perhaps to remove
-Cominotto <- c("MT17_Cominotto_2", "MT17_Cominotto_1", "MT17_Cominotto_3", "MT17_Cominotto", "MT17_Cominotto_7", "MT17_Cominotto_4", "MT17_Cominotto_8", "MT17_Cominotto_9") # 4 only since 2017; #8 & 9 only since 2018 so better to remove these caves?
+Cominotto <- c("MT17_Cominotto_2", "MT17_Cominotto_1", "MT17_Cominotto_3", "MT17_Cominotto", "MT17_Cominotto_7", "MT17_Cominotto_4") # 4 only since 2017; #8 & 9 only since 2018 so better to remove these caves?
 StPauls <- c("MT22_StPauls_MainCave", "MT22_StPauls_WestCave")
 Majjistral_main <- c("MT24_Majjistral_Eggshell", "MT24_Majjistral_Thomas", "MT24_Majjistral_Subt", "MT24_Majjistral_NS2_NS3")             
-Majjistral_south <- c("MT24_Majjistral_South_1", 	"MT24_Majjistral_South", "MT24_Majjistral_South_4", "MT24_Majjistral_South_3") #probably too little effort           
+Majjistral_south <- c("MT24_Majjistral_South") #probably too little effort           
 
 adults <- c("6", "4", "2")
                

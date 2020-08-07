@@ -19,6 +19,8 @@
 
 ## REMOVED CAVES ONLY MONITORED IN 2018-2019 TO ESTIMATE LONGER TREND
 
+### UPDATED ON 6 AUG 2020 to include 2020 data 
+
 
 library(tidyverse)
 library(lubridate)
@@ -48,7 +50,7 @@ caves<-fread("Cave_ID.csv")
 
 #### replaced with Martins CMR cleaning code on 3 March 2019
 # to get list of all rings deployed, in the source file only original rings present and not their replacements
-rings <- fread("2012_2019_replacement_and_tags.csv")
+rings <- fread("2012_2020_replacement_and_tags.csv")
 
 #to update "2012_2018_replacement_and_tags.csv" with rings placed in 2019, "new" birds of 2019 were added in excel
 #fwrite(unique_rings, "2012_2018_uniquerings.csv")
@@ -64,7 +66,7 @@ midday<-format(midday, format="%H:%M:%S",tz = "UTC")
 
 
 #since ringing database extract for 2012-2016 gave time in hour only, :00:00 CONCATENATED onto hour value in excel
-records <- fread("2012_2019_cavestring_ringingrecords.csv")
+records <- fread("2012_2020_cavestring_ringingrecords.csv")
 
 records <- records %>%
   mutate(DateTime=dmy_hms(paste(ringingDate,paste(HourTime, sep=":"), sep=" "),tz="Europe/Berlin")) %>%
@@ -76,7 +78,7 @@ records <- records %>%
   dplyr::filter(Errors!=1) #handful of records remain. these have been checked but could not be resolved. most likely are errors and should therefore not be included in analysis
 
 
-effort <- fread("Cave_Activity_complete_2012-2019.csv")
+effort <- fread("Cave_Activity_complete_2012-2020.csv")
 
 effort <- effort %>%
   mutate(DateTime=dmy_hm(paste(Date,paste(start_time, sep=":"), sep=" "),tz="Europe/Berlin")) %>%
@@ -115,29 +117,37 @@ misseff<-records %>% dplyr::select(Cave_String,NightStarting, ringnumber, ringer
 #Majjistral_main <- initialsites
 
 
-### CHANGED ON 22 NOV 2019 TO REMOVE THE COLONIES VISITED ONLY IN 2017-2019
-
-RM01 <- c("MT09_RM01")
-RM03 <- c("MT09_RM03_18to22", "MT09_RM03", "MT09_RM03_North", "MT09_RM03_South") #if high transcience to remove "MT09_RM03_18to22" - lower effort than other sites
-RM05 <- c("MT09_RM05", "MT09_RM05BT", "MT09_RM05GC_Central", "MT09_RM05GC", "MT09_RM05GC_South", "MT09_RM05GC_North", "MT09_RM05BT_Lower", "MT09_RM05BT_Upper") #if high transcience to remove "MT09_RM05BT_Upper" - lower effort than other sites in last years but probably a lot of the effort made at MT09_RM05BT in 2013 was actually at lower
-RM04 <- c("MT09_RM04A", "MT09_RM04B", "MT09_RM04D", "MT09_RM04C") #RM04C lowest effort perhaps to remove
-Cominotto <- c("MT17_Cominotto_2", "MT17_Cominotto_1", "MT17_Cominotto_3", "MT17_Cominotto", "MT17_Cominotto_7", "MT17_Cominotto_4") # 4 only since 2017; #8 & 9 only since 2018 so better to remove these caves?
-StPauls <- c("MT22_StPauls_MainCave", "MT22_StPauls_WestCave")
-Majjistral_main <- c("MT24_Majjistral_Eggshell", "MT24_Majjistral_Thomas", "MT24_Majjistral_Subt", "MT24_Majjistral_NS2_NS3")             
-#Majjistral_south <- c("MT24_Majjistral_South") #probably too little effort           
+# ### CHANGED ON 22 NOV 2019 TO REMOVE THE COLONIES VISITED ONLY IN 2017-2019
+# 
+# RM01 <- c("MT09_RM01")
+# RM03 <- c("MT09_RM03_18to22", "MT09_RM03", "MT09_RM03_North", "MT09_RM03_South") #if high transcience to remove "MT09_RM03_18to22" - lower effort than other sites
+# RM05 <- c("MT09_RM05", "MT09_RM05BT", "MT09_RM05GC_Central", "MT09_RM05GC", "MT09_RM05GC_South", "MT09_RM05GC_North", "MT09_RM05BT_Lower", "MT09_RM05BT_Upper") #if high transcience to remove "MT09_RM05BT_Upper" - lower effort than other sites in last years but probably a lot of the effort made at MT09_RM05BT in 2013 was actually at lower
+# RM04 <- c("MT09_RM04A", "MT09_RM04B", "MT09_RM04D", "MT09_RM04C") #RM04C lowest effort perhaps to remove
+# Cominotto <- c("MT17_Cominotto_2", "MT17_Cominotto_1", "MT17_Cominotto_3", "MT17_Cominotto", "MT17_Cominotto_7", "MT17_Cominotto_4") # 4 only since 2017; #8 & 9 only since 2018 so better to remove these caves?
+# StPauls <- c("MT22_StPauls_MainCave", "MT22_StPauls_WestCave")
+# Majjistral_main <- c("MT24_Majjistral_Eggshell", "MT24_Majjistral_Thomas", "MT24_Majjistral_Subt", "MT24_Majjistral_NS2_NS3")             
+# #Majjistral_south <- c("MT24_Majjistral_South") #probably too little effort           
 
 adults <- c("6", "4", "2")
                
 
 ### REPLACE ORIGINAL CAVE STRING WITH POOLED SITES
-## added on 28 Oct 2019 by steffen oppel based on Martin Austad's suggestion how to pool sites
+## inserted on 6 Aug 2020 by steffen oppel based on Martin Austad's suggestion how to pool sites
 
 ## create lookup-table
-## Making LUT
-all_lut<-data.frame(orig=as.character(c(RM01,RM03,RM04,RM05,Cominotto,StPauls,Majjistral_main)),
-                poolloc=as.character(c("RM01",rep("RM03",4),rep("RM04",4),rep("RM05",8),rep("Cominotto",6),rep("StPauls",2),rep("Majjistral_main",4))),
-                maincol=as.character(c(rep("RdumTalMadonna",17),rep("Cominotto",6),rep("StPauls",2),rep("Majjistral",4))))
+RM01 <- c("MT09_RM01")
+RM03 <- c("MT09_RM03", "MT09_RM03_North", "MT09_RM03_South") # "MT09_RM03_18to22" - removed no effort in 2019 and 2020 for adults
+RM05 <- c("MT09_RM05", "MT09_RM05BT", "MT09_RM05GC_Central", "MT09_RM05GC", "MT09_RM05GC_South", "MT09_RM05GC_North", "MT09_RM05BT_Lower", "MT09_RM05BT_Upper") #if high transcience to remove "MT09_RM05BT_Upper" - lower effort than other sites in last years but probably a lot of the effort made at MT09_RM05BT in 2013 was actually at lower
+RM04 <- c("MT09_RM04A", "MT09_RM04B", "MT09_RM04D", "MT09_RM04C") #RM04C lowest effort perhaps to remove
+Cominotto <- c("MT17_Cominotto_2", "MT17_Cominotto_1", "MT17_Cominotto_3", "MT17_Cominotto_4") # 4 only since 2017; #8 & 9 only since 2018 so better to remove these caves? #"MT17_Cominotto_7" no real effort for adults after 2017
+StPauls <- c("MT22_StPauls_MainCave", "MT22_StPauls_WestCave")
+Majjistral_main <- c("MT24_Majjistral_Eggshell", "MT24_Majjistral_Thomas", "MT24_Majjistral_Subt", "MT24_Majjistral_NS2_NS3")             
 
+all_lut<-data.frame(orig=as.character(c(RM01,RM03,RM04,RM05,Cominotto,StPauls,Majjistral_main)),
+                    
+                    poolloc=as.character(c("RM01",rep("RM03",3),rep("RM04",4),rep("RM05",8),rep("Cominotto",4),rep("StPauls",2),rep("Majjistral_main",4))),
+                    
+                    maincol=as.character(c(rep("RdumTalMadonna",16),rep("Cominotto",4),rep("StPauls",2),rep("Majjistral",4))))
 
                
 effort <- effort %>%
@@ -308,7 +318,7 @@ survPeriods$surv_int[survPeriods$surv_int<0]<-NA
 #########################################################################
                
 names(YESH)
-CH<-as.matrix(YESH[,4:11], dimnames=F)
+CH<-as.matrix(YESH[,4:12], dimnames=F)
 dim(CH)
                
 ### check that there are contacts in every season
@@ -340,7 +350,7 @@ COLEFF<- eff %>% group_by(COLO,SITE, OCC_NR) %>%
          #mutate(COL_NR=seq_along(COLO),SITE_NR=row_number())
         mutate(COL_NR=c(1,2,3,3,3,3,4),SITE_NR=c(1,1,1,2,3,4,1))
                
-effmat<-as.matrix(COLEFF[,3:10], dimnames=F)
+effmat<-as.matrix(COLEFF[,3:11], dimnames=F)
                
                
 ## CREATE LOOKUP VECTOR FOR WHICH COLONY BIRDS WERE CAUGHT IN
@@ -360,7 +370,7 @@ DURMAT<- survPeriods %>% group_by(COLO,SITE, OCC_NR) %>%
          ungroup() %>%
          mutate(COL_NR=c(1,2,3,3,3,3,4),SITE_NR=c(1,1,1,2,3,4,1))
                
-periods<-as.matrix(DURMAT[,3:10], dimnames=F)
+periods<-as.matrix(DURMAT[,3:11], dimnames=F)
                
 ### JAGS CRASHES WHEN period==0, so we need to remove intermittent 0 and split survival interval over two years
 periods[1,4]<-periods[1,3]/2
@@ -601,37 +611,13 @@ YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analy
 # PRODUCE OUTPUT TABLE
 #########################################################################
 setwd("C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan")
-save.image("YESH_JS_trendmodel_output.RData")
+save.image("YESH_JS_trendmodel_output2020.RData")
 
 out<-as.data.frame(YESHabund$summary)
 out$parameter<-row.names(YESHabund$summary)
 export<-out %>% select(c(12,1,5,2,3,7)) %>%
   setNames(c('Parameter','Mean', 'Median','SD','lcl', 'ucl'))
-fwrite(export,"YESH_Malta_Abundance_trend_estimates2019.csv")
-
-
-
-
-#########################################################################
-# PRODUCE SURVIVAL GRAPH 
-#########################################################################
-
-ggplot(data=export[1:7,],aes(y=Mean, x=seq(2012.5,2018.5,1))) + geom_point(size=2)+
-  geom_errorbar(aes(ymin=lcl, ymax=ucl), width=.1)+
-  scale_x_continuous(name="Year", limits=c(2012,2019), breaks=seq(2012,2019,1), labels=seq(2012,2019,1))+
-  scale_y_continuous(name="Annual survival probability", limits=c(0.5,1), breaks=seq(0.5,1,0.1), labels=seq(0.5,1,0.1))+
-  #ggtitle(COLEFF$Colony)+
-  theme(panel.background=element_rect(fill="white", colour="black"), 
-        axis.text=element_text(size=20, color="black", margin=6), 
-        axis.title=element_text(size=22),
-        plot.title=element_text(size=22), 
-        strip.text.x=element_text(size=20, color="black", margin=6), 
-        strip.background=element_rect(fill="white", colour="black"), 
-        panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(), 
-        panel.border = element_blank())
-
-ggsave("YESH_survival_2012_2019.pdf", device = "pdf", width=12, height=9)
+fwrite(export,"YESH_Malta_Abundance_trend_estimates2020.csv")
 
 
 
@@ -663,7 +649,7 @@ ggplot(data=abund,aes(y=Mean, x=Year)) + geom_point(size=2)+
         panel.grid.minor = element_blank(), 
         panel.border = element_blank())
 
-ggsave("YESH_abundance_trend_2013_2019.pdf", device = "pdf", width=9, height=9)
+ggsave("YESH_abundance_trend_2013_2020.pdf", device = "pdf", width=9, height=9)
 
 
 

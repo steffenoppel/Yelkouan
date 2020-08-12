@@ -6,20 +6,14 @@
 
 ## written by steffen.oppel@rspb.org.uk on 19 February 2019
 
-## updated on 13 March - new data included and model run successfully
-## output alarming: very low adult survival probability
-
 ## revised and split from YESH_survival_estimation.r on 25 March 2019
 ## re-arranged data structure to 1 occasion per year
 ## model with 32 occasions yielded consistent invalid parent error
 
-## data cleaning section updated on 02 Oct by MA to include other sub-sites
-## ABUNDANCE JS MODEL for 4 major colonies introduced on 31 OCT 2019
-## first abundance output produced on 8 Nov 2019
-
 ## REMOVED CAVES ONLY MONITORED IN 2018-2019 TO ESTIMATE LONGER TREND
+## UPDATED ON 6 AUG 2020 to include 2020 data 
 
-### UPDATED ON 6 AUG 2020 to include 2020 data 
+## revised model on 10 Aug 2020 to include linear trend
 
 
 library(tidyverse)
@@ -389,16 +383,18 @@ periods[1,3]<-periods[1,3]/2
 
 
 ##########################################################################################################
-# Specify JS model with colony-occasion-specific ABUNDANCE
+# Specify JS model with colony-specific ABUNDANCE TREND
 ##########################################################################################################
-## GOAL IS TO CALCULATE ABUNDANCE FOR FOUR MAIN COLONIES
+## GOAL IS TO CALCULATE TREND FOR FOUR MAIN COLONIES
 #Cominotto
 #StPauls
 #Majjistral: Majjistral_main & Majjistral_south
 #Rdum tal-Madonna: RM01 & RM03 & RM04 & RM05
-
-sink("YESH_JS_abundance_survival_v5.jags")
+setwd("C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan")
+sink("YESH_JS_abundance_trend_v6.jags")
 cat("
+    
+
     
     model
     {
@@ -407,41 +403,39 @@ cat("
     
     ### SURVIVAL PROBABILITY
     for (t in 1:(n.years-1)){
-      ann.surv[t] ~ dunif(0.7, 1)                      # Priors for age-specific ANNUAL survival - this is the basic survival that is scaled to difference between occasions
-        for (col in 1:n.cols) {
-          for (s in 1:n.sites){
-            phi[s,t,col] <- pow(pow(ann.surv[t],(1/365)),periods[s,t,col]) 
-          } #s
-        } #col
+    ann.surv[t] ~ dunif(0.7, 1)                      # Priors for age-specific ANNUAL survival - this is the basic survival that is scaled to difference between occasions
+    for (col in 1:n.cols) {
+    for (s in 1:n.sites){
+    phi[s,t,col] <- pow(pow(ann.surv[t],(1/365)),periods[s,t,col]) 
+    } #s
+    } #col
     } #t
-
-
+    
+    
     ### RECAPTURE PROBABILITY
     mean.p ~ dbeta(1.5, 4)                        # Prior for mean recapture switched to beta from unif
     logit.p <- log(mean.p / (1-mean.p))           # Logit transformation
-
+    
     for (col in 1:n.cols){
-      for (s in 1:n.sites){
-        beta.effort[s,col] ~ dnorm(0,0.01)                   # Prior for trapping effort offset on capture probability
-      }
+    beta.effort[col] ~ dnorm(0,0.01)                   # Prior for trapping effort offset on capture probability
     }
-
+    
     for (col in 1:n.cols) {
-      for (i in 1:M){  
-        for (t in 1:n.years){
-          logit(p[i,t,col]) <- logit.p + beta.effort[sitevec[i,col],col]*effmat[sitevec[i,col],t,col] + capt.raneff[i,t]   ## includes site-specific effort and random effect for time and individual
-        } # close t
-      } #i
+    for (i in 1:M){  
+    for (t in 1:n.years){
+    logit(p[i,t,col]) <- logit.p + beta.effort[col]*effmat[sitevec[i,col],t,col] + capt.raneff[i,t,col]   ## includes colony-specific effort and random effect for time and individual
+    } # close t
+    } #i
     } #col
     
     ## RANDOM INDIVIDUAL EFFECT ON CAPTURE PROBABILITY
-    #for (col in 1:n.cols) {
-      for (i in 1:M){
-        for (t in 1:n.years){
-          capt.raneff[i,t] ~ dnorm(0, tau.capt)
-        }
-      }
-    #}
+    for (col in 1:n.cols) {
+    for (i in 1:M){
+    for (t in 1:n.years){
+    capt.raneff[i,t,col] ~ dnorm(0, tau.capt)
+    }
+    }
+    }
     
     ### PRIORS FOR RANDOM EFFECTS
     sigma.capt ~ dunif(0, 10)                     # Prior for standard deviation of capture
@@ -450,39 +444,39 @@ cat("
     
     ### RECRUITMENT PROBABILITY INTO THE MARKED POPULATION
     for (col in 1:n.cols){    
-      for (t in 1:n.years){
-        gamma[t,col] ~ dunif(0, 1)
-      } #t
+    for (t in 1:n.years){
+    gamma[t,col] ~ dunif(0, 1)
+    } #t
     } #col
     
     
     ##################### LIKELIHOOD #################################
     
     for (col in 1:n.cols) {
-      for (i in 1:M){
+    for (i in 1:M){
     
-        # First occasion
-        # State process
-        z[i,col.first[col],col] ~ dbern(gamma[1,col])
+    # First occasion
+    # State process
+    z[i,1,col] ~ dbern(gamma[1,col])
     
-        # Observation process
-        mu1[i,col.first[col],col] <- z[i,col.first[col],col] * p[i,col.first[col],col]
-        y[i,col.first[col],col] ~ dbern(mu1[i,col.first[col],col])
+    # Observation process
+    mu1[i,1,col] <- z[i,1,col] * p[i,1,col]
+    y[i,1,col] ~ dbern(mu1[i,1,col])
     
     
-        # Subsequent occasions
-        for (t in (col.first[col]+1):n.years){
+    # Subsequent occasions
+    for (t in 2:n.years){
     
-            # State process
-            recru[i,t-1,col] <- max(z[i,1:(t-1),col])		# Availability for recruitment - this will be 0 if the bird has never been observed before and 1 otherwise
-            pot.alive[i,t,col] <- phi[sitevec[i,col],t-1,col] * z[i,t-1,col] + gamma[t,col] * (1-recru[i,t-1,col])
-            z[i,t,col] ~ dbern(pot.alive[i,t,col])
+    # State process
+    recru[i,t-1,col] <- max(z[i,1:(t-1),col])		# Availability for recruitment - this will be 0 if the bird has never been observed before and 1 otherwise
+    pot.alive[i,t,col] <- phi[sitevec[i,col],t-1,col] * z[i,t-1,col] + gamma[t,col] * (1-recru[i,t-1,col])
+    z[i,t,col] ~ dbern(pot.alive[i,t,col])
     
-            # Observation process
-            mu1[i,t,col] <- z[i,t,col] * p[i,t,col]	
-            y[i,t,col] ~ dbern(mu1[i,t,col])
-        } #t
-      } #i
+    # Observation process
+    mu1[i,t,col] <- z[i,t,col] * p[i,t,col]	
+    y[i,t,col] ~ dbern(mu1[i,t,col])
+    } #t
+    } #i
     } #col
     
     
@@ -490,13 +484,23 @@ cat("
     
     # POPULATION SIZE
     for (t in 1:n.years){
-      for (col in 1:n.cols){
-        N[t,col] <- sum(z[1:M,t,col])        # Actual population size per colony
-      } #col
+    for (col in 1:n.cols){
+    N[t,col] <- sum(z[1:M,t,col])        # Actual population size per colony
+    } #col
     } #t
     
+    ##################### DERIVED TREND #################################
     
-}								#### END OF THE MODEL STATEMENT
+    for (col in 1:n.cols){
+    col.trend[col]<-mean(trend[,col])
+    for (t in 2:n.years){
+    trend[t-1,col] <- N[t-1,col]/max(N[t,col],1)        # trend estimate, avoid division by 0
+    } #t
+    } #col
+    
+    
+    }								#### END OF THE MODEL STATEMENT
+    
     
     
     
@@ -530,7 +534,7 @@ dim(zinit)
 ### AUGMENT DATA TO HAVE 1000 INDIVIDUALS PER COLONY
 ### ARRAY must have identical dimensions
 col.n<-as.numeric(table(colvec))
-potYESH<-1500
+potYESH<-1000   ### changed to 1000 from 1500 on 12 Aug 2020
 #CHcol<- simplify2array(by(YESH[,4:11], YESH$COLO, as.matrix),USE.NAMES==F)
 #CHcol<- split(YESH[,4:11],f=YESH$COLO)
 
@@ -590,18 +594,18 @@ inits <- function(){list(mean.phi = runif(1, 0.95, 1),
 
 
 # Parameters monitored
-parameters <- c("ann.surv","N")
+parameters <- c("col.trend")
 
 # MCMC settings
 # no convergence with ni=50,000, which took 760 minutes
 
 ni <- 75000
-nt <- 6
+nt <- 3
 nb <- 15000
 nc <- 3
 
 # Call JAGS from R
-YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_survival_v5.jags",
+YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_trend_v6.jags",
                   n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T, n.iter=ni)
 
 
@@ -618,39 +622,6 @@ out$parameter<-row.names(YESHabund$summary)
 export<-out %>% select(c(12,1,5,2,3,7)) %>%
   setNames(c('Parameter','Mean', 'Median','SD','lcl', 'ucl'))
 fwrite(export,"YESH_Malta_Abundance_trend_estimates2020.csv")
-
-
-
-
-#########################################################################
-# PRODUCE ABUNDANCE GRAPH 
-#########################################################################
-
-abund<-out %>% select(c(12,1,5,2,3,7)) %>%
-  setNames(c('Parameter','Mean', 'Median','SD','lcl', 'ucl')) %>%
-  dplyr::filter(grepl("N",Parameter)) %>%
-  mutate(Colony=substr(Parameter,5,5),Year=as.numeric(substr(Parameter,3,3))+2011) %>%
-  mutate(Colony=COLEFF$COLO[match(Colony,COLEFF$COL_NR)]) %>%
-  dplyr::filter(Year>2012)
-  
-
-### plot output ###
-
-ggplot(data=abund,aes(y=Mean, x=Year)) + geom_point(size=2)+
-  geom_errorbar(aes(ymin=lcl, ymax=ucl), width=.1)+
-  facet_wrap(~Colony,ncol=2,scales="free_y") +
-  ylab("N of adult Yelkouan Shearwaters") +
-  theme(panel.background=element_rect(fill="white", colour="black"), 
-        axis.text=element_text(size=20, color="black"), 
-        axis.title=element_text(size=22),
-        strip.text.x=element_text(size=20, color="black"), 
-        strip.background=element_rect(fill="white", colour="black"), 
-        panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(), 
-        panel.border = element_blank())
-
-ggsave("YESH_abundance_trend_2013_2020.pdf", device = "pdf", width=9, height=9)
-
 
 
 

@@ -19,6 +19,9 @@
 ##revised by Martin Austad September 2023 to include 2022 and 2023 data
 ##revised by Martin Austad August 2024 to include 2024 data
 
+## code checked by steffen oppel on 25 April 2025
+
+
 rm(list = ls())
 library(dplyr)
 library(tidyverse)
@@ -44,6 +47,7 @@ filter<-dplyr::filter
 
 try(setwd("C:\\Users\\martin.austad\\Documents\\PanPuffinus\\CMR"), silent=T)
 try(setwd("C:\\STEFFEN\\OneDrive - THE ROYAL SOCIETY FOR THE PROTECTION OF BIRDS\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\2025\\CMR_data"), silent=T)
+try(setwd("C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan\\data"), silent=T)
 
 # yesh<-read_excel("YESH_2012_2018_cavestring_replacedrings.xlsx", sheet="with cave string")
 # effort<-read_excel("Cave_Activity_complete_2012-2018.xlsx", sheet="Sheet1")
@@ -162,19 +166,19 @@ effort <- fread("Cave_Activity_complete_2012-2024DT.csv")
 
 ##does the start and end time overlap midnight? 
 ##create an end date and correct for midnight overlap
-effort <- effort %>%
+effort <- as.data.frame(effort) %>%   ### fixed this to data frame because data.table does not support multicolumn values such as intervals: https://github.com/tidyverse/dtplyr/issues/475
   filter(!is.na(start_time) & !is.na(end_time)) %>%
   mutate(
     start=as.POSIXct(start_time, format="%H:%M",tz = "Europe/Berlin"),
     end=as.POSIXct(end_time, format="%H:%M", tz="Europe/Berlin"),
     st_minutes = hour(start) * 60 + minute(start),
     et_minutes = hour(end) * 60 + minute(end),
-    overlaps_midnight = if_else(st_minutes > et_minutes, "YES", "NO"))%>%
+    overlaps_midnight = if_else(st_minutes > et_minutes, "YES", "NO")) %>%
   mutate(start_date = as.Date(Date, format="%d/%m/%Y"),
          end_date=if_else(overlaps_midnight=="NO", start_date, start_date+days(1))) %>%
   mutate(Start = as.POSIXct(paste(start_date, start_time, " "), format="%Y-%m-%d %H:%M", tz="Europe/Berlin"), 
-         End= as.POSIXct(paste(end_date, end_time, " "), format="%Y-%m-%d %H:%M", tz="Europe/Berlin"), 
-         SessionInt=interval(Start, End, tz="Europe/Berlin"))%>%
+         End= as.POSIXct(paste(end_date, end_time, " "), format="%Y-%m-%d %H:%M", tz="Europe/Berlin")) %>%
+  mutate(SessionInt=interval(Start, End, tz="Europe/Berlin")) %>%
   mutate(NightStarting=if_else(start_time>midday,start_date,start_date-days(1)))%>%
   dplyr::select(Cave_String, Year, Date, start_date, end_date, start_time, end_time, hours, number_persons, net_length, SessionInt, NightStarting)
 
@@ -516,6 +520,11 @@ periods<-as.matrix(DURMAT[,3:15], dimnames=F)
 periods[1,4]<-periods[1,3]/2 #2020 sites
 periods[1,3]<-periods[1,3]/2
 
+
+
+
+
+
 ##########################################################################################################
 # Specify JS model with colony-specific ABUNDANCE TREND
 ##########################################################################################################
@@ -532,6 +541,7 @@ periods[1,3]<-periods[1,3]/2
 
 try(setwd("C:\\Users\\rita.matos\\Documents\\CMR"),silent=T)
 try(setwd("C:\\STEFFEN\\OneDrive - THE ROYAL SOCIETY FOR THE PROTECTION OF BIRDS\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\2025"), silent=T)
+try(setwd("C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan\\models"), silent=T)
 
 sink("YESH_JS_abundance_trend_v2025.jags")
 cat("
@@ -643,8 +653,6 @@ cat("
 }								#### END OF THE MODEL STATEMENT
     
     
-    
-    
     ",fill = TRUE)
 sink()
 
@@ -741,6 +749,12 @@ inits <- function(){list(mean.phi = runif(1, 0.95, 1),
 # Parameters monitored
 parameters <- c("N", "ann.surv") # changed parameters to see if it could extract any data
 
+# clean up workspace
+save.image("YESH_prepared_data_2025.RData")
+rm(list=setdiff(ls(), c('jags.data','inits','parameters','zinit.arr')))
+gc()
+
+
 # MCMC settings
 # no convergence with ni=50,000, which took 760 minutes
 
@@ -749,11 +763,15 @@ nt <- 3
 nb <- 15000
 nc <- 3
 
-# Call JAGS from R
-YESHabund <- jags(jags.data, inits, parameters, "C:\\Users\\rita.matos\\Documents\\CMR\\YESH_JS_abundance_trend_v6.jags",  #C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_trend_v6.jags
-                  n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T, n.iter=ni)
 
-YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\OneDrive - THE ROYAL SOCIETY FOR THE PROTECTION OF BIRDS\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\2025\\YESH_JS_abundance_trend_v2025.jags",  #C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_trend_v6.jags
+
+
+
+# Call JAGS from R
+# YESHabund <- jags(jags.data, inits, parameters, "C:\\Users\\rita.matos\\Documents\\CMR\\YESH_JS_abundance_trend_v6.jags",  #C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_trend_v6.jags
+#                   n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T, n.iter=ni)
+
+YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan\\models\\YESH_JS_abundance_trend_v2025.jags",  #C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_trend_v6.jags
                   n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T, n.iter=ni)
 
 
@@ -838,11 +856,28 @@ ggplot(data=abund,aes(y=Mean, x=Year)) + geom_point(size=2)+
 
 ggsave("YESH_abundance_2013_2024.pdf", device = "pdf", width=20, height=14)
 
+
+
+
+
+
+
+
+
+
+
+
 #########################################################################################################################
 #############calculate trend on subsites maintained throughout monitoring period ########################################
 #########################################################################################################################
 
-load("C:\\Users\\rita.matos\\Documents\\CMR\\2024_preJAGS.Rdata") #preprocessing is the same
+
+try(setwd("C:\\Users\\rita.matos\\Documents\\CMR"),silent=T)
+try(setwd("C:\\STEFFEN\\OneDrive - THE ROYAL SOCIETY FOR THE PROTECTION OF BIRDS\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\2025"), silent=T)
+try(setwd("C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan\\data"), silent=T)
+
+#load("2024_preJAGS.Rdata") #preprocessing is the same - this file has a faulty 'effort' data frame
+load("YESH_prepared_data_2025.RData")
 
 #modified in 2024 to make sure that all sites included were monitored throughout period
 

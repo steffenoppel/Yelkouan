@@ -1,0 +1,483 @@
+Errors,site,Cave_string,ringingDate,month,Year,Hour,HourTime,type,ringnumber,Replacement,age,sex,winglength,weight,billlength,billheight,tarsus,TH,middletoe,Head,BLnalopsi,ringer,cave,nest_or_direction,Tag details,BP,Notes,Prospector
+,,MT09_RM01,08/03/2023,3,2023,15,15:30:00,R,EE03004,0,4,,,,,,,,,,,BLM seabird project,RM01,NB02 on egg,with FF03203 on left,,,0
+,,MT09_RM01,08/03/2023,3,2023,15,15:35:00,R,EE04229,0,4,,,,,,,,,,,BLM seabird project,RM01,NB23 on egg,,,,0
+,,MT09_RM01,08/03/2023,3,2023,15,15:50:00,R,FF03205,0,4,,,,,,,,,,,BLM seabird project,RM01,NB20 on egg,,,,0
+,,MT09_RM04D,12/04/2023,4,2023,20,20:22:00,R,EE04681,0,4,,,,,,,,,,,BLM seabird project,RM04D,way in,,,,0
+,,MT09_RM04D,12/04/2023,4,2023,20,20:35:00,N,EE05051,0,4,,,380,37.8,8.1,,,,,28.5,BLM seabird project,RM04D,way in ,overlapped on purpose,,,0
+,,MT09_RM04D,12/04/2023,4,2023,20,20:48:00,N,EE09002,0,4,,,395,37.4,8.3,,,,,28.6,BLM seabird project,RM04D,way in,,,,0
+,,MT09_RM04D,12/04/2023,4,2023,20,20:55:00,R,EE04658,0,4,,,430,,,,,,,,BLM seabird project,RM04D,way in,,BP4,,0
+,,MT09_RM04D,12/04/2023,4,2023,21,21:04:00,R,EE03611,0,4,,,355,36.3,8.1,43.6,,,,28.5,BLM seabird project,RM04D,way in,GLS retrieved | P1 P5 P9 & blood sampled,BP2,HeadBill 82.2 ,0
+,,MT09_RM04D,12/04/2023,4,2023,21,21:26:00,R,EE04848,0,4,,,320,,,,,,,,BLM seabird project,RM04D,way in,,BP2,,0
+,,MT09_RM04D,12/04/2023,4,2023,21,21:39:00,R,EE03656,0,4,,,420,,,,,,,,BLM seabird project,RM04D,way in,,BP2,ringed as 3J 25/06/2017 never recaptured,0
+,,MT09_RM04D,12/04/2023,4,2023,21,21:55:00,R,EE04590,0,4,,,385,,,,,,,,BLM seabird project,RM04D,way in,,BP1,,0
+,,MT09_RM04D,12/04/2023,4,2023,22,22:12:00,N,EE09003,0,4,,,340,,,,,,,,BLM seabird project,RM04D,way in ,,BP2,prospector,1
+,,MT09_RM04D,12/04/2023,4,2023,22,22:40:00,R,EE06802,0,4,,,385,,,,,,,,BLM seabird project,RM04D,way in,GLS retrieved from FF04849,BP2,,0
+,,MT27_Hasan,10/04/2023,4,2023,20,20:00:00,N,EE09026,0,4,,,295,34.7,7.2,46.2,,,,,BLM seabird project,Ghar Hasan,NS3,,BP2,prospecting NS3 with EE01660,1
+,,MT27_Hasan,10/04/2023,4,2023,20,20:00:00,R,EE01660,0,4,,,,36.1,7.3,47.8,,,,,BLM seabird project,Ghar Hasan,NS3,old ring EE01660 replaced with EE09027,BP2,prospecting NS3 with EE09026,1
+,,MT27_Hasan,10/04/2023,4,2023,20,20:00:00,R,EE09027,1,4,,,,36.1,7.3,47.8,,,,,BLM seabird project,Ghar Hasan,NS3,old ring EE01660 replaced with EE09027,BP2,prospecting NS3 with EE09026,1
+,,MT09_RM04A,12/04/2023,4,2023,20,20:39:00,R,EE01550,0,4,,,410,,,,,,,,BLM seabird project,RM04A,way in,old ring EE01550 replaced with EE09028,BP2,,0
+,,MT09_RM04A,12/04/2023,4,2023,20,20:39:00,R,EE09028,1,4,,,410,,,,,,,,BLM seabird project,RM04A,way in,old ring EE01550 replaced with EE09028,BP2,,0
+,,MT09_RM04A,12/04/2023,4,2023,20,20:42:00,N,EE09029,0,4,,237,365,34.7,7.8,46.7,,,,,BLM seabird project,RM04A,way in,,BP2,,0
+,,MT09_RM04A,12/04/2023,4,2023,21,21:02:00,R,EE06932,0,4,,,355,,,,,,,,BLM seabird project,RM04A,way in,,BP2,,0
+,,MT09_RM04A,12/04/2023,4,2023,21,21:10:00,N,EE09030,0,4,,,330,,,,,,,,BLM seabird project,RM04A,way in,,BP3,,0
+,,MT09_RM04A,12/04/2023,4,2023,21,21:21:00,R,EE03800,0,4,,,360,,,,,,,,BLM seabird project,RM04A,way in,,BP2,"ringed as pullus 04/06/2018	",0
+,,MT09_RM04A,12/04/2023,4,2023,21,21:42:00,N,EE09031,0,4,,,310,,,,,,,,BLM seabird project,RM04A,way in,,BP0,,0
+,,MT09_RM04A,12/04/2023,4,2023,22,22:00:00,R,EE03332,0,4,,,435,,,,,,,,BLM seabird project,RM04A,way in,,BP3,,0
+,,MT09_RM04A,12/04/2023,4,2023,22,22:14:00,R,EE06705,0,4,,,320,,,,,,,,BLM seabird project,RM04A,way in,,BP3,,0
+,,MT09_RM04A,12/04/2023,4,2023,22,22:29:00,R,EE03243,0,4,,,370,,,,,,,,BLM seabird project,RM04A,way in,,BP2,,0
+,,MT17_Cominotto_2,19/04/2023,4,2023,20,20:48:00,N,EE09004,0,4,,,370,,,,,,,,BLM seabird project,Cominotto Cave 2 ,way in,,BP3,,0
+,,MT17_Cominotto_2,19/04/2023,4,2023,21,21:12:00,R,EE04735,0,4,,,440,,,,,,,,BLM seabird project,Cominotto Cave 2 ,way in,,BP3,,0
+,,MT17_Cominotto_2,19/04/2023,4,2023,21,21:16:00,R,EE04716,0,4,,,455,,,,,,,,BLM seabird project,Cominotto Cave 2 ,way in,,BP3,,0
+,,MT17_Cominotto_2,19/04/2023,4,2023,21,21:38:00,R,EE04781,0,4,,,395,,,,,,,,BLM seabird project,Cominotto Cave 2,way in,,BP3,,0
+,,MT17_Cominotto_2,19/04/2023,4,2023,22,22:14:00,R,EE06792,0,4,,,490,,,,,,,,BLM seabird project,Cominotto Cave 2,way in,,BP2,,0
+,,MT17_Cominotto_2,19/04/2023,4,2023,22,22:23:00,N,EE09005,0,4,,,310,,,,,,,,BLM seabird project,Cominotto Cave 2,way out,,BP5,,0
+,,MT17_Cominotto_9,19/04/2023,4,2023,20,20:59:00,R,EE03956,0,4,,,485,,,,,,,,BLM seabird project,Cominotto Cave 9,way in ,open ring EE03956 replaced with EE09032,,,0
+,,MT17_Cominotto_9,19/04/2023,4,2023,20,20:59:00,R,EE09032,1,4,,,485,,,,,,,,BLM seabird project,Cominotto Cave 9,way in ,open ring EE03956 replaced with EE09032,,,0
+,,MT17_Cominotto_9,19/04/2023,4,2023,21,21:05:00,N,EE09033,0,4,,,320,,,,,,,,BLM seabird project,Cominotto Cave 9,way in,,,,0
+,,MT17_Cominotto_9,19/04/2023,4,2023,21,21:17:00,N,EE09034,0,4,,,330,,,,,,,,BLM seabird project,Cominotto Cave 9,,,BP2,prospector,1
+,,MT17_Cominotto_9,19/04/2023,4,2023,21,21:56:00,N,EE09035,0,4,,,310,,,,,,,,BLM seabird project,Cominotto Cave 9,,,BP4,prospector,1
+,,MT17_Cominotto_9,19/04/2023,4,2023,22,22:24:00,N,EE09036,0,4,,,490,,,,,,,,BLM seabird project,Cominotto Cave 9,way in,,,,0
+,,MT09_RM01,26/04/2023,4,2023,18,18:30:00,R,EE02730,0,4,,,360,,,,,,,,BLM seabird project,RM01 Big Crack,NB02,FS00242 on left,BP4,with TO,0
+,,MT09_RM01,26/04/2023,4,2023,18,18:35:00,R,EE03132,0,4,,,360,,,,,,,,BLM seabird project,RM01 Big Crack,NB18,,,on egg,0
+,,MT09_RM01,26/04/2023,4,2023,18,18:38:00,R,EE04039,0,4,,,335,,,,,,,,BLM seabird project,RM01 Big Crack,NB23,,,on egg,0
+,,MT09_RM01,26/04/2023,4,2023,18,18:45:00,N,EE09006,0,4,,,385,34.6,7,,,,,26.3,BLM seabird project,RM01 Big Crack,NB19,,,on egg,0
+,,MT09_RM01,26/04/2023,4,2023,18,18:47:00,N,EE09007,0,4,,,,35.5,7.8,,,,,27.8,BLM seabird project,RM01 Big Crack,NB22,,BP3,on egg,0
+,,MT09_RM01,26/04/2023,4,2023,18,18:50:00,N,EE09008,0,4,,,360,37.2,8,,,,,28.4,BLM seabird project,RM01,NB25,,BP4,with TO,0
+,,MT09_RM01,26/04/2023,4,2023,18,18:59:00,R,EE04542,0,4,,,390,,,,,,,,BLM seabird project,RM01,NB27,,,on egg,0
+,,MT09_RM05GC_South,26/04/2023,4,2023,21,21:06:00,R,EE06611,0,4,,,455,,,,,,,,BLM seabird project,Gregale South ledge,way in,open ring EE06611 replaced with EE09010,BP4,,0
+,,MT09_RM05GC_South,26/04/2023,4,2023,21,21:06:00,R,EE09010,1,4,,,455,,,,,,,,BLM seabird project,Gregale South ledge,way in,open ring EE06611 replaced with EE09010,BP4,,0
+,,MT09_RM05GC_South,26/04/2023,4,2023,21,21:14:00,N,EE09011,0,4,,,345,,,,,,,,BLM seabird project,Gregale South ledge,way in,,BP3,,0
+,,MT09_RM05GC_South,26/04/2023,4,2023,21,21:26:00,R,EE06573,0,4,,,430,,,,,,,,BLM seabird project,Gregale South ledge,way in,,BP3,,0
+,,MT09_RM05GC_South,26/04/2023,4,2023,21,21:59:00,R,EE06897,0,4,,,435,,,,,,,,BLM seabird project,Gregale South ledge,way in,,BP4,,0
+,,MT09_RM05GC_South,26/04/2023,4,2023,22,22:20:00,R,EE03024,0,4,,,370,,,,,,,,BLM seabird project,Gregale South ledge,way in ,ring EE03024 replaced with EE09012,BP4,,0
+,,MT09_RM05GC_South,26/04/2023,4,2023,22,22:20:00,R,EE09012,1,4,,,370,,,,,,,,BLM seabird project,Gregale South ledge,way in ,ring EE03024 replaced with EE09012,BP4,,0
+,,MT09_RM05GC_Central,26/04/2023,4,2023,21,21:00:00,R,EE04215,0,4,,,435,,,,,,,,BLM seabird project,Gregale central ledge,way in,,,,0
+,,MT09_RM05GC_Central,26/04/2023,4,2023,21,21:03:00,R,EE03711,0,4,,,355,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,,vomitted before weighing,0
+,,MT09_RM05GC_Central,26/04/2023,4,2023,21,21:28:00,N,EE09037,0,4,,,420,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,,,0
+,,MT09_RM05GC_Central,26/04/2023,4,2023,21,21:45:00,R,EE03017,0,4,,,350,,,,,,,,BLM seabird project,Gregale central ledge,way in NS10,Overlapped on purpose,,,0
+,,MT09_RM05GC_Central,26/04/2023,4,2023,21,21:49:00,R,EE04172,0,4,,,455,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,,,0
+,,MT09_RM05GC_Central,26/04/2023,4,2023,21,21:54:00,R,EE04779,0,4,,,340,,,,,,,,BLM seabird project,Gregale central ledge,way in,,BP4,,0
+,,MT09_RM05GC_Central,26/04/2023,4,2023,22,22:00:00,N,EE09038,0,4,,,350,36,7.6,,,,,27.3,BLM seabird project,Gregale central ledge,way in,,,,0
+,,MT09_RM05GC_Central,26/04/2023,4,2023,22,22:08:00,R,EE03778,0,4,,,410,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,,,0
+,,MT09_RM05GC_Central,26/04/2023,4,2023,22,22:19:00,N,EE09039,0,4,,,435,36.2,7.3,,,,,27.3,BLM seabird project,Gregale central ledge,way in ,,BP5,,0
+,,MT09_RM05GC_Central,26/04/2023,4,2023,22,22:30:00,R,EE02357,0,4,,,400,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,,,0
+,,MT09_RM05GC_Central,26/04/2023,4,2023,22,22:36:00,R,EE04202,0,4,,,390,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,,,0
+,,MT09_RM05GC_Central,26/04/2023,4,2023,22,22:40:00,N,EE09040,0,4,,,370,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP4,,0
+,,MT09_RM05GC_Central,26/04/2023,4,2023,22,22:58:00,R,EE06588,0,4,,,385,,,,,,,,BLM seabird project,Gregale central ledge,way in,,BP4,,0
+,,MT09_RM05GC_Central,26/04/2023,4,2023,22,23:05:00,N,EE09041,0,4,,,345,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,,,0
+,,MT09_RM03_North,28/04/2023,4,2023,20,20:40:00,R,EE01227,0,4,,,430,,,,,,,,BLM seabird project,RM03 North MN,way in,EE01227 not removed EE09013 placed on left leg,,,0
+,,MT09_RM03_North,28/04/2023,4,2023,20,20:48:00,R,EE04325,0,4,,,435,,,,,,,,BLM seabird project,RM03 North MN,way in,,,,0
+,,MT09_RM03_North,28/04/2023,4,2023,21,21:00:00,R,EE04339,0,4,,,440,,,,,,,,BLM seabird project,RM03 North MN,way in,"on left, origininally ringed 27/06/2012 as EE01822",,,0
+,,MT09_RM03_North,28/04/2023,4,2023,21,21:04:00,R,EE04645,0,4,,,370,,,,,,,,BLM seabird project,RM03 North MN,way in,,,,0
+,,MT09_RM03_North,28/04/2023,4,2023,21,21:09:00,R,EE03390,0,4,F,,400,,,,,,,,BLM seabird project,RM03 North MN,way in,,,sexed by call,0
+,,MT09_RM03_North,28/04/2023,4,2023,21,21:10:00,R,EE04519,0,4,,,360,,,,,,,,BLM seabird project,RM03 North MN,way in,,,,0
+,,MT09_RM03_North,28/04/2023,4,2023,21,21:20:00,R,EE03536,0,4,,,440,,,,,,,,BLM seabird project,RM03 North MN,way in,,,,0
+,,MT09_RM03_North,28/04/2023,4,2023,21,21:24:00,N,EE09014,0,4,,,405,,,,,,,,BLM seabird project,RM03 North MN,way in,,,vomitted before weighing,0
+,,MT09_RM03_North,28/04/2023,4,2023,21,21:37:00,R,EE03176,0,4,,,410,,,,,,,,BLM seabird project,RM03 North MN,way in,,,,0
+,,MT09_RM03_North,28/04/2023,4,2023,21,21:42:00,R,EE03786,0,4,,,330,,,,,,,,BLM seabird project,RM03 North MN,way in,,,,0
+,,MT09_RM03_North,28/04/2023,4,2023,22,22:00:00,N,EE09015,0,4,,,370,,,,,,,,BLM seabird project,RM03 North MN,way in,,,,0
+,,MT09_RM03_North,28/04/2023,4,2023,22,22:00:00,R,EE04886,0,4,,,440,,,,,,,,BLM seabird project,RM03 North MN,way in,,,,0
+,,MT09_RM03_North,28/04/2023,4,2023,22,22:15:00,N,EE09016,0,4,,,340,,,,,,,,BLM seabird project,RM03 North ,,,,prospector,1
+,,MT09_RM03_North,28/04/2023,4,2023,22,22:15:00,R,EE06822,0,4,,,415,,,,,,,,BLM seabird project,RM03 North MN,way in,,,,0
+,,MT09_RM03_North,28/04/2023,4,2023,22,22:40:00,R,EE01227,0,4,,,410,,,,,,,,BLM seabird project,RM03 North,way out,,,,0
+,,MT09_RM05BT_Lower,28/04/2023,4,2023,20,20:49:00,R,EE00315,0,4,,,420,,,,,,,,BLM seabird project,Butter Cave Lower,way in ,EE00315 open replaced with EE09051,BP4,,0
+,,MT09_RM05BT_Lower,28/04/2023,4,2023,20,20:49:00,R,EE09051,1,4,,,420,,,,,,,,BLM seabird project,Butter Cave Lower,way in ,EE00315 open replaced with EE09051,BP4,,0
+,,MT09_RM05BT_Lower,28/04/2023,4,2023,20,20:52:00,R,EE03664,0,4,,,400,,,,,,,,BLM seabird project,Butter Cave Lower,way in ,,BP3,,0
+,,MT09_RM05BT_Lower,28/04/2023,4,2023,20,20:59:00,R,EE03638,0,4,,,460,,,,,,,,BLM seabird project,Butter Cave Lower,way in,,BP4,,0
+,,MT09_RM05BT_Lower,28/04/2023,4,2023,21,21:00:00,R,EE00317,0,4,,,390,,,,,,,,BLM seabird project,Butter Cave Lower,way in,EE00317 replaced with EE09052,BP5,,0
+,,MT09_RM05BT_Lower,28/04/2023,4,2023,21,21:00:00,R,EE09052,1,4,,,390,,,,,,,,BLM seabird project,Butter Cave Lower,wayin ,EE00317 replaced with EE09052,BP5,,0
+,,MT09_RM05BT_Lower,28/04/2023,4,2023,21,21:08:00,R,EE03739,0,4,,,435,,,,,,,,BLM seabird project,Butter Cave Lower,way in ,,BP4,,0
+,,MT09_RM05BT_Lower,28/04/2023,4,2023,21,21:11:00,R,EE06741,0,4,,,430,,,,,,,,BLM seabird project,Butter Cave Lower,wayin ,,BP2,,0
+,,MT09_RM05BT_Lower,28/04/2023,4,2023,21,21:14:00,N,EE09053,0,4,,,335,,,,,,,,BLM seabird project,Butter Cave Lower,way in ,,BP2,,0
+,,MT09_RM05BT_Lower,28/04/2023,4,2023,21,21:29:00,N,EE09054,0,4,,,340,,,,,,,,BLM seabird project,Butter Cave Lower,wayin ,,BP3,,0
+,,MT09_RM05BT_Lower,28/04/2023,4,2023,21,21:46:00,N,EE09055,0,4,,,510,,,,,,,,BLM seabird project,Butter Cave lower,way in ,,BP4,,0
+,,MT09_RM05BT_Lower,28/04/2023,4,2023,21,21:57:00,R,EE03804,0,4,,,360,,,,,,,,BLM seabird project,Butter Cave Lower,way in ,,BP4,,0
+,,MT09_RM05BT_Lower,28/04/2023,4,2023,21,21:58:00,R,EE06699,0,4,,,330,,,,,,,,BLM seabird project,Butter Cave Lower,way in ,,BP4,,0
+,,MT09_RM05BT_Lower,28/04/2023,4,2023,22,22:00:00,R,EE03809,0,4,,,440,,,,,,,,BLM seabird project,Butter Cave Lower,way in ,,BP3,,0
+,,MT09_RM05BT_Lower,28/04/2023,4,2023,22,22:06:00,N,EE09056,0,4,,,340,,,,,,,,BLM seabird project,Butter Cave Lower,way in,,BP2,,0
+,,MT09_RM05BT_Upper,28/04/2023,4,2023,21,21:11:00,N,EE09042,0,4,,,385,,,,,,,,BLM seabird project,Butter Cave upper ,way in,,,,0
+,,MT09_RM05BT_Upper,28/04/2023,4,2023,22,22:04:00,N,EE09043,0,4,,,365,,,,,,,,BLM seabird project,Butter Cave upper ,way in,,BP4,,0
+,,MT09_RM05BT_Upper,28/04/2023,4,2023,22,22:42:00,R,EE06832,0,4,,,390,,,,,,,,BLM seabird project,Butter Cave upper,way out,,BP4,,0
+,,MT09_RM04C,10/05/2023,5,2023,21,21:26:00,N,EE09019,0,4,,,335,,,,,,,,BLM seabird project,RM04C,way in,,BP4,,0
+,,MT09_RM04C,10/05/2023,5,2023,21,21:37:00,N,EE09020,0,4,,,385,,,,,,,,BLM seabird project,RM04C,way in,,BP4,,0
+,,MT09_RM04C,10/05/2023,5,2023,21,21:39:00,N,EE09021,0,4,,,310,,,,,,,,BLM seabird project,RM04C,way in,,BP5,,0
+,,MT09_RM04C,10/05/2023,5,2023,21,21:49:00,N,EE09022,0,4,,,435,,,,,,,,BLM seabird project,RM04C,way in,,BP4,,0
+,,MT09_RM04C,10/05/2023,5,2023,21,21:56:00,R,EE03951,0,4,,,460,,,,,,,,BLM seabird project,RM04C,way in ,,BP4,,0
+,,MT09_RM04C,10/05/2023,5,2023,22,22:00:00,R,EE01318,0,4,,,410,,,,,,,,BLM seabird project,RM04C,way in,,BP4,,0
+,,MT09_RM04C,10/05/2023,5,2023,22,22:20:00,N,EE09023,0,4,,,385,,,,,,,,BLM seabird project,RM04C,way in ,,BP4,,0
+,,MT09_RM04C,10/05/2023,5,2023,22,22:24:00,N,EE09024,0,4,,,385,,,,,,,,BLM seabird project,RM04C,way in ,,BP4,regurgitated,0
+,,MT09_RM04C,10/05/2023,5,2023,22,22:47:00,R,EE04692,0,4,,,550,,,,,,,,BLM seabird project,RM04C,way in ,,BP4,,0
+,,MT09_RM04C,10/05/2023,5,2023,22,22:53:00,R,EE03111,0,4,,,435,,,,,,,,BLM seabird project,RM04C,way in ,,BP5,,0
+,,MT09_RM04C,10/05/2023,5,2023,23,23:01:00,R,EE01305,0,4,,,460,,,,,,,,BLM seabird project,RM04C,way in ,,BP4,,0
+,,MT09_RM04C,10/05/2023,5,2023,23,23:07:00,R,EE06908,0,4,,,445,,,,,,,,BLM seabird project,RM04C,way in,,BP5,,0
+,,MT09_RM04C,10/05/2023,5,2023,23,23:13:00,R,EE04588,0,4,,,380,,,,,,,,BLM seabird project,RM04C,way in ,,BP4,,0
+,,MT09_RM05GC_South,11/05/2023,5,2023,21,21:01:00,R,EE06818,0,4,,,390,,,,,,,,BLM seabird project,Gregale South ledge,way in ,,BP4,,0
+,,MT09_RM05GC_South,11/05/2023,5,2023,21,21:05:00,R,EE01899,0,4,,,460,,,,,,,,BLM seabird project,Gregale South ledge,way in,,BP5,closed better,0
+,,MT09_RM05GC_South,11/05/2023,5,2023,21,21:11:00,R,EE03722,0,4,,,415,,,,,,,,BLM seabird project,Gregale South ledge,way in ,,BP4,,0
+,,MT09_RM05GC_South,11/05/2023,5,2023,21,21:13:00,R,EE04981,0,4,,,435,,,,,,,,BLM seabird project,Gregale South ledge,way in,,BP4,,0
+,,MT09_RM05GC_South,11/05/2023,5,2023,21,21:17:00,R,EE01903,0,4,,,415,,,,,,,,BLM seabird project,Gregale South ledge,way in ,old ring EE01903 replaced with ring EE09061,BP4,,0
+,,MT09_RM05GC_South,11/05/2023,5,2023,21,21:17:00,R,EE09061,1,4,,,415,,,,,,,,BLM seabird project,Gregale South ledge,way in,old ring EE01903 replaced with ring EE09061,BP4,,0
+,,MT09_RM05GC_South,11/05/2023,5,2023,21,21:24:00,N,EE09062,0,4,,,325,,,,,,,,BLM seabird project,Gregale South ledge,way in ,,BP5,,0
+,,MT09_RM05GC_South,11/05/2023,5,2023,21,21:30:00,N,EE09063,0,4,,,420,,,,,,,,BLM seabird project,Gregale South ledge,way in,,BP4,,0
+,,MT09_RM05GC_South,11/05/2023,5,2023,21,21:43:00,R,EE03707,0,4,,,415,,,,,,,,BLM seabird project,Gregale South ledge,way in ,,BP4,,0
+,,MT09_RM05GC_South,11/05/2023,5,2023,21,21:54:00,R,EE04248,0,4,,,380,,,,,,,,BLM seabird project,Gregale South ledge,way in,,BP5,,0
+,,MT09_RM05GC_South,11/05/2023,5,2023,22,22:01:00,N,EE09064,0,4,,,355,,,,,,,,BLM seabird project,Gregale South ledge,way in ,,BP4,,0
+,,MT09_RM05GC_South,11/05/2023,5,2023,22,22:06:00,R,EE02084,0,4,,,385,,,,,,,,BLM seabird project,Gregale South ledge,way in,,BP5,,0
+,,MT09_RM05GC_South,11/05/2023,5,2023,22,22:07:00,N,EE09065,0,4,,,345,,,,,,,,BLM seabird project,Gregale South ledge,way in ,,BP4,,0
+,,MT09_RM05GC_South,11/05/2023,5,2023,22,22:24:00,R,EE02342,0,4,,,385,,,,,,,,BLM seabird project,Gregale South ledge,way in ,,BP5,,0
+,,MT09_RM05GC_South,11/05/2023,5,2023,22,22:26:00,N,EE09066,0,4,,,325,,,,,,,,BLM seabird project,Gregale South ledge,way in,,BP4,,0
+,,MT09_RM05GC_South,11/05/2023,5,2023,22,22:36:00,R,EE06739,0,4,,,385,,,,,,,,BLM seabird project,Gregale South ledge,way in ,,BP4,,0
+,,MT09_RM05GC_South,11/05/2023,5,2023,22,22:37:00,N,EE09067,0,4,,,360,,,,,,,,BLM seabird project,Gregale South ledge,way in ,,BP5,,0
+,,MT09_RM05GC_South,11/05/2023,5,2023,22,22:57:00,R,EE03581,0,4,,,385,,,,,,,,BLM seabird project,Gregale South ledge,way in ,,BP4,,0
+,,MT09_RM05GC_South,11/05/2023,5,2023,23,23:01:00,R,EE02318,0,4,,,450,,,,,,,,BLM seabird project,Gregale South ledge,way in ,,BP5,,0
+,,MT09_RM05GC_South,11/05/2023,5,2023,23,23:25:00,R,EE02722,0,4,,,475,,,,,,,,BLM seabird project,Gregale South ledge,way in,,BP5,,0
+,,MT09_RM05GC_South,11/05/2023,5,2023,23,23:34:00,N,EE09068,0,4,,,325,,,,,,,,BLM seabird project,Gregale South ledge,way in,,BP5,,0
+,,MT09_RM05GC_South,11/05/2023,5,2023,23,23:40:00,N,EE09069,0,4,,,370,,,,,,,,BLM seabird project,Gregale South ledge cave 0,outside,,BP4,,0
+,,MT09_RM05GC_South,11/05/2023,5,2023,23,23:45:00,R,EE06655,0,4,,,320,,,,,,,,BLM seabird project,Gregale South ledge cave 0,outside,,BP4,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,21,21:16:00,N,EE09025,0,4,,,355,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP4,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,21,21:21:00,R,EE04993,0,4,,,360,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP4,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,21,21:22:00,N,EE09082,0,4,,,315,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP4,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,21,21:23:00,N,EE09083,0,4,,,380,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP5,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,21,21:30:00,R,EE02296,0,4,,,340,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP4,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,21,21:34:00,R,EE03017,0,4,,,385,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP3,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,21,21:34:00,R,EE06688,0,4,,,310,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP5,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,21,21:36:00,N,EE09084,0,4,,,370,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP4,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,21,21:39:00,R,EE02433,0,4,,,410,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP4,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,21,21:40:00,R,EE03006,0,4,,,410,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP4,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,21,21:45:00,R,EE06851,0,4,,,390,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP4,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,21,21:46:00,N,EE09086,0,4,,,360,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,21,21:50:00,N,EE09087,0,4,,,340,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP4,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,21,21:56:00,N,EE09088,0,4,,,370,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP5,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,22,22:02:00,N,EE09089,0,4,,,345,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP4,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,22,22:05:00,N,EE09090,0,4,,,410,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP4,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,22,22:05:00,R,EE03018,0,4,,,490,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP4,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,22,22:09:00,N,EE09091,0,4,,,360,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP4,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,22,22:15:00,R,EE06738,0,4,,,360,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP4,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,22,22:20:00,R,EE04215,0,4,,,395,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP4,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,22,22:23:00,R,EE03021,0,4,,,435,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP4,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,22,22:26:00,R,EE04073,0,4,,,350,,,,,,,,BLM seabird project,Gregale central ledge,way in ,EE04073 replaced with EE09092,BP5,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,22,22:26:00,R,EE09092,1,4,,,350,,,,,,,,BLM seabird project,Gregale central ledge,way in ,EE04073 replaced with EE09092,BP5,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,22,22:27:00,N,EE09093,0,4,,,370,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP5,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,22,22:32:00,N,EE09094,0,4,,,390,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP4,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,22,22:41:00,N,EE09085,0,4,,,310,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP5,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,22,22:42:00,N,EE09095,0,4,,,330,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP5,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,22,22:45:00,R,EE03014,0,4,,,380,,,,,,,,BLM seabird project,Gregale central ledge,way in ,with FF04833 on left,BP4,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,22,22:47:00,N,EE09096,0,4,,,330,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,Bp4,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,22,22:50:00,N,EE09097,0,4,,,370,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,Bp4,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,22,22:54:00,R,EE06540,0,4,,,420,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP4,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,22,22:56:00,R,EE06809,0,4,,,340,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP4,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,22,22:59:00,R,EE06683,0,4,,,360,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP4,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,23,23:18:00,R,EE02605,0,4,,,510,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP4,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,23,23:23:00,R,EE04202,0,4,,,360,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP5,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,23,23:24:00,R,EE09039,0,4,,,460,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP4,,0
+,,MT09_RM05GC_Central,11/05/2023,5,2023,23,23:28:00,N,EE09098,0,4,,,450,,,,,,,,BLM seabird project,Gregale central ledge,way in ,,BP4,,0
+,,MT24_Majjistral_South_4,05/05/2023,5,2023,20,20:58:00,R,EE06639,0,4,,,390,,,,,,,,BLM seabird project,SOW cave 4,way in,,BP4,,0
+,,MT24_Majjistral_South_4,05/05/2023,5,2023,20,20:58:00,N,EE09044,0,4,,,330,,,,,,,,BLM seabird project,SOW cave 4,way in,,Bp4,,0
+,,MT24_Majjistral_South_4,05/05/2023,5,2023,21,21:10:00,R,EE02054,0,4,,,360,,,,,,,,BLM seabird project,SOW cave 4,way in,,BP4,,0
+,,MT24_Majjistral_South_4,05/05/2023,5,2023,21,21:12:00,R,EE03401,0,4,,,325,,,,,,,,BLM seabird project,SOW cave 4,way in,,BP5,,0
+,,MT24_Majjistral_South_4,05/05/2023,5,2023,21,21:20:00,R,EE04767,0,4,,,385,,,,,,,,BLM seabird project,SOW cave 4,way in,,BP4,,0
+,,MT24_Majjistral_South_4,05/05/2023,5,2023,21,21:23:00,R,EE06875,0,4,,,410,,,,,,,,BLM seabird project,SOW cave 4,way in,,BP5,,0
+,,MT24_Majjistral_South_4,05/05/2023,5,2023,21,21:33:00,R,EE04765,0,4,,,435,,,,,,,,BLM seabird project,SOW cave 4,way in,,BP4,,0
+,,MT24_Majjistral_South_4,05/05/2023,5,2023,21,21:41:00,R,EE06845,0,4,,,405,,,,,,,,BLM seabird project,SOW cave 4,way in,,Bp4,,0
+,,MT24_Majjistral_South_4,05/05/2023,5,2023,22,22:01:00,N,EE09045,0,4,,,340,,,,,,,,BLM seabird project,SOW cave 4,way in,,BP5,,0
+,,MT24_Majjistral_South_4,05/05/2023,5,2023,22,22:28:00,R,EE03416,0,4,,,410,,,,,,,,BLM seabird project,SOW cave 4,way in,,BP4,,0
+,,MT24_Majjistral_South_1,05/05/2023,5,2023,21,21:20:00,N,EE09018,0,4,,,440,,,,,,,,BLM seabird project,SOW cave 1,way in ,,BP4,,0
+,,MT24_Majjistral_South_1,05/05/2023,5,2023,21,21:45:00,R,EE06961,0,4,,,385,,,,,,,,BLM seabird project,SOW cave 1,way in,,BP5,,0
+,,MT09_RM05BT_Lower,23/05/2023,5,2023,21,21:23:00,N,EE09017,0,4,,,360,,,,,,,,BLM seabird project,Butter Cave Lower,way in ,,BP3,,0
+,,MT09_RM05BT_Lower,23/05/2023,5,2023,21,21:33:00,N,EE09126,0,4,,,400,,,,,,,,BLM seabird project,Butter Cave Lower,way in,,BP5,,0
+,,MT09_RM05BT_Lower,23/05/2023,5,2023,21,21:35:00,R,EE03811,0,4,,,470,,,,,,,,BLM seabird project,Butter cave,way in,,BP5,,0
+,,MT09_RM05BT_Lower,23/05/2023,5,2023,21,21:47:00,R,EE03814,0,4,,,410,,,,,,,,BLM seabird project,Butter Cave lower,way in,,BP4,,0
+,,MT09_RM05BT_Lower,23/05/2023,5,2023,21,21:59:00,R,EE04330,0,4,,,400,,,,,,,,BLM seabird project,Butter Cave Lower,way in,,BP5,,0
+,,MT09_RM05BT_Lower,23/05/2023,5,2023,22,22:10:00,N,EE09100,0,4,,,420,,,,,,,,BLM seabird project,Butter cave,way in,,BP4,,0
+,,MT09_RM05BT_Lower,23/05/2023,5,2023,22,22:11:00,R,EE04317,0,4,,,490,,,,,,,,BLM seabird project,Butter Cave lower,way in,,BP5,,0
+,,MT09_RM05BT_Lower,23/05/2023,5,2023,22,22:22:00,N,EE09057,0,4,,,385,,,,,,,,BLM seabird project,Butter Cave Lower,way in,,BP5,,0
+,,MT09_RM05BT_Lower,23/05/2023,5,2023,22,22:31:00,N,EE09058,0,4,,,420,,,,,,,,BLM seabird project,Butter cave,way in,,BP4,,0
+,,MT09_RM05BT_Lower,23/05/2023,5,2023,22,22:40:00,N,EE09059,0,4,,,410,,,,,,,,BLM seabird project,Butter Cave Lower,way in ,,BP5,,0
+,,MT09_RM05BT_Lower,23/05/2023,5,2023,22,22:49:00,R,EE09051,0,4,,,370,,,,,,,,BLM seabird project,Butter Cave lower,way in,,BP5,,0
+,,MT09_RM05BT_Lower,23/05/2023,5,2023,22,22:54:00,R,EE04502,0,4,,,390,,,,,,,,BLM seabird project,Butter Cave Lower,way in ,,BP5,,0
+,,MT09_RM05BT_Lower,23/05/2023,5,2023,22,22:55:00,R,EE00306,0,4,,,480,,,,,,,,BLM seabird project,Butter Cave lower,way in ,old open ring EE00306 replaced with EE09060,BP5,,0
+,,MT09_RM05BT_Lower,23/05/2023,5,2023,22,22:55:00,R,EE09060,1,4,,,480,,,,,,,,BLM seabird project,Butter Cave lower,way in,old open ring EE00306 replaced with EE09060,BP5,,0
+,,MT09_RM05BT_Upper,23/05/2023,5,2023,21,21:21:00,N,EE09046,0,4,,,410,,,,,,,,BLM seabird project,Butter Cave upper,way in,entered NS5 feeding chick,BP5,,0
+,,MT09_RM05BT_Lower,23/05/2023,5,2023,22,22:14:00,N,EE09047,0,4,,,420,,,,,,,,BLM seabird project,Butter Cave lower,way in,,BP5,,0
+,,MT09_RM01,23/05/2023,5,2023,19,19:30:00,R,EE09007,0,4,,,460,,,,,,,,BLM seabird project,Big Crack,NB22,on egg,BP3,,0
+,,MT09_RM01,23/05/2023,5,2023,19,19:45:00,N,EE09070,0,4,M,,370,38.5,8.3,,,,,29.3,BLM seabird project,Big Crack,NB24,prospecting with EE09071,BP5,,1
+,,MT09_RM01,23/05/2023,5,2023,19,19:45:00,N,EE09071,0,4,F,,335,34.3,7.3,,,,,24.9,BLM seabird project,Big Crack,NB24,prospecting with EE09070,BP5,,1
+,,MT09_RM04A,23/05/2023,5,2023,21,21:24:00,N,EE09072,0,4,,,410,,,,,,,,BLM seabird project,RM04A,way in,,Bp4,,0
+,,MT09_RM04A,23/05/2023,5,2023,21,21:45:00,R,EE06535,0,4,,,470,,,,,,,,BLM seabird project,RM04A,way in ,,BP4,,0
+,,MT09_RM04A,23/05/2023,5,2023,21,21:53:00,R,EE04225,0,4,,,430,,,,,,,,BLM seabird project,RM04A,way in ,,BP4,,0
+,,MT09_RM04A,23/05/2023,5,2023,21,21:58:00,N,EE09073,0,4,,,385,,,,,,,,BLM seabird project,RM04A,way in,,BP5,,0
+,,MT09_RM04A,23/05/2023,5,2023,22,22:04:00,R,EE02506,0,4,,,535,,,,,,,,BLM seabird project,RM04A,way in,,BP5,,0
+,,MT09_RM04A,23/05/2023,5,2023,22,22:20:00,R,EE04820,0,4,,,425,,,,,,,,BLM seabird project,RM04A,way in,,BP4,,0
+,,MT09_RM04A,23/05/2023,5,2023,22,22:32:00,R,EE03800,0,4,,,360,,,,,,,,BLM seabird project,RM04A,way in,,BP5,,0
+,,MT09_RM04A,23/05/2023,5,2023,22,22:35:00,R,EE04545,0,4,,,485,,,,,,,,BLM seabird project,RM04A,way in,,BP4,,0
+,,MT09_RM04A,23/05/2023,5,2023,22,22:38:00,R,EE09028,0,4,,,460,,,,,,,,BLM seabird project,RM04A,way in,,BP4,,0
+,,MT09_RM04A,23/05/2023,5,2023,22,22:47:00,R,EE04537,0,4,,,385,,,,,,,,BLM seabird project,RM04A,way in,,BP4,,0
+,,MT09_RM04A,23/05/2023,5,2023,22,22:49:00,N,EE09074,0,4,,,360,,,,,,,,BLM seabird project,RM04A ,,,BP5,prospector,1
+,,MT09_RM04A,23/05/2023,5,2023,22,22:55:00,R,EE02707,0,4,,,410,,,,,,,,BLM seabird project,RM04A,way in,,BP5,,0
+,,MT09_RM04A,23/05/2023,5,2023,23,23:00:00,R,EE06934,0,4,,,410,,,,,,,,BLM seabird project,RM04A,way in,,BP5,,0
+,,MT09_RM04D,30/05/2023,5,2023,21,21:21:00,R,EE05051,0,4,,,370,,,,,,,,BLM seabird project,Bellavista,way in,wet legs,,,0
+,,MT09_RM04D,30/05/2023,5,2023,21,21:25:00,R,EE04657,0,4,,,420,,,,,,,,BLM seabird project,Bellavista,way in,open ring EE04657 replaced with EE09099,,entered NS8,0
+,,MT09_RM04D,30/05/2023,5,2023,21,21:25:00,R,EE09099,1,4,,,420,,,,,,,,BLM seabird project,Bellavista,way in,open ring EE04657 replaced with EE09099,,entered NS8,0
+,,MT09_RM04D,30/05/2023,5,2023,22,22:05:00,R,EE04147,0,4,,,490,,,,,,,,BLM seabird project,Bellavista lower,way in,,,,0
+,,MT09_RM04D,30/05/2023,5,2023,21,22:35:00,R,EE04683,0,4,,,430,,,,,,,,BLM seabird project,Bellavista upper,way in,,,,0
+,,MT09_RM04D,30/05/2023,5,2023,21,22:50:00,R,EE04655,0,4,,,350,,,,,,,,BLM seabird project,Bellavista upper ,way in,,,,0
+,,MT09_RM04C,30/05/2023,5,2023,22,22:49:00,N,EE09075,0,4,,,400,,,,,,,,BLM seabird project,RM04C,prospector,,BP5,,0
+,,MT22_StPauls_Nestboxledge,03/06/2023,6,2023,20,20:15:00,N,EE09048,0,1,,,485,,,,,,,,BLM seabird project,NB03,FM,,,,0
+,,MT22_StPauls_Nestboxledge,03/06/2023,6,2023,20,20:15:00,N,EE09049,0,1,,,465,,,,,,,,BLM seabird project,NB15,FL,,,,0
+,,MT22_StPauls_WestCave,03/06/2023,6,2023,22,22:55:00,N,EE09101,0,4,,,360,,,,,,,,BLM seabird project,West Cave,way in,,,,0
+,,MT22_StPauls_WestCave,03/06/2023,6,2023,23,23:11:00,R,EE04049,0,4,,,430,,,,,,,,BLM seabird project,West Cave,way in,,,,0
+,,MT22_StPauls_WestCave,03/06/2023,6,2023,23,23:31:00,N,EE09102,0,4,,,470,,,,,,,,BLM seabird project,West Cave,way in,,BP5,,0
+,,MT22_StPauls_MainCave,03/06/2023,6,2023,22,22:25:00,N,EE09050,0,4,,,335,,,,,,,,BLM seabird project,Main Cave,,,,,0
+,,MT22_StPauls_MainCave,03/06/2023,6,2023,22,22:42:00,R,EE02368,0,4,,,460,,,,,,,,BLM seabird project,Main Cave,,,,,0
+,,MT22_StPauls_MainCave,03/06/2023,6,2023,22,22:44:00,N,EE09127,0,4,,,470,,,,,,,,BLM seabird project,Main Cave,,,,,0
+,,MT22_StPauls_MainCave,03/06/2023,6,2023,22,22:46:00,N,EE09128,0,4,,,400,,,,,,,,BLM seabird project,Main Cave,,,,,0
+,,MT22_StPauls_MainCave,03/06/2023,6,2023,22,22:47:00,N,EE09129,0,4,,,380,,,,,,,,BLM seabird project,Main Cave,,,,,0
+,,MT22_StPauls_MainCave,03/06/2023,6,2023,23,23:11:00,N,EE09130,0,4,,,485,,,,,,,,BLM seabird project,Main Cave,,,,,0
+,,MT22_StPauls_MainCave,03/06/2023,6,2023,23,23:37:00,R,EE04633,0,4,,,390,,,,,,,,BLM seabird project,Main Cave,,weighed after regurgitating in net,,,0
+,,MT22_StPauls_MainCave,03/06/2023,6,2023,23,23:50:00,N,EE09131,0,4,,,530,,,,,,,,BLM seabird project,Main Cave,,,,,0
+,,MT24_Majjistral_Eggshell,08/06/2023,6,2023,21,21:39:00,R,EE04088,0,4,,,480,,,,,,,,BLM seabird project,Eggshell Cave,way in,,BP6,,0
+,,MT24_Majjistral_Eggshell,08/06/2023,6,2023,21,21:50:00,R,EE03427,0,4,,,415,,,,,,,,BLM seabird project,Eggshell Cave,way in,,BP6,,0
+,,MT24_Majjistral_Eggshell,08/06/2023,6,2023,22,22:31:00,R,EE03029,0,4,,,390,,,,,,,,BLM seabird project,Eggshell Cave,way in,,BP6,,0
+,,MT24_Majjistral_Eggshell,08/06/2023,6,2023,22,22:57:00,R,EE03772,0,4,,,405,,,,,,,,BLM seabird project,Eggshell Cave,way in ,,BP5,,0
+,,MT24_Majjistral_Eggshell,08/06/2023,6,2023,23,23:11:00,R,EE03010,0,4,,,410,,,,,,,,BLM seabird project,Eggshell Cave,way in ,,BP6,,0
+,,MT24_Majjistral_Eggshell,08/06/2023,6,2023,23,23:41:00,R,EE03593,0,4,,,320,,,,,,,,BLM seabird project,Eggshell Cave,way in ,,BP6,,0
+,,MT24_Majjistral_Eggshell,08/06/2023,6,2023,23,23:22:00,R,EE02128,0,4,,,395,,,,,,,,BLM seabird project,Eggshell Cave,way in ,A19 removed,BP6,,0
+,,MT24_Majjistral_Eggshell,08/06/2023,6,2023,23,23:28:00,R,EE04854,0,4,,,400,,,,,,,,BLM seabird project,Eggshell Cave,way in ,,BP5,,0
+,,MT24_Majjistral_Eggshell,08/06/2023,6,2023,23,23:32:00,R,EE06679,0,4,,,415,,,,,,,,BLM seabird project,Eggshell Cave,way in ,,BP6,,0
+,,MT24_Majjistral_Eggshell,08/06/2023,6,2023,23,23:40:00,R,EE04126,0,4,,,345,,,,,,,,BLM seabird project,Eggshell Cave,way in ,ringed as pullus NOW  05/06/2019,BP6,,0
+,,MT24_Majjistral_Eggshell,08/06/2023,6,2023,23,23:44:00,R,EE04550,0,4,,,340,,,,,,,,BLM seabird project,Eggshell Cave,Way in ,,BP6,,0
+,,MT24_Majjistral_Eggshell,08/06/2023,6,2023,23,23:48:00,R,EE03050,0,4,,,420,,,,,,,,BLM seabird project,Eggshell Cave,way in,,BP6,,0
+,,MT24_Majjistral_Eggshell,08/06/2023,6,2023,23,23:51:00,R,EE04901,0,4,,,380,,,,,,,,BLM seabird project,Eggshell Cave,way in,,BP6,,0
+,,MT24_Majjistral_Eggshell,08/06/2023,6,2023,21,21:31:00,R,FF03273,0,4,,,390,,,,,,,,BLM seabird project,Eggshell Cave,way in ,D90 removed,BP6,,0
+,,MT24_Majjistral_Eggshell,08/06/2023,6,2023,21,21:39:00,N,EE09103,0,4,,,325,,,,,,,,BLM seabird project,Eggshell Cave,way in ,weighed after regurgitating,Bp6,,0
+,,MT24_Majjistral_Eggshell,08/06/2023,6,2023,21,21:40:00,R,EE03118,0,4,,,410,,,,,,,,BLM seabird project,Eggshell Cave,way in ,D86 removed,BP6,,0
+,,MT24_Majjistral_Eggshell,08/06/2023,6,2023,21,21:45:00,N,EE09104,0,4,,,330,,,,,,,,BLM seabird project,Eggshell Cave,way in ,,,,0
+,,MT24_Majjistral_Eggshell,08/06/2023,6,2023,22,22:05:00,R,EE09105,1,4,,,370,,,,,,,,BLM seabird project,Eggshell Cave,way in ,A05 removed | ring EE03670 missing completely | identified from pit tag,,,0
+,,MT24_Majjistral_Eggshell,08/06/2023,6,2023,22,22:06:00,R,EE03061,0,4,,,370,,,,,,,,BLM seabird project,Eggshell Cave,way in ,D11 removed,BP6,,0
+,,MT24_Majjistral_Eggshell,08/06/2023,6,2023,22,22:15:00,R,EE04270,0,4,,,385,,,,,,,,BLM seabird project,Eggshell Cave,way in,D46 removed,Bp5,,0
+,,MT24_Majjistral_Eggshell,08/06/2023,6,2023,22,22:20:00,R,EE04115,0,4,,,390,,,,,,,,BLM seabird project,Eggshell Cave,way in ,D22 removed,Bp6,,0
+,,MT24_Majjistral_Eggshell,08/06/2023,6,2023,22,22:35:00,R,EE06633,0,4,,,425,,,,,,,,BLM seabird project,Eggshell Cave,way in ,D69 removed ,BP5,,0
+,,MT24_Majjistral_Eggshell,08/06/2023,6,2023,22,22:37:00,R,EE03030,0,4,,,380,,,,,,,,BLM seabird project,Eggshell Cave,way in ,C29 removed,BP6,,0
+,,MT24_Majjistral_Eggshell,08/06/2023,6,2023,22,22:46:00,R,EE02226,0,4,,,430,,,,,,,,BLM seabird project,Eggshell Cave,way in ,D47 removed,BP5,,0
+,,MT24_Majjistral_Thomas,08/06/2023,6,2023,22,22:49:00,R,EE03597,0,4,,,380,,,,,,,,BLM seabird project,Thomas Cave,potentially prospector,,Bp6,,0
+,,MT24_Majjistral_Thomas,08/06/2023,6,2023,22,22:52:00,N,EE09106,0,4,,,380,,,,,,,,BLM seabird project,Thomas Cave,potentially prospector,,BP6,,0
+,,MT24_Majjistral_Thomas,08/06/2023,6,2023,22,22:55:00,N,EE09107,0,4,,,310,,,,,,,,BLM seabird project,Thomas Cave,potentially prospector,prospector,BP5,,1
+,,MT24_Majjistral_Thomas,08/06/2023,6,2023,22,22:59:00,R,EE03333,0,4,,,400,,,,,,,,BLM seabird project,Thomas Cave,potentially prospector,,,,0
+,,MT24_Majjistral_Thomas,08/06/2023,6,2023,23,23:07:00,R,EE04969,0,4,,,340,,,,,,,,BLM seabird project,Thomas Cave,outside,,,,0
+,,MT24_Majjistral_Thomas,08/06/2023,6,2023,23,23:10:00,R,EE04548,0,4,,,375,,,,,,,,BLM seabird project,Thomas Cave,potentially prospector,,,,0
+,,MT24_Majjistral_Eggshell,08/06/2023,6,2023,23,23:12:00,N,EE09108,0,4,,,320,,,,,,,,BLM seabird project,Eggshell Cave,way in ,,,,0
+,,MT24_Majjistral_Eggshell,08/06/2023,6,2023,23,23:20:00,R,EE02052,0,4,,,360,,,,,,,,BLM seabird project,Eggshell Cave,way in ,GLS retrieved,,"Blood P1, P5 P9 and chest feathers sampled",0
+,,MT24_Majjistral_Thomas,08/06/2023,6,2023,23,23:40:00,R,EE03897,0,4,,,395,,,,,,,,BLM seabird project,Thomas Cave,way in ,,Bp5,,0
+,,MT24_Majjistral_Thomas,08/06/2023,6,2023,23,23:54:00,N,EE09109,0,4,,,345,,,,,,,,BLM seabird project,Thomas Cave,potentially prospector,,BP5,,0
+,,MT24_Majjistral_Eggshell,09/06/2023,6,2023,0,00:00:00,N,EE09110,0,4,,,345,,,,,,,,BLM seabird project,Eggshell Cave,way in,,BP4q,,0
+,,MT24_Majjistral_Eggshell,09/06/2023,6,2023,0,00:01:00,N,EE09111,0,4,,,340,,,,,,,,BLM seabird project,Eggshell Cave,way in ,,Bp5,,0
+,,MT17_Cominotto_9,09/06/2023,6,2023,21,21:32:00,R,EE03954,0,4,,,490,,,,,,,,BLM seabird project,Cominotto Cave 9 ,way in ,,,,0
+,,MT17_Cominotto_9,09/06/2023,6,2023,21,21:45:00,R,EE04244,0,4,,,460,,,,,,,,BLM seabird project,Cominotto Cave 9 ,way in ,,,,0
+,,MT17_Cominotto_9,09/06/2023,6,2023,21,21:47:00,R,EE03399,0,4,,,470,,,,,,,,BLM seabird project,Cominotto Cave 9,way in ,,,,0
+,,MT17_Cominotto_9,09/06/2023,6,2023,21,21:48:00,R,EE03397,0,4,,,385,,,,,,,,BLM seabird project,Cominotto Cave 9,way in ,,,,0
+,,MT17_Cominotto_9,09/06/2023,6,2023,21,21:58:00,N,EE09132,0,4,,,360,,,,,,,,BLM seabird project,Cominotto Cave 9 ,prospector,,,,0
+,,MT17_Cominotto_9,09/06/2023,6,2023,21,21:59:00,N,EE09133,0,4,,,330,,,,,,,,BLM seabird project,Cominotto Cave 9 ,prospector,,,,0
+,,MT17_Cominotto_9,09/06/2023,6,2023,22,22:06:00,R,EE04243,0,4,,,390,,,,,,,,BLM seabird project,Cominotto Cave 9,way in ,EE04243 slipped off replaced with EE09134,,,0
+,,MT17_Cominotto_9,09/06/2023,6,2023,22,22:06:00,R,EE09134,1,4,,,390,,,,,,,,BLM seabird project,Cominotto Cave 9,way in ,EE04243 slipped off replaced with EE09134,,,0
+,,MT17_Cominotto_9,09/06/2023,6,2023,22,22:10:00,N,EE09135,0,4,,,510,,,,,,,,BLM seabird project,Cominotto Cave 9,way in,regurgitated before weighing!,,,0
+,,MT17_Cominotto_9,09/06/2023,6,2023,22,22:12:00,R,EE06557,0,4,,,400,,,,,,,,BLM seabird project,Cominotto Cave 9,way in ,,,,0
+,,MT17_Cominotto_9,09/06/2023,6,2023,22,22:20:00,R,EE06552,0,4,,,350,,,,,,,,BLM seabird project,Cominotto Cave 9,way in,,,,0
+,,MT17_Cominotto_9,09/06/2023,6,2023,23,23:10:00,N,EE09136,0,4,,,360,,,,,,,,BLM seabird project,Cominotto Cave 9,prospector,,,,0
+,,MT17_Cominotto_4,09/06/2023,6,2023,21,21:40:00,R,EE02843,0,4,,,440,,,,,,,,BLM seabird project,Cominotto Cave 4,way in,,,,0
+,,MT17_Cominotto_4,09/06/2023,6,2023,21,21:45:00,N,EE09161,0,4,,,375,,,,,,,,BLM seabird project,Cominotto Cave 4,way in,,,,0
+,,MT17_Cominotto_4,09/06/2023,6,2023,21,21:49:00,N,EE09162,0,4,,,360,,,,,,,,BLM seabird project,Cominotto Cave 4,way in,,,,0
+,,MT17_Cominotto_4,09/06/2023,6,2023,22,22:05:00,R,EE06848,0,4,,,360,,,,,,,,BLM seabird project,Cominotto Cave 4,way in ,regurgitated before weighing!,,,0
+,,MT17_Cominotto_4,09/06/2023,6,2023,22,22:17:00,N,EE09163,0,4,,,360,,,,,,,,BLM seabird project,Cominotto Cave 4,way in ,,,,0
+,,MT17_Cominotto_4,09/06/2023,6,2023,22,22:34:00,R,EE04750,0,4,,,340,,,,,,,,BLM seabird project,Cominotto Cave 4,way in ,,,,0
+,,MT17_Cominotto_4,09/06/2023,6,2023,22,22:49:00,N,EE09164,0,4,,,435,,,,,,,,BLM seabird project,Cominotto Cave 4,way in,,,,0
+,,MT17_Cominotto_4,09/06/2023,6,2023,22,22:49:00,N,EE09165,0,4,,,385,,,,,,,,BLM seabird project,Cominotto Cave 4,way in ,,,,0
+,,MT17_Cominotto_4,09/06/2023,6,2023,23,23:13:00,N,EE09166,0,4,,,410,,,,,,,,BLM seabird project,Cominotto Cave 4,way in ,,,,0
+,,MT17_Cominotto_4,09/06/2023,6,2023,23,23:20:00,R,EE04219,0,4,,,435,,,,,,,,BLM seabird project,Cominotto Cave 4,way in,regurgitated before weighing!,,,0
+,,MT17_Cominotto_4,09/06/2023,6,2023,23,23:32:00,R,EE06847,0,4,,,440,,,,,,,,BLM seabird project,Cominotto Cave 4,way in ,,,,0
+,,MT17_Cominotto_4,09/06/2023,6,2023,23,23:35:00,R,EE02844,0,4,,,460,,,,,,,,BLM seabird project,Cominotto Cave 4,way in ,,,,0
+,,MT17_Cominotto_2,09/06/2023,6,2023,21,21:34:00,R,EE04722,0,4,,,,,,,,,,,BLM seabird project,Cominotto Cave 2,way in,,,,0
+,,MT17_Cominotto_2,09/06/2023,6,2023,21,21:49:00,R,EE04843,0,4,,,,,,,,,,,BLM seabird project,Cominotto Cave 2,way in,,,,0
+,,MT17_Cominotto_2,09/06/2023,6,2023,21,21:58:00,R,EE04738,0,4,,,,,,,,,,,BLM seabird project,Cominotto Cave 2,way in ,,,,0
+,,MT17_Cominotto_2,09/06/2023,6,2023,22,22:56:00,R,EE09115,0,4,,,,,,,,,,,BLM seabird project,Cominotto Cave 2 ,way out,,,,0
+,,MT17_Cominotto_2,09/06/2023,6,2023,23,23:20:00,R,EE03089,0,4,,,,,,,,,,,BLM seabird project,Cominotto Cave 2,way in ,,,,0
+,,MT17_Cominotto_2,09/06/2023,6,2023,21,21:33:00,N,EE09112,0,4,,,,,,,,,,,BLM seabird project,Cominotto Cave 2,way in ,,,,0
+,,MT17_Cominotto_2,09/06/2023,6,2023,21,21:35:00,N,EE09113,0,4,,,,,,,,,,,BLM seabird project,Cominotto Cave 2,way in ,,,,0
+,,MT17_Cominotto_2,09/06/2023,6,2023,21,21:43:00,N,EE09114,0,4,,,,,,,,,,,BLM seabird project,Cominotto Cave 2,way in ,,,,0
+,,MT17_Cominotto_2,09/06/2023,6,2023,21,21:46:00,N,EE09115,0,4,,,,,,,,,,,BLM seabird project,Cominotto Cave 2,way in ,,,,0
+,,MT17_Cominotto_2,09/06/2023,6,2023,22,22:05:00,N,EE09116,0,4,,,,,,,,,,,BLM seabird project,Cominotto Cave 2,way in ,,,,0
+,,MT17_Cominotto_2,09/06/2023,6,2023,22,22:13:00,N,EE09117,0,4,,,,,,,,,,,BLM seabird project,Cominotto Cave 2,way out,,,,0
+,,MT17_Cominotto_2,09/06/2023,6,2023,22,22:17:00,N,EE09118,0,4,,,,,,,,,,,BLM seabird project,Cominotto Cave 2,way in ,,,,0
+,,MT17_Cominotto_2,09/06/2023,6,2023,22,22:23:00,N,EE09119,0,4,,,,,,,,,,,BLM seabird project,Cominotto Cave 2,way out,,,,0
+,,MT17_Cominotto_2,09/06/2023,6,2023,22,22:14:00,N,EE09120,0,4,,,,,,,,,,,BLM seabird project,Cominotto Cave 2,way in ,,,,0
+,,MT17_Cominotto_2,09/06/2023,6,2023,22,22:30:00,N,EE09121,0,4,,,,,,,,,,,BLM seabird project,Cominotto Cave 2,way in ,,,,0
+,,MT17_Cominotto_2,09/06/2023,6,2023,22,22:34:00,N,EE09122,0,4,,,,,,,,,,,BLM seabird project,Cominotto Cave 2,way in ,,,,0
+,,MT17_Cominotto_2,09/06/2023,6,2023,22,22:48:00,N,EE09123,0,4,,,,,,,,,,,BLM seabird project,Cominotto Cave 2,way in ,,,,0
+,,MT17_Cominotto_1,09/06/2023,6,2023,22,22:56:00,N,EE09124,0,4,,,,,,,,,,,BLM seabird project,Cominotto Cave 1,way in ,,,,0
+,,MT17_Cominotto_2,09/06/2023,6,2023,23,23:05:00,N,EE09125,0,4,,,,,,,,,,,BLM seabird project,Cominotto Cave 2,way in ,,,,0
+,,MT17_Cominotto_1,09/06/2023,6,2023,23,23:23:00,N,EE09076,0,4,,,,,,,,,,,BLM seabird project,Cominotto Cave 1,way in ,,,,0
+,,MT17_Cominotto_2,09/06/2023,6,2023,23,23:27:00,N,EE09077,0,4,,,,,,,,,,,BLM seabird project,Cominotto Cave 2,way in ,,,,0
+,,MT22_StPauls_WestCave,11/06/2023,6,2023,21,21:40:00,N,EE09140,0,4,,,310,,,,,,,,BLM seabird project,West Cave,prospector,,,,0
+,,MT22_StPauls_WestCave,11/06/2023,6,2023,21,21:10:00,N,EE09138,0,1,,,520,,,,,,,,BLM seabird project,West Cave,NS8,FM,,,0
+,,MT22_StPauls_WestCave,11/06/2023,6,2023,21,21:20:00,N,EE09139,0,1,,,390,,,,,,,,BLM seabird project,West Cave,NS3,FS,,,0
+,,MT22_StPauls_WestCave,11/06/2023,6,2023,21,21:55:00,R,EE02097,0,4,,,410,,,,,,,,BLM seabird project,West Cave,way in,,,,0
+,,MT22_StPauls_WestCave,11/06/2023,6,2023,22,22:05:00,R,EE03422,0,4,,,400,,,,,,,,BLM seabird project,West Cave,way in,,,,0
+,,MT22_StPauls_WestCave,11/06/2023,6,2023,22,22:55:00,N,EE09151,0,4,,,370,,,,,,,,BLM seabird project,West Cave,way in,,,,0
+,,MT22_StPauls_WestCave,11/06/2023,6,2023,22,22:58:00,R,EE03526,0,4,,,370,,,,,,,,BLM seabird project,West Cave,way in,,,,0
+,,MT22_StPauls_MainCave,11/06/2023,6,2023,21,21:55:00,N,EE09167,0,4,,,340,,,,,,,,BLM seabird project,Main Cave MN,way out,,,,0
+,,MT22_StPauls_MainCave,11/06/2023,6,2023,22,22:13:00,N,EE09168,0,4,,,410,,,,,,,,BLM seabird project,Main Cave MN,way out,,,,0
+,,MT22_StPauls_MainCave,11/06/2023,6,2023,23,23:08:00,N,EE09169,0,4,,,420,,,,,,,,BLM seabird project,Main Cave MN,way out,,,,0
+,,MT22_StPauls_MainCave,11/06/2023,6,2023,23,23:17:00,R,EE04135,0,4,,,380,,,,,,,,BLM seabird project,Main Cave MN,way in,weighed after regurgitating,,,0
+,,MT22_StPauls_MainCave,11/06/2023,6,2023,23,23:19:00,N,EE09170,0,4,,,340,,,,,,,,BLM seabird project,Main Cave MN,way in,,,,0
+,,MT22_StPauls_MainCave,11/06/2023,6,2023,23,23:29:00,N,EE09171,0,4,,,415,,,,,,,,BLM seabird project,Main Cave MN,way in,,,,0
+,,MT24_Majjistral_Eggshell,12/06/2023,6,2023,20,20:30:00,N,EE09078,0,1,,,,,,,,,,,BLM seabird project,Eggshell Cave,NS17,FM,,,0
+,,MT24_Majjistral_NS2_NS3,12/06/2023,6,2023,21,21:15:00,N,EE09080,0,1,,,335,,,,,,,,BLM seabird project,NS2_NS3,NS2,FM,,,0
+,,MT24_Majjistral_NS2_NS3,12/06/2023,6,2023,21,21:00:00,N,EE09079,0,1,,,485,,,,,,,,BLM seabird project,NS2_NS3,NS3,RF,,UT,0
+,,MT24_Majjistral_Eggshell,12/06/2023,6,2023,21,21:28:00,R,EE02540,0,4,,,460,,,,,,,,BLM seabird project,Eggshell Cave,way in ,D26 retrieved,,,0
+,,MT24_Majjistral_Thomas,12/06/2023,6,2023,21,21:45:00,R,EE03060,0,4,,,410,,,,,,,,BLM seabird project,Thomas Cave,way in ,EE03060 badly overlapped | replaced with EE09081,,,0
+,,MT24_Majjistral_Thomas,12/06/2023,6,2023,21,21:45:00,R,EE09081,1,4,,,410,,,,,,,,BLM seabird project,Thomas Cave,way in ,EE03060 badly overlapped | replaced with EE09081,,,0
+,,MT24_Majjistral_Thomas,12/06/2023,6,2023,22,22:00:00,R,EE04209,0,4,,,370,,,,,,,,BLM seabird project,Thomas Cave,way in ,EE04209 weirdly bent | replaced with EE09172,,,0
+,,MT24_Majjistral_Thomas,12/06/2023,6,2023,22,22:00:00,R,EE09172,1,4,,,370,,,,,,,,BLM seabird project,Thomas Cave,way in ,EE04209 weirdly bent | replaced with EE09172,,,0
+,,MT24_Majjistral_Thomas,12/06/2023,6,2023,22,22:06:00,N,EE09173,0,4,,,400,,,,,,,,BLM seabird project,Thomas Cave,way in ,,,,0
+,,MT24_Majjistral_Thomas,12/06/2023,6,2023,22,22:44:00,R,EE02204,0,4,,,410,,,,,,,,BLM seabird project,Thomas Cave,way in ,,,,0
+,,MT24_Majjistral_Thomas,12/06/2023,6,2023,23,23:06:00,R,EE03897,0,4,,,400,,,,,,,,BLM seabird project,Thomas Cave,way in ,,,,0
+,,MT24_Majjistral_Eggshell,12/06/2023,6,2023,23,23:07:00,R,EE03727,0,4,,,400,,,,,,,,BLM seabird project,Eggshell Cave,way in ,A01 retrieved,,,0
+,,MT24_Majjistral_South_4,12/06/2023,6,2023,21,21:34:00,R,EE06709,0,4,,,440,,,,,,,,BLM seabird project,SOW 4,way in,,BP5,,0
+,,MT24_Majjistral_South_4,12/06/2023,6,2023,21,21:53:00,R,EE02600,0,4,,,420,,,,,,,,BLM seabird project,SOW 4,way in ,,BP4,,0
+,,MT24_Majjistral_South_4,12/06/2023,6,2023,22,22:04:00,R,EE09045,0,4,,,390,,,,,,,,BLM seabird project,SOW 4,way in,,BP5,,0
+,,MT24_Majjistral_South_4,12/06/2023,6,2023,22,22:12:00,R,EE04558,0,4,,,410,,,,,,,,BLM seabird project,SOW 4,way in ,,BP5,,0
+,,MT24_Majjistral_South_4,12/06/2023,6,2023,22,22:14:00,R,EE06690,0,4,,,450,,,,,,,,BLM seabird project,SOW 4,way in ,,BP5,,0
+,,MT24_Majjistral_South_4,12/06/2023,6,2023,23,23:02:00,R,EE06958,0,4,,,410,,,,,,,,BLM seabird project,SOW 4,way in ,,BP5,,0
+,,MT24_Majjistral_South_4,12/06/2023,6,2023,23,23:00:00,R,EE02594,0,4,,,460,,,,,,,,BLM seabird project,SOW 4,way in ,,BP6,,0
+,,MT24_Majjistral_South_4,12/06/2023,6,2023,23,23:15:00,R,EE04536,0,4,,,440,,,,,,,,BLM seabird project,SOW 4,way in ,,BP5,,0
+,,MT24_Majjistral_South_1,12/06/2023,6,2023,22,22:27:00,R,EE03927,0,4,,,370,,,,,,,,BLM seabird project,SOW 1 ,way in ,"ringed as 3J same cave 22/06/2018	",,,0
+,,MT24_Majjistral_South_1,12/06/2023,6,2023,23,23:18:00,R,EE03160,0,4,,,460,,,,,,,,BLM seabird project,SOW 1 ,way in ,,,,0
+,,MT17_Comino_Shelf,10/06/2023,6,2023,11,11:00:00,N,EE09137,0,1,,,400,,,,,,,,BLM seabird project,Shelf Cave ,NS23,,,,0
+,,MT24_Majjistral_Eggshell,12/06/2023,6,2023,21,21:40:00,R,EE04790,0,4,,,360,,,,,,,,BLM seabird project,Eggshell Cave,way in ,,BP4,,0
+,,MT24_Majjistral_Eggshell,12/06/2023,6,2023,21,21:47:00,R,EE03427,0,4,,,390,,,,,,,,BLM seabird project,Eggshell Cave,way in ,,BP3,,0
+,,MT24_Majjistral_Eggshell,12/06/2023,6,2023,21,21:55:00,R,EE03749,0,4,,,310,,,,,,,,BLM seabird project,Eggshell Cave,way in ,,BP4,,0
+,,MT24_Majjistral_Eggshell,12/06/2023,6,2023,22,22:11:00,R,EE04115,0,4,,,320,,,,,,,,BLM seabird project,Eggshell Cave,way in ,,BP3,,0
+,,MT24_Majjistral_Eggshell,12/06/2023,6,2023,22,22:49:00,R,EE03030,0,4,,,330,,,,,,,,BLM seabird project,Eggshell Cave,way in ,,BP3,,0
+,,MT24_Majjistral_Eggshell,12/06/2023,6,2023,22,22:51:00,R,FF03273,0,4,,,460,,,,,,,,BLM seabird project,Eggshell Cave,way in ,,BP4,,0
+,,MT09_RM01,13/06/2023,6,2023,17,17:10:00,N,EE09174,0,1,,173,430,,,46.7,,,,,BLM seabird project,RM01,NB27,FL,,,0
+,,MT09_RM01,13/06/2023,6,2023,17,17:20:00,N,EE09175,0,1,,157,390,,,44.7,,,,,BLM seabird project,RM01,NB24,FM,,,0
+,,MT09_RM01,13/06/2023,6,2023,17,17:30:00,N,EE09176,0,1,,197,480,,,47.4,,,,,BLM seabird project,RM01,NB02,FL,,,0
+,,MT09_RM01,13/06/2023,6,2023,17,17:35:00,N,EE09177,0,1,,145,510,,,46.7,,,,,BLM seabird project,RM01,NB17,FM,,,0
+,,MT09_RM01,13/06/2023,6,2023,17,17:45:00,N,EE09178,0,1,,210,440,,,45.3,,,,,BLM seabird project,RM01,NB20,RF,,overlapped on purpose | UT,0
+,,MT24_Cumnija,19/06/2023,6,2023,18,18:00:00,N,EE09626,0,1,,,480,,,48.2,,,,,BLM seabird project,Cumnija ,NS4,RF,,UT,0
+,,MT17_Cominotto_4,19/06/2023,6,2023,21,21:39:00,N,EE09627,0,4,,,385,,,,,,,,BLM seabird project,Cominotto Cave 4,way in ,,Bp5,,0
+,,MT17_Cominotto_4,19/06/2023,6,2023,22,22:06:00,R,EE02844,0,4,,,410,,,,,,,,BLM seabird project,Cominotto Cave 4,way in ,,Bp4,,0
+,,MT17_Cominotto_4,19/06/2023,6,2023,22,22:46:00,R,EE04219,0,4,,,390,,,,,,,,BLM seabird project,Cominotto Cave 4 ,way in ,EE04219 opening replaced with EE09628,BP5,,0
+,,MT17_Cominotto_4,19/06/2023,6,2023,22,22:46:00,R,EE09628,1,4,,,390,,,,,,,,BLM seabird project,Cominotto Cave 4,way in ,EE04219 opening replaced with EE09628,Bp5,,0
+,,MT17_Cominotto_4,19/06/2023,6,2023,23,23:10:00,R,EE02843,0,4,,,415,,,,,,,,BLM seabird project,Cominotto Cave 4 ,way in ,regurgitated before weighing!,BP6,,0
+,,MT17_Cominotto_2,19/06/2023,6,2023,23,23:28:00,R,EE04721,0,4,,,320,,,,,,,,BLM seabird project,Cominotto Cave 2,in burrow infront of cave,,BP5,,0
+,,MT17_Cominotto_1,19/06/2023,6,2023,23,23:34:00,N,EE09629,0,4,,,320,,,,,,,,BLM seabird project,Cominotto behind Cave 1,outside,,BP5,,0
+,,MT17_Cominotto_9,19/06/2023,6,2023,23,23:48:00,N,EE09630,0,3J,,,470,,,46.6,,,,,BLM seabird project,Cominotto Cave 9,outside,,,UT,0
+,,MT24_Majjistral_NorthCave,19/06/2023,6,2023,17,17:58:00,N,EE09179,0,1,,209,435,,,45.5,,,,,BLM seabird project,NOW ,NS5,RF,,UT,0
+,,MT24_Majjistral_NorthCave,19/06/2023,6,2023,18,18:05:00,N,EE09180,0,1,,215,490,,,45.6,,,,,BLM seabird project,NOW ,NS2,RF,,UT,0
+,,MT24_Majjistral_NorthCave,19/06/2023,6,2023,18,18:15:00,N,EE09181,0,1,,183,435,,,46.4,,,,,BLM seabird project,NOW ,NS4,FL,,UT,0
+,,MT24_Majjistral_NorthCave,19/06/2023,6,2023,18,18:30:00,N,EE09182,0,1,,192,470,,,46.3,,,,,BLM seabird project,NOW ,NS10,FL,,UT,0
+,,MT24_Majjistral_NorthCave,19/06/2023,6,2023,18,18:35:00,N,EE09183,0,1,,187,370,,,44.5,,,,,BLM seabird project,NOW ,NS7,FL,,UT,0
+,,MT24_Majjistral_NorthCave,19/06/2023,6,2023,18,18:45:00,N,EE09184,0,1,,221,490,,,45.7,,,,,BLM seabird project,NOW ,NS8,RF,,UT,0
+,,MT24_Majjistral_Eggshell,19/06/2023,6,2023,19,19:30:00,R,EE09110,0,4,,,390,,,,,,,,BLM seabird project,Eggshell Cave,inside during the day ,,,,0
+,,MT24_Majjistral_Eggshell,19/06/2023,6,2023,19,19:30:00,N,EE09185,0,1,,206,350,,,44,,,,,BLM seabird project,Eggshell Cave,moving inside,RF,,UT,0
+,,MT09_RM04C,21/06/2023,6,2023,19,19:30:00,N,EE09152,0,1,,,460,,,,,,,,BLM seabird project,RM04C,NS6,RF,,UT,0
+,,MT09_RM04D,21/06/2023,6,2023,20,20:45:00,N,EE09153,0,1,,205,490,,,46.5,,,,,BLM seabird project,RM04D,NS6,RF,,UT,0
+,,MT09_RM04D,21/06/2023,6,2023,21,21:00:00,N,EE09154,0,1,,175,510,,,45.7,,,,,BLM seabird project,RM04D,NS1,FL,,UT,0
+,,MT09_RM04D,21/06/2023,6,2023,21,21:05:00,N,EE09155,0,1,,,335,,,,,,,,BLM seabird project,RM04D,NS2,FM overlapped on purpose,,,0
+,,MT09_RM04D,21/06/2023,6,2023,21,21:30:00,N,EE09156,0,1,,173,405,,,45.3,,,,,BLM seabird project,RM04D,NS5,FM/FL,,UT,0
+,,MT09_RM05GC,21/06/2023,6,2023,22,22:15:00,N,EE09157,0,1,,191,390,,,45.6,,,,,BLM seabird project,RM05GC,NS1,FL,,UT,0
+,,MT09_RM05GC_Central,21/06/2023,6,2023,22,22:45:00,R,EE04756,0,4,,,,,,,,,,,BLM seabird project,RM05GC ,,,,,0
+,,MT09_RM05GC,21/06/2023,6,2023,22,22:50:00,N,EE09158,0,1,,182,430,,,45.8,,,,,BLM seabird project,RM05GC,NS9,Floverlapped on purpose,,UT,0
+,,MT09_RM05GC,21/06/2023,6,2023,23,23:08:00,N,EE09159,0,4,,,340,,,,,,,,BLM seabird project,RM05GC North Ledge,way out,,,,0
+,,MT09_RM05GC_Central,21/06/2023,6,2023,23,23:30:00,N,EE09160,0,4,,,440,,,,,,,,BLM seabird project,RM05GC ,way in,,,,0
+,,MT09_RM05GC_Central,21/06/2023,6,2023,23,23:30:00,R,EE03018,0,4,,,410,,,,,,,,BLM seabird project,RM05GC,way in ,,,,0
+,,MT09_RM05GC_Central,21/06/2023,6,2023,23,23:35:00,N,EE09141,0,4,,,370,,,,,,,,BLM seabird project,RM05GC,prospector,,,,0
+,,MT09_RM03,21/06/2023,6,2023,21,21:09:00,N,EE09186,0,3J,,225,,,,44.7,,,,,BLM seabird project,RM03,NS8,,,UT?,0
+,,MT09_RM03_North,21/06/2023,6,2023,21,21:16:00,N,EE09187,0,4,,,390,,,,,,,,BLM seabird project,RM03 North MN,way in,,BP5,,0
+,,MT09_RM03,21/06/2023,6,2023,21,21:51:00,R,EE03108,0,4,,,390,,,,,,,,BLM seabird project,RM03 ,by hand on boulders,,BP4,,0
+,,MT09_RM03_North,21/06/2023,6,2023,22,22:00:00,R,EE04695,0,4,,,435,,,,,,,,BLM seabird project,RM03 North MN,way in,,BP5,,0
+,,MT09_RM03_North,21/06/2023,6,2023,22,22:03:00,R,EE03180,0,4,,,380,,,,,,,,BLM seabird project,RM03 North MN,way in ,,BP5,,0
+,,MT09_RM03_North,21/06/2023,6,2023,22,22:05:00,R,EE04340,0,4,,,440,,,,,,,,BLM seabird project,RM03 North MN,way in ,,BP4,,0
+,,MT09_RM03_North,21/06/2023,6,2023,22,22:06:00,N,EE09189,0,3J,,225,370,,,42.6,,,,,BLM seabird project,RM03 ,NS8 way out,,,UT?,0
+,,MT09_RM03_North,21/06/2023,6,2023,22,22:10:00,N,EE09188,0,4,,,410,,,,,,,,BLM seabird project,RM03 North MN,way in ,regurgitated before weighing!,BP4,,0
+,,MT09_RM03_North,21/06/2023,6,2023,22,22:16:00,R,EE03541,0,4,,,390,,,,,,,,BLM seabird project,RM03 North MN,way in ,,Bp6,,0
+,,MT09_RM03_North,21/06/2023,6,2023,22,22:16:00,R,EE04961,0,4,,,380,,,,,,,,BLM seabird project,RM03 North MN,way in,,BP6,,0
+,,MT09_RM03_North,21/06/2023,6,2023,22,22:19:00,R,EE04927,0,4,,,430,,,,,,,,BLM seabird project,RM03 North MN,way in,entered NS2,BP4,,0
+,,MT09_RM03_North,21/06/2023,6,2023,22,22:27:00,R,EE03176,0,4,,,435,,,,,,,,BLM seabird project,RM03 North MN,way in ,entered NS2,BP5,,0
+,,MT09_RM03,21/06/2023,6,2023,22,23:02:00,N,EE09190,0,1,,182,515,,,45.9,,,,,BLM seabird project,RM03,NS19,,,UT,0
+,,MT09_RM03_North,21/06/2023,6,2023,23,23:16:00,N,EE09191,0,4,,,365,,,,,,,,BLM seabird project,RM03 Noth MN,way in ,regurgitated before weighing!,BP6,,0
+,,MT09_RM03_North,21/06/2023,6,2023,23,23:24:00,R,EE09014,0,4,,,410,,,,,,,,BLM seabird project,RM03 North MN,way in ,,,,0
+,,MT09_RM03_North,21/06/2023,6,2023,23,23:25:00,R,EE03431,0,4,,,410,,,,,,,,BLM seabird project,RM03 North MN ,way in ,,,,0
+,,MT09_RM03_North,21/06/2023,6,2023,23,23:25:00,R,EE02508,0,4,,,480,,,,,,,,BLM seabird project,RM03 North MN,way in ,,,,0
+,,MT09_RM03_North,21/06/2023,6,2023,23,23:50:00,R,EE04723,0,4,,,390,,,,,,,,BLM seabird project,RM03 North MN,way in ,,,,0
+,,MT30_TaCenc_Benscave,26/06/2023,6,2023,22,22:30:00,N,EE09192,0,3J,,,400,,,47.3,,,,,BLM seabird project,Ben's Cave ,way out ,,,UT,0
+,,MT09_RM01,28/06/2023,6,2023,19,19:54:00,R,EE09176,0,1,,232,410,,,46.6,,,,,BLM seabird project,Big Crack,NB02,RF,,UT,0
+,,MT09_RM01,28/06/2023,6,2023,20,20:00:00,R,EE09177,0,1,,194,410,,,46.5,,,,,BLM seabird project,Big Crack,NB17,FL,,UT,0
+,,MT09_RM01,28/06/2023,6,2023,20,20:10:00,N,EE09637,0,1,,209,420,,,46,,,,,BLM seabird project,Big Crack,NB23,RF,,UT,0
+,,MT09_RM01,28/06/2023,6,2023,20,20:20:00,N,EE09638,0,1,,194,420,,,43.9,,,,,BLM seabird project,Big Crack,NB18,FL,,UT,0
+,,MT09_RM01,28/06/2023,6,2023,20,20:30:00,N,EE09639,0,1,,196,430,,,45.8,,,,,BLM seabird project,Big Crack,NB19,FL,,"UT, overlapped on purpose",0
+,,MT09_RM01,28/06/2023,6,2023,20,20:35:00,R,EE09175,0,1,,204,390,,,44.5,,,,,BLM seabird project,Big Crack,NB25,FL,,"UT, overlapped on purpose",0
+,,MT09_RM01,28/06/2023,6,2023,20,20:40:00,R,EE09174,0,1,,221,530,,,47,,,,,BLM seabird project,Big Crack,NB27,RF,,UT? ,0
+,,MT09_RM00,28/06/2023,6,2023,21,21:45:00,N,EE09640,0,3J,,219,360,,,48.1,,,,,BLM seabird project,South of RM01 Boulder scree witth vegetation 35.989354°  14.375119°,,,,UT?,0
+,,MT09_RM00,28/06/2023,6,2023,23,23:16:00,N,EE09641,0,3J,,230,420,,,47.9,,,,,BLM seabird project,South of RM02 Boulder scree round corner below chapel 35.9876396 14.3756831,,,,UT?,0
+,,MT09_RM00,29/06/2023,6,2023,0,00:20:00,N,EE09642,0,4,,,310,,,,,,,,BLM seabird project,South of RM01,way out,,,,0
+,,MT09_RM01,28/06/2023,6,2023,22,22:08:00,R,EE04229,0,4,,,400,,,,,,,,BLM seabird project,Big Crack,way in,,,,0
+,,MT09_RM01,28/06/2023,6,2023,22,22:48:00,N,EE09142,0,3J,,221,385,,,46,,,,,BLM seabird project,Big Crack,,,,UT,0
+,,MT09_RM01,28/06/2023,6,2023,23,23:19:00,R,EE09008,0,4,,,430,,,,,,,,BLM seabird project,Big Crack,way in,,BP6,,0
+,,MT09_RM01,28/06/2023,6,2023,23,23:30:00,N,EE09143,0,3J,,224,435,,,43.7,,,,,BLM seabird project,Big Crack,in front of NB26 and 27,,,UT,0
+,,MT09_RM01,28/06/2023,6,2023,23,23:50:00,N,EE09144,0,3J,,231,410,,,45.7,,,,,BLM seabird project,Big Crack,close to BS13,,,UT,0
+,,MT27_Babu,29/06/2023,6,2023,18,18:50:00,N,EE09643,0,1,,190,190,,,44.7,,,,,BLM seabird project,Wied Babu,NS6,FL. same nest as other chick but one of them probably moved in ,,UT,0
+,,MT27_Babu,29/06/2023,6,2023,18,18:50:00,N,EE09644,0,1,,194,250,,,43.8,,,,,BLM seabird project,Wied Babu,NS6,RF. same nest as other chick but one of them probably moved in ,,UT,0
+,,MT27_Babu,29/06/2023,6,2023,19,19:00:00,N,EE09645,0,1,,224,470,,,47.1,,,,,BLM seabird project,Wied Babu,NS8,RF,,UT,0
+,,MT17_Comino_Treasure,30/06/2023,6,2023,21,21:00:00,N,EE09651,0,1,,221,460,,,47.7,,,,,BLM seabird project,Treasure Cave ledge,NB6,RF,,UT,0
+,,MT17_Cominotto_1,30/06/2023,6,2023,21,21:57:00,N,EE09652,0,3J,,223,480,,,48.9,,,,,BLM seabird project,Cominotto Cave 1,outside,,,UT,0
+,,MT17_Cominotto_1,30/06/2023,6,2023,22,22:00:00,N,EE09653,0,4,,,395,,,,,,,,BLM seabird project,Cominotto Cave 1,way in,,,,0
+,,MT17_Cominotto_5,30/06/2023,6,2023,22,22:53:00,N,EE09654,0,3J,,226,460,,,47.6,,,,,BLM seabird project,Cominotto Cave 5,way out,,,UT,0
+,,MT17_Cominotto_8,30/06/2023,6,2023,23,23:19:00,N,EE09655,0,3J,,228,385,,,46.6,,,,,BLM seabird project,Cominotto Cave 8 ,outside,,,UT,0
+,,office,29/06/2023,6,2023,14,14:00:00,N,EE05052,0,3J,,202,230,,,45.4,,,,,BLM seabird project,Rescued Gnejna Bay,waterproofing problem,Died in rehab 30/06/2023,,UT,0
+,,office,29/06/2023,6,2023,21,21:08:00,N,EE09145,0,3J,,226,390,,,45.2,,,,,BLM seabird project,Grounded Sliema,released majjistral same day at 21:08,,,UT,0
+,,office,15/07/2023,7,2023,22,22:10:00,N,EE09197,0,3J,,226,290,,,44.3,,,,,BLM seabird project,Grounded Cirkewwa South Quay | found before dark on 15/07/2023 so probably grounded night 14-15/07/2023,released majjistral same day at 22:10,,,UT,0
+,,MT24_Majjistral_South_1,27/07/2023,7,2023,10,10:00:00,N,EE09199,0,1,,,330,,,43.9,,,,,BLM seabird project,SOW Cave 1,right NS,FL,,UT,0
+,,office,02/07/2023,7,2023,22,22:02:00,N,EE09146,0,3J,,223,400,,,,,,,,BLM seabird project,Found at sea close to Selmun 29/06/2023,release above RM01 02/07/2023 22:02,weight at retrieval 400g | weight at rlease 445g,,UT,0
+,,MT17_Comino_Shelf,03/07/2023,7,2023,20,20:55:00,N,EE09646,0,3J,,217,345,,,45.9,,,,,BLM seabird project,Shelf Cave ,Close to NS15,,,UT,0
+,,MT17_Comino_Shelf,03/07/2023,7,2023,21,21:02:00,N,EE09647,0,3J,,221,360,,,44.6,,,,,BLM seabird project,Shelf Cave,upper blue hole,,,UT,0
+,,MT17_Comino_Shelf,03/07/2023,7,2023,21,21:15:00,N,EE09649,0,3J,,228,385,,,45.3,,,,,BLM seabird project,Shelf Cave ,upper blue hole,,,UT,0
+,,MT17_Comino_Shelf,03/07/2023,7,2023,21,21:17:00,N,EE09648,0,3J,,227,410,,,46.8,,,,,BLM seabird project,Shelf Cave ,,,,UT,0
+,,MT17_Comino_Shelf,03/07/2023,7,2023,21,21:30:00,N,EE09650,0,3J,,222,385,,,44.7,,,,,BLM seabird project,Shelf Cave,Close NS21,,,UT,0
+,,MT17_Comino_Shelf,03/07/2023,7,2023,21,21:34:00,N,EE09615,0,3J,,232,410,,,44.7,,,,,BLM seabird project,Shelf Cave,Upper ledge,dirty wing tips,,UT,0
+,,MT17_Comino_Shelf,03/07/2023,7,2023,21,21:43:00,N,EE09616,0,4,,,340,,,,,,,,BLM seabird project,Shelf Cave ,prospector,,,,0
+,,MT17_Comino_Shelf,03/07/2023,7,2023,21,21:45:00,R,EE09137,0,1,,167,410,,,48.1,,,,,BLM seabird project,Shelf Cave ,NS23,FM/FL,,UT,0
+,,MT17_Comino_Shelf,03/07/2023,7,2023,22,22:00:00,N,EE09617,0,3J,,208,445,,,46.5,,,,,BLM seabird project,Shelf Cave ,NS18 way out,,,UT,0
+,,MT17_Comino_Shelf,03/07/2023,7,2023,22,22:10:00,N,EE09618,0,4,,,410,,,,,,,,BLM seabird project,Shelf Cave,Upper ledge way in ,,BP5,,0
+,,MT17_Comino_Shelf,03/07/2023,7,2023,22,22:34:00,N,EE09619,0,4,,,350,,,,,,,,BLM seabird project,Shelf Cave,NS15 way out,chick calling inside,BP6,,0
+,,MT17_Comino_Shelf,03/07/2023,7,2023,22,22:47:00,N,EE09620,0,3J,,225,,,,48.1,,,,,BLM seabird project,Shelf Cave,Between NS8 and NS15,,,UT,0
+,,MT17_Comino_Shelf,03/07/2023,7,2023,23,23:05:00,N,EE09621,0,3J,,222,410,,,47.4,,,,,BLM seabird project,Shelf Cave,Motorway,Leucistic - mottled black and white,,UT,0
+,,MT24_Delli_Mheadland,04/07/2023,7,2023,22,22:25:00,N,EE09622,0,3J,,230,390,,,46.5,,,,,BLM seabird project,M's Headland Cave,outside,,,UT,0
+,,MT24_Majjistral_above_main_colony,05/07/2023,7,2023,0,00:21:00,N,EE09623,0,4,,,385,,,,,,,,BLM seabird project,"burrows at cliff top, just above ARU loc and next to BST05",outside,,,,0
+,,office,04/07/2023,7,2023,21,21:20:00,N,EE09147,0,3J,,229,390,,,47.8,,,,,BLM seabird project,Grounded on San Antonio balcony Bugibba 04/07/2023 | realeased same day at Majjistra,,,,UT,0
+,,MT24_Majjistral_Eggshell,04/07/2023,7,2023,21,21:35:00,N,EE09148,0,3J,,222,300,,,47.9,,,,,BLM seabird project,Eggshell Cave,outside,dirty belly,,UT,0
+,,MT24_Majjistral_Thomas,04/07/2023,7,2023,21,21:52:00,R,EE09172,0,4,,229,340,,,45.7,,,,,BLM seabird project,Thomas Cave,,,,,0
+,,MT24_Majjistral_South_4,04/07/2023,7,2023,22,22:37:00,N,EE09149,0,3J,,232,360,,,44.6,,,,,BLM seabird project,SOW cave 4,outside,,,UT,0
+,,MT24_Majjistral_South_4,04/07/2023,7,2023,22,22:37:00,N,EE09150,0,4,,,345,,,,,,,,BLM seabird project,SOW cave 4,prospector,,BP5,,0
+,,MT24_Majjistral_South_1,04/07/2023,7,2023,23,23:11:00,R,EE03928,0,4,,,370,,,,,,,,BLM seabird project,SOW cave 1,left NS,,BP6,,0
+,,MT24_Majjistral_South_1,04/07/2023,7,2023,23,23:11:00,R,EE06964,0,4,,,330,,,,,,,,BLM seabird project,SOW cave 1,centre NS,,BP5,,0
+,,MT24_Majjistral_South_1,04/07/2023,7,2023,23,23:21:00,N,EE09631,0,4,,,360,,,,,,,,BLM seabird project,SOW cave 1,,,BP5,,0
+,,MT24_Majjistral_South_4,04/07/2023,7,2023,22,22:55:00,N,EE09632,0,3J,,220,360,,,44.1,,,,,BLM seabird project,SOW cave 4,,dirty belly,,UT,0
+,,MT24_Majjistral_Eggshell,05/07/2023,7,2023,0,00:20:00,N,EE09633,0,3J,,221,340,,,41.2,,,,,BLM seabird project,Eggshell Cave,,dirty belly,,UT,0
+,,MT09_RM05GC,05/07/2023,7,2023,21,21:33:00,N,EE04871,0,1,,181,220,,,47.3,,,,,BLM seabird project,RM05GC,NS5,overlapped on purpose,,UT,0
+,,MT09_RM05GC,05/07/2023,7,2023,21,21:35:00,N,EE09624,0,3J,,221,360,,,45.7,,,,,BLM seabird project,RM05GC ,outside Cave 1,,,UT,0
+,,MT09_RM05GC,05/07/2023,7,2023,22,22:05:00,N,EE09625,0,3J,,220,350,,,46.7,,,,,BLM seabird project,RM05GC,outside Cave 1,,,UT,0
+,,MT09_RM05GC,05/07/2023,7,2023,22,22:15:00,N,EE09193,0,4,,,335,,,,,,,,BLM seabird project,RM05GC,prospector central ledge,,,,0
+,,MT24_Cumnija,06/07/2023,7,2023,21,21:20:00,N,EE04872,0,1,,173,220,,,45.2,,,,,BLM seabird project,Cumnija ,NS14,overlapped on purpose | first ringed with EE09194 but opened and removed,,UT,0
+,,office,09/07/2023,7,2023,21,21:30:00,N,EE09634,0,3J,,229,380,,,43.7,,,,,BLM seabird project,Grounded paraside bay at stairs down to bay 08/07/2023,released Majjistral 09/07/2023 at 21:30,,,UT?,0
+,,MT30_TaCenc_Stormpetrel,12/07/2023,7,2023,19,19:15:00,N,EE05053,0,1,,196,250,,,47.1,,,,,BLM seabird project,Storm petrel cave,NS in same crack as MSP nests,,,UT,0
+,,MT09_RM01,13/07/2023,7,2023,20,20:50:00,R,EE09639,0,1,,,350,,,,,,,,BLM seabird project,Big Crack,NB19,RF,,,0
+,,MT09_RM01,13/07/2023,7,2023,22,22:20:00,N,EE09195,0,3J,,223,385,,,40.9,,,,,BLM seabird project,RM01,close to BS16,,,UT?,0
+,,office,13/07/2023,7,2023,19,19:00:00,N,EE09635,0,3J,,210,250,,,45.4,,,,,BLM seabird project,found at Gnejna Bay on 08/07/2023 weighing 170g,released from Majjistral 24/07/2023,,,UT,0
+,,office,13/07/2023,7,2023,19,19:10:00,N,EE09636,0,3J,,219,310,,,42.5,,,,,BLM seabird project,found offshore Comino 07/07/2023 at 245g,released at Cumnija 14/07/2023,,,UT,0
+,,MT27_Hasan,23/07/2023,7,2023,20,20:35:00,N,EE09198,0,3J,,227,360,,,46.2,,,,,BLM seabird project,Ghar Hasan,way out NS2 ,,,UT,0
+,,office,01/08/2023,8,2023,20,20:40:00,N,EE05160,0,3J,,224,,,,43.4,,,,,BLM seabird project,Found offshore Sikka l-bajda 13/07/2023,released Rdum tal-Madonna 01/08/2023,,,,0
+,,office,14/07/2023,7,2023,20,20:45:00,N,EE09196,0,3J,,230,320,,,47.4,,,,,BLM seabird project,found 14/07/2023 in Qammieh water reservoir,eleased same day Cumnija,,,UT,0
+,,MT22_StPauls_Nestboxledge,11/06/2023,6,2023,20,20:15:00,R,EE09048,0,1,,,420,,,,,,,,BLM seabird project,NB03,FL,,,,0
+,,MT22_StPauls_Nestboxledge,11/06/2023,6,2023,20,20:20:00,R,EE09049,0,1,,,340,,,,,,,,BLM seabird project,NB15,FL,,,,0
+,,office,09/08/2023,8,2023,20,20:30,R,EE05166,0,3J,,,,,,,,,,,David Attard,collected at sea off l-Ahrax 23/07/2023,released at majjistral 09/08/2023 | Ringed by DA,,,,0

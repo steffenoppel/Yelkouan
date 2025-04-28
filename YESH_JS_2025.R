@@ -22,6 +22,9 @@
 ## code checked by steffen oppel on 25 April 2025
 
 
+### NEED TO DO: build capthist for ring loss
+### add ring loss prob into model
+
 rm(list = ls())
 library(dplyr)
 library(tidyverse)
@@ -167,7 +170,7 @@ effort <- fread("Cave_Activity_complete_2012-2024DT.csv")
 ##does the start and end time overlap midnight? 
 ##create an end date and correct for midnight overlap
 effort <- as.data.frame(effort) %>%   ### fixed this to data frame because data.table does not support multicolumn values such as intervals: https://github.com/tidyverse/dtplyr/issues/475
-  filter(!is.na(start_time) & !is.na(end_time)) %>%
+  dplyr::filter(!is.na(start_time) & !is.na(end_time)) %>%
   mutate(
     start=as.POSIXct(start_time, format="%H:%M",tz = "Europe/Berlin"),
     end=as.POSIXct(end_time, format="%H:%M", tz="Europe/Berlin"),
@@ -588,6 +591,19 @@ cat("
       }
     }
     
+    
+    ## RING LOSS PROBABILITY FOR SUBSAMPLE OF BIRDS
+     mu.ring.loss ~
+      for (i in 1:M){
+        for (t in 1:n.years){
+          logit(ring.loss.p[i,t]) ~ dunif(0, 1)
+        }
+      }
+    
+    
+    
+    
+    
     ### PRIORS FOR RANDOM EFFECTS
     sigma.capt ~ dunif(0, 10)                     # Prior for standard deviation of capture
     tau.capt <- pow(sigma.capt, -2)
@@ -624,7 +640,7 @@ cat("
         z[i,t,col] ~ dbern(pot.alive[i,t,col])
     
         # Observation process
-        mu1[i,t,col] <- z[i,t,col] * p[i,t,col]	
+        mu1[i,t,col] <- z[i,t,col] * p[i,t,col]	* (1-ring.loss.p[i,t])
         y[i,t,col] ~ dbern(mu1[i,t,col])
         } #t
       } #i
@@ -751,7 +767,7 @@ parameters <- c("N", "ann.surv") # changed parameters to see if it could extract
 
 # clean up workspace
 save.image("YESH_prepared_data_2025.RData")
-rm(list=setdiff(ls(), c('jags.data','inits','parameters','zinit.arr')))
+rm(list=setdiff(ls(), c('jags.data','inits','parameters','zinit.arr','COLEFF')))
 gc()
 
 
@@ -785,15 +801,16 @@ YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\Vogelwarte\\YESH\\
 #########################################################################
 # PRODUCE OUTPUT TABLE
 #########################################################################
-setwd("C:\\Users\\rita.matos\\Documents\\CMR")
-save.image("YESH_JS_output2024.RData")
+try(setwd("C:\\Users\\rita.matos\\Documents\\CMR"), silent=T)
+try(setwd("C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan"), silent=T)
+save.image("output/YESH_JS_output2024.RData")
 
 out<-as.data.frame(YESHabund$summary)
 out$parameter<-row.names(YESHabund$summary)
 
 export<-out %>% select(c(12,1,5,2,3,7)) %>%
   setNames(c('Parameter','Mean', 'Median','SD','lcl', 'ucl'))
-fwrite(export,"YESH_Malta_Abundance_estimates2024.csv")
+fwrite(export,"output/YESH_Malta_Abundance_estimates2024.csv")
 
 #########################################################################
 # PRODUCE SURVIVAL GRAPH 
@@ -814,7 +831,7 @@ ggplot(data=export[53:64,],aes(y=Mean, x=seq(2012.5,2023.5,1))) + geom_point(siz
         panel.grid.minor = element_blank(), 
         panel.border = element_blank())
 
-ggsave("YESH_survival_2012_2024.pdf", device = "pdf", width=12, height=9)
+ggsave("output/YESH_survival_2012_2024.pdf", device = "pdf", width=12, height=9)
 
 #########################################################################
 # PRODUCE ABUNDANCE GRAPH 
@@ -854,7 +871,7 @@ ggplot(data=abund,aes(y=Mean, x=Year)) + geom_point(size=2)+
         panel.grid.minor = element_blank(), 
         panel.border = element_blank())
 
-ggsave("YESH_abundance_2013_2024.pdf", device = "pdf", width=20, height=14)
+ggsave("output/YESH_abundance_2013_2024.pdf", device = "pdf", width=20, height=14)
 
 
 

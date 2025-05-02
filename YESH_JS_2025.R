@@ -457,6 +457,36 @@ survPeriods$surv_int[survPeriods$surv_int<0]<-NA
 
 #fwrite(survPeriods,"Malta_intervals_sessions.csv")
 
+
+
+
+#########################################################################
+# READ IN RING LOSS DATA
+#########################################################################
+
+
+ringloss<-fread("YESH_doublemarks.csv") %>%
+  rename(ringnumber=Original_ring)
+
+firstringed<-records %>% dplyr::filter(ringnumber %in% ringloss$ringnumber) %>%
+  group_by(ringnumber) %>%
+  summarise(marked=min(ringingDate, na.rm=T))
+
+ringloss<-ringloss %>%
+  mutate(ringnumber=ifelse(ringnumber %in% replist$repl,replist$orig[match(ringnumber,replist$repl)],ringnumber)) %>%
+  left_join(firstringed, by="ringnumber") %>%
+  mutate(marked=if_else(is.na(marked),as.Date(DoubleTagON),
+                        if_else(!is.na(DateReplacement) & DateReplacement<DoubleTagOff,as.Date(DateReplacement),marked))) %>%
+  mutate(elapsed=as.numeric(difftime(DoubleTagOff,marked,unit="days"))/365)
+
+## find missing records
+missing<-(ringloss %>% filter(is.na(elapsed)) %>% select(ringnumber))$ringnumber
+table(ringloss$LostRing,round(ringloss$elapsed,0))
+summary(glm(LostRing~elapsed,data=ringloss, family=binomial))  ## there is no indication that ring loss is actually increasing with ring age
+
+
+
+
 #########################################################################
 # PREPARE DATA FOR INPUT INTO JAGS
 #########################################################################
@@ -546,7 +576,7 @@ try(setwd("C:\\Users\\rita.matos\\Documents\\CMR"),silent=T)
 try(setwd("C:\\STEFFEN\\OneDrive - THE ROYAL SOCIETY FOR THE PROTECTION OF BIRDS\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\2025"), silent=T)
 try(setwd("C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan\\models"), silent=T)
 
-sink("YESH_JS_abundance_trend_v2025.jags")
+sink("YESH_JS_abundance_trend_ring_loss.jags")
 cat("
     
     
@@ -593,20 +623,20 @@ cat("
     
     
     ## RING LOSS PROBABILITY FOR SUBSAMPLE OF BIRDS
-     mu.ring.loss ~
-      for (i in 1:M){
-        for (t in 1:n.years){
-          logit(ring.loss.p[i,t]) ~ dunif(0, 1)
+      mu.ring.loss ~ dnorm(0,0.01)
+     #beta.ring.age ~ dexp(50)
+      for (i in 1:n.doubleringed){
+          eps.ring.loss[i] ~ dnorm(0, tau.ring.loss)
+          logit(lp.ring.loss[i]) <- mu.ring.loss + eps.ring.loss[i]
+          ring.loss[i] ~ dbern(lp.ring.loss[i])
         }
-      }
-    
-    
-    
-    
-    
+
+
     ### PRIORS FOR RANDOM EFFECTS
     sigma.capt ~ dunif(0, 10)                     # Prior for standard deviation of capture
     tau.capt <- pow(sigma.capt, -2)
+    sigma.ring.loss ~ dunif(0,10)
+    tau.ring.loss  <- pow(sigma.ring.loss, -2)
     
     
     ### RECRUITMENT PROBABILITY INTO THE MARKED POPULATION
@@ -627,6 +657,7 @@ cat("
       z[i,1,col] ~ dbern(gamma[1,col])
     
       # Observation process
+      ring.loss.p[col,i,1]<-0
       mu1[i,1,col] <- z[i,1,col] * p[i,1,col]
       y[i,1,col] ~ dbern(mu1[i,1,col])
     
@@ -640,7 +671,10 @@ cat("
         z[i,t,col] ~ dbern(pot.alive[i,t,col])
     
         # Observation process
-        mu1[i,t,col] <- z[i,t,col] * p[i,t,col]	* (1-ring.loss.p[i,t])
+        raneff.ring.loss[col,i,t] ~ dnorm(0,tau.ring.loss)
+        logit.ring.loss.p[col,i,t] <- mu.ring.loss + raneff.ring.loss[col,i,t]
+        ring.loss.p[col,i,t] <- max(ring.loss.p[col,i,t-1],ilogit(logit.ring.loss.p[col,i,t])) ## to ensure that once a ring is lost it cannot be observed again
+        mu1[i,t,col] <- z[i,t,col] * p[i,t,col]	* (1-ring.loss.p[col,i,t])
         y[i,t,col] ~ dbern(mu1[i,t,col])
         } #t
       } #i
@@ -750,7 +784,12 @@ col.first$OCC<-as.numeric(col.first$OCC) ##changed OCC to numeric so that first 
 
 
 # Bundle data
-jags.data <- list(y = CHcol, n.years = n.years,col.first=as.numeric(col.first$first),
+jags.data <- list(y = CHcol,
+                  n.years = n.years,
+                  col.first=as.numeric(col.first$first),
+                  n.doubleringed=dim(ringloss)[1],
+                  ring.loss=ringloss$LostRing,
+                  #elapsed=ringloss$elapsed,
                   M = potYESH, sitevec=site.arr, 
                   periods=per.arr, effmat=eff.arr,
                   n.sites=max(COLEFF$COL_NR),n.cols=max(DURMAT$SITE_NR)) 
@@ -763,7 +802,7 @@ inits <- function(){list(mean.phi = runif(1, 0.95, 1),
 
 
 # Parameters monitored
-parameters <- c("N", "ann.surv") # changed parameters to see if it could extract any data
+parameters <- c("N", "ann.surv","mu.ring.loss","tau.ring.loss") # changed parameters to see if it could extract any data
 
 # clean up workspace
 save.image("YESH_prepared_data_2025.RData")
@@ -774,9 +813,9 @@ gc()
 # MCMC settings
 # no convergence with ni=50,000, which took 760 minutes
 
-ni <- 75000
+ni <- 7500
 nt <- 3 
-nb <- 15000
+nb <- 1500
 nc <- 3
 
 
@@ -784,20 +823,12 @@ nc <- 3
 
 
 # Call JAGS from R
-# YESHabund <- jags(jags.data, inits, parameters, "C:\\Users\\rita.matos\\Documents\\CMR\\YESH_JS_abundance_trend_v6.jags",  #C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_trend_v6.jags
-#                   n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T, n.iter=ni)
-
-YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan\\models\\YESH_JS_abundance_trend_v2025.jags",  #C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_trend_v6.jags
+YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan\\models\\YESH_JS_abundance_trend_ring_loss.jags",  #C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_trend_v6.jags
                   n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T, n.iter=ni)
 
 
 
 
-### ERROR OCCURS!!!!! ######
-#Error in checkForRemoteErrors(val) : 
-#3 nodes produced errors; first error: RUNTIME ERROR:
-  #Compilation error on line 14.
-#Index out of range taking subset of  periods
 #########################################################################
 # PRODUCE OUTPUT TABLE
 #########################################################################
@@ -875,541 +906,5 @@ ggsave("output/YESH_abundance_2013_2024.pdf", device = "pdf", width=20, height=1
 
 
 
-
-
-
-
-
-
-
-
-
-#########################################################################################################################
-#############calculate trend on subsites maintained throughout monitoring period ########################################
-#########################################################################################################################
-
-
-try(setwd("C:\\Users\\rita.matos\\Documents\\CMR"),silent=T)
-try(setwd("C:\\STEFFEN\\OneDrive - THE ROYAL SOCIETY FOR THE PROTECTION OF BIRDS\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\2025"), silent=T)
-try(setwd("C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan\\data"), silent=T)
-
-#load("2024_preJAGS.Rdata") #preprocessing is the same - this file has a faulty 'effort' data frame
-load("YESH_prepared_data_2025.RData")
-
-#modified in 2024 to make sure that all sites included were monitored throughout period
-
-## create lookup-table
-RM01 <- c("MT09_RM01")
-RM03 <- c("MT09_RM03", "MT09_RM03_North", "MT09_RM03_South") # "MT09_RM03_18to22" - removed no effort in 2019 and 2020 for adults
-RM05 <- c("MT09_RM05", "MT09_RM05BT", "MT09_RM05GC_Central", "MT09_RM05GC", "MT09_RM05GC_South", "MT09_RM05GC_North", "MT09_RM05BT_Lower", "MT09_RM05BT_Upper") 
-RM04 <- c("MT09_RM04A", "MT09_RM04D", "MT09_RM04C") #"MT09_RM04B" collapsed and changed since 2019 onwards
-Cominotto <- c("MT17_Cominotto_2", "MT17_Cominotto_1", "MT17_Cominotto_3", "MT17_Cominotto_4") # 4 only since 2017; #8 & 9 only since 2018 so better to remove these caves? #"MT17_Cominotto_7" no real effort for adults after 2017
-StPauls <- c("MT22_StPauls_MainCave", "MT22_StPauls_WestCave")
-Majjistral_main <- c("MT24_Majjistral_Eggshell", "MT24_Majjistral_Thomas", "MT24_Majjistral_NS2_NS3")   #no access to "MT24_Majjistral_Subt" since 2021          
-
-all_lut<-data.frame(orig=as.character(c(RM01,RM03,RM04,RM05,Cominotto,StPauls,Majjistral_main)),
-                    
-                    poolloc=as.character(c("RM01",rep("RM03",3),rep("RM04",3),rep("RM05",8),rep("Cominotto",4),rep("StPauls",2),rep("Majjistral_main",3))),
-                    
-                    maincol=as.character(c(rep("RdumTalMadonna",15),rep("Cominotto",4),rep("StPauls",2),rep("Majjistral",3))))
-
-
-effort <- effort %>%
-  mutate(SITE=all_lut$poolloc[match(as.character(Cave_String),all_lut$orig)]) %>%
-  mutate(COLO=all_lut$maincol[match(as.character(Cave_String),all_lut$orig)]) %>%
-  dplyr::filter(!is.na(SITE))
-
-records <- records %>%
-  mutate(SITE=all_lut$poolloc[match(as.character(Cave_String),all_lut$orig)]) %>%
-  mutate(COLO=all_lut$maincol[match(as.character(Cave_String),all_lut$orig)]) %>%
-  dplyr::filter(!is.na(SITE)) %>%
-  dplyr::filter(age %in% adults)%>%
-  dplyr::filter(Errors!= 1)
-
-
-
-
-#########################################################################
-# ENSURE THAT RING REPLACEMENTS ARE INCORPORATED INTO RECORDS
-#########################################################################
-names(records)
-length(unique(records$ringnumber))
-
-#same as pre-JAGS
-
-## CREATE REPLACEMENT LIST
-#replist<-rings %>% #dplyr::filter(Replacement_ring!="") %>%
-# rename(orig=Origninal_ring, repl=Replacement_ring) %>%
-# select(orig,repl)
-
-## FIND DOUBLE REPLACEMENTS AND UPDATE LIST
-#doublerep<-unique(rings$Replacement_ring)[unique(rings$Replacement_ring) %in% rings$Origninal_ring]
-#replist$orig[replist$orig %in% doublerep]<-replist$orig[replist$repl %in% doublerep]
-#replist[replist$orig %in% doublerep,] ### this should be empty
-#replist[replist$repl %in% doublerep,] ### this should have two records
-
-
-## UPDATE RECORDS
-yesh<- records %>%
-  mutate(ringnumber=ifelse(ringnumber %in% replist$repl,replist$orig[match(ringnumber,replist$repl)],ringnumber))
-length(unique(yesh$ringnumber))  ## reduces number of individuals from 1619 to 1572
-
-
-length(unique(yesh$ringnumber))
-
-
-#########################################################################
-# CREATE MATRIX OF ENCOUNTER DATA (0/1)
-#########################################################################
-
-
-### FIRST WE NEED TO CREATE A LIST OF OCCASIONS AND NUMBER THEM SEQUENTIALLY
-## ANALYSE AT SEASON LEVEL
-names(yesh)
-
-OCC_lookup<- yesh %>%
-  mutate(Year=year(NightStarting)) %>%
-  mutate(month=month(NightStarting)) %>%
-  #mutate(Occ=paste(Year,month,sep="_")) %>%
-  mutate(SEASON=ifelse(month<10,(Year-1),Year)) %>% ###define a breeding season from Oct to Jul
-  group_by(SEASON) %>%
-  summarise(middate=median(NightStarting)) %>%
-  arrange(middate) %>%
-  mutate(OCC_NR=seq_along(SEASON))
-
-
-
-YESH<- yesh %>% #mutate(Colony=caves$Subcolony_Name[match(Cave_String,caves$Cave_String)]) %>%
-  mutate(Year=year(NightStarting)) %>%
-  mutate(month=month(NightStarting), seen=1) %>%
-  #mutate(Occ=paste(Year,month,sep="_")) %>%
-  mutate(SEASON=ifelse(month<10,(Year-1),Year)) %>% ###define a breeding season from Oct to Jul
-  mutate(OCC_NR=OCC_lookup$OCC_NR[match(SEASON,OCC_lookup$SEASON)]) %>%
-  group_by(COLO,SITE, OCC_NR,ringnumber) %>%   ## REPLACED Colony with SITE based on Martin's grouping in October 2019
-  summarise(ALIVE=max(seen,na.rm=T)) %>%
-  spread(key=OCC_NR, value=ALIVE) %>%
-  replace(is.na(.), 0) %>%
-  ungroup() %>%
-  mutate(COLO=as.character(COLO),SITE=as.character(SITE))
-
-#length is longer the unique(records$ringnumber) cause some rings are assigned to more than one cavestring but this should not be a problem
-## THESE TWO DIMENSIONS DO NOT MATCH, BECAUSE SOME BIRDS WERE RECORDED IN >1 SITE
-duplicates<-names(table(YESH$ringnumber))[table(YESH$ringnumber)>1]
-transients <- YESH %>% dplyr::filter(ringnumber %in% duplicates) %>%
-  arrange(ringnumber,SITE)
-
-#fwrite(transients,"YESH_Malta_transients_EncHist.csv")
-
-
-
-## REMOVE DUPLICATES AND TRANSFER ENCOUNTERS INTO OTHER ROWS
-
-transientCH<-transients %>% gather(key='OCC', value='surv',-ringnumber,-SITE,-COLO) %>%
-  arrange(ringnumber,OCC) %>%
-  group_by(ringnumber,OCC) %>% summarise(surv=max(surv)) %>%
-  spread(key=OCC,value=surv, fill=0)
-
-transientCH<-transients %>% gather(key='OCC', value='surv',-ringnumber,-SITE,-COLO) %>%
-  dplyr::filter(surv==1) %>%
-  arrange(ringnumber,OCC) %>%
-  group_by(ringnumber) %>% summarise(COLO=last(COLO),SITE=last(SITE)) %>%
-  left_join(transientCH, by="ringnumber") %>%
-  dplyr::select(2,3,1,4:16)
-
-YESH<- YESH %>% dplyr::filter(!(ringnumber %in% duplicates)) %>%
-  bind_rows(transientCH)
-dim(YESH)
-
-
-
-
-#########################################################################
-# CREATE MATRIX OF EFFORT DATA AND DIFFERENCES BETWEEN OCCASIONS
-#########################################################################
-
-### FORMAT EFFORT DATA ###
-head(effort)
-min(effort$Date)
-
-eff<- effort %>% #mutate(Colony=caves$Subcolony_Name[match(Cave_String,caves$Cave_String)]) %>% ### REPLACED WITH THE GROUPING MARTIN PROVIDED IN OCTOBER 2019
-  #mutate(Colony=Cave_String) %>%  ### this does not work unless the 'periods' are somehow adjusted'
-  mutate(Year=year(NightStarting)) %>%   ## needs to be done due to conflicts between year=2017 for dates from 2015
-  #mutate(NightStarting=dmy(Date)) %>%
-  mutate(month=month(NightStarting)) %>%
-  mutate(SEASON=ifelse(month<10,(Year-1),Year)) %>% ###define a breeding season from Oct to Jul
-  mutate(OCC_NR=OCC_lookup$OCC_NR[match(SEASON,OCC_lookup$SEASON)]) %>%
-  mutate(hours=as.numeric(hours)) %>%
-  group_by(COLO,SITE, SEASON,OCC_NR) %>%  ## REPLACED Colony with SITE based on Martin's grouping in October 2019
-  summarise(effort=sum(hours,na.rm=T))
-
-
-### MATRIX OF EFFORT BY Cave_String ###
-### CALCULATE INTERVAL BETWEEN OCCASIONS ###
-survPeriods<-effort %>% 
-  mutate(Year=year(NightStarting)) %>%   ## needs to be done due to conflicts between year=2017 for dates from 2015
-  mutate(month=month(NightStarting)) %>%
-  mutate(SEASON=ifelse(month<10,(Year-1),Year)) %>% ###define a breeding season from Oct to Jul
-  mutate(OCC_NR=OCC_lookup$OCC_NR[match(SEASON,OCC_lookup$SEASON)]) %>%
-  group_by(COLO,SITE, SEASON,OCC_NR) %>%  ## REPLACED Colony with SITE based on Martin's grouping in October 2019
-  summarise(first=min(NightStarting,na.rm=T), last=max(NightStarting,na.rm=T), mid=median(NightStarting, na.rm=T)) %>%
-  arrange(SITE, SEASON,OCC_NR) %>%  ## REPLACED Colony with SITE based on Martin's grouping in October 2019
-  mutate(surv_int=as.numeric(difftime(dplyr::lead(mid,1), mid,unit="days")))  
-
-## calculate the difference in days between the mid days of subsequent sessions
-## somehow the lead/lag does not work in: mutate(surv_int=as.numeric(difftime(lead(first), last,unit="days")))  ## calculates the difference in days between end of current session and beginning of next session
-
-survPeriods$surv_int<-as.numeric(difftime(dplyr::lead(survPeriods$mid,1), survPeriods$mid,unit="days"))            
-survPeriods$surv_int[survPeriods$surv_int<0]<-NA               
-
-#fwrite(survPeriods,"Malta_intervals_sessions.csv")
-
-
-
-#########################################################################
-# PREPARE DATA FOR INPUT INTO JAGS
-#########################################################################
-
-names(YESH)
-CH<-as.matrix(YESH[,4:16], dimnames=F)
-dim(CH)
-
-### check that there are contacts in every season
-apply(CH,2,sum)
-
-# Compute vector with occasion of first capture
-get.first <- function(x) min(which(x==1))
-f <- apply(CH, 1, get.first)
-n.occ<-ncol(CH)
-
-### CHECK WHETHER IT LOOKS OK ###
-head(CH)
-
-## PREPARE CONSTANTS
-n.ind<-dim(CH)[1]		## defines the number of individuals
-n.years<-dim(CH)[2]  ## defines the number of years
-n.sites<-length(unique(YESH$SITE))
-n.colonies<-length(unique(YESH$COLO))              
-
-
-## CREATE MATRIX TO LOOK UP OBSERVATION EFFORT
-## STANDARDISE HOURS TO AVOID INVALID PARENT ERROR IN JAGS
-COLEFF<- eff %>% group_by(COLO,SITE, OCC_NR) %>%
-  summarise(effort=sum(effort)) %>%
-  mutate(effort=scale(effort, center=T, scale=T)) %>% #mean(effort))/sd(effort)) %>%
-  spread(key=OCC_NR, value=effort) %>%
-  replace(is.na(.), 0) %>%
-  ungroup() %>%
-  #mutate(COL_NR=seq_along(COLO),SITE_NR=row_number())
-  mutate(COL_NR=c(1,2,3,3,3,3,4),SITE_NR=c(1,1,1,2,3,4,1))
-
-effmat<-as.matrix(COLEFF[,3:15], dimnames=F)
-
-
-## CREATE LOOKUP VECTOR FOR WHICH COLONY BIRDS WERE CAUGHT IN
-head(YESH)
-sitevec<-COLEFF$SITE_NR[match(YESH$SITE,COLEFF$SITE)]
-colvec<-match(YESH$COLO,unique(YESH$COLO))
-
-length(f)
-length(colvec)
-length(sitevec)
-
-## CREATE LOOKUP VECTOR FOR WHICH COLONY BIRDS WERE CAUGHT IN
-DURMAT<- survPeriods %>% group_by(COLO,SITE, OCC_NR) %>%
-  summarise(int=sum(surv_int)) %>%
-  spread(key=OCC_NR, value=int) %>%
-  replace(is.na(.), 0) %>%
-  ungroup() %>%
-  mutate(COL_NR=c(1,2,3,3,3,3,4),SITE_NR=c(1,1,1,2,3,4,1))
-
-periods<-as.matrix(DURMAT[,3:15], dimnames=F)
-
-### JAGS CRASHES WHEN period==0, so we need to remove intermittent 0 and split survival interval over two years
-periods[1,4]<-periods[1,3]/2
-periods[1,3]<-periods[1,3]/2
-
-##########################################################################################################
-# Specify JS model with colony-specific ABUNDANCE TREND
-##########################################################################################################
-## GOAL IS TO CALCULATE TREND FOR FOUR MAIN COLONIES
-#Cominotto
-#StPauls
-#Majjistral: Majjistral_main
-#Rdum tal-Madonna: RM01 & RM03 & RM04 & RM05
-setwd("C:\\Users\\rita.matos\\Documents\\CMR")
-sink("YESH_JS_abundance_trend_v6.jags")
-cat("
-    
-
-    
-    model
-    {
-    
-    ##################### Priors and constraints #################################
-    
-    ### SURVIVAL PROBABILITY
-    for (t in 1:(n.years-1)){
-    ann.surv[t] ~ dunif(0.7, 1)                      # Priors for age-specific ANNUAL survival - this is the basic survival that is scaled to difference between occasions
-    for (col in 1:n.cols) {
-    for (s in 1:n.sites){
-    phi[s,t,col] <- pow(pow(ann.surv[t],(1/365)),periods[s,t,col]) 
-    } #s
-    } #col
-    } #t
-    
-    
-    ### RECAPTURE PROBABILITY
-    mean.p ~ dbeta(1.5, 4)                        # Prior for mean recapture switched to beta from unif
-    logit.p <- log(mean.p / (1-mean.p))           # Logit transformation
-    
-    for (col in 1:n.cols){
-    beta.effort[col] ~ dnorm(0,0.01)                   # Prior for trapping effort offset on capture probability
-    }
-    
-    for (col in 1:n.cols) {
-    for (i in 1:M){  
-    for (t in 1:n.years){
-    logit(p[i,t,col]) <- logit.p + beta.effort[col]*effmat[sitevec[i,col],t,col] + capt.raneff[i,t,col]   ## includes colony-specific effort and random effect for time and individual
-    } # close t
-    } #i
-    } #col
-    
-    ## RANDOM INDIVIDUAL EFFECT ON CAPTURE PROBABILITY
-    for (col in 1:n.cols) {
-    for (i in 1:M){
-    for (t in 1:n.years){
-    capt.raneff[i,t,col] ~ dnorm(0, tau.capt)
-    }
-    }
-    }
-    
-    ### PRIORS FOR RANDOM EFFECTS
-    sigma.capt ~ dunif(0, 10)                     # Prior for standard deviation of capture
-    tau.capt <- pow(sigma.capt, -2)
-    
-    
-    ### RECRUITMENT PROBABILITY INTO THE MARKED POPULATION
-    for (col in 1:n.cols){    
-    for (t in 1:n.years){
-    gamma[t,col] ~ dunif(0, 1)
-    } #t
-    } #col
-    
-    
-    ##################### LIKELIHOOD #################################
-    
-    for (col in 1:n.cols) {
-    for (i in 1:M){
-    
-    # First occasion
-    # State process
-    z[i,1,col] ~ dbern(gamma[1,col])
-    
-    # Observation process
-    mu1[i,1,col] <- z[i,1,col] * p[i,1,col]
-    y[i,1,col] ~ dbern(mu1[i,1,col])
-    
-    
-    # Subsequent occasions
-    for (t in 2:n.years){
-    
-    # State process
-    recru[i,t-1,col] <- max(z[i,1:(t-1),col])		# Availability for recruitment - this will be 0 if the bird has never been observed before and 1 otherwise
-    pot.alive[i,t,col] <- phi[sitevec[i,col],t-1,col] * z[i,t-1,col] + gamma[t,col] * (1-recru[i,t-1,col])
-    z[i,t,col] ~ dbern(pot.alive[i,t,col])
-    
-    # Observation process
-    mu1[i,t,col] <- z[i,t,col] * p[i,t,col]	
-    y[i,t,col] ~ dbern(mu1[i,t,col])
-    } #t
-    } #i
-    } #col
-    
-    
-    ##################### DERIVED PARAMETERS #################################
-    
-    # POPULATION SIZE
-    for (t in 1:n.years){
-    for (col in 1:n.cols){
-    N[t,col] <- sum(z[1:M,t,col])        # Actual population size per colony
-    } #col
-    } #t
-    
-    ##################### DERIVED TREND #################################
-    
-    for (col in 1:n.cols){
-    col.trend[col]<-mean(trend[,col])
-    for (t in 2:n.years){
-    trend[t-1,col] <- N[t-1,col]/max(N[t,col],1)        # trend estimate, avoid division by 0
-    } #t
-    } #col
-    
-    
-    }								#### END OF THE MODEL STATEMENT
-    
-    
-    
-    
-    ",fill = TRUE)
-sink()
-
-
-
-
-#########################################################################
-# PREPARE DATA FOR MODEL - INCLUDING DATA AUGMENTATION
-#########################################################################
-
-
-## CREATE MATRIX for INITIAL STATE Z (MATRIX WITH 0 and 1)
-zinit<-CH
-for (l in 1:nrow(zinit)){
-  firstocc<-get.first(zinit[l,])
-  if(firstocc<n.years){
-    zinit[l,(firstocc):n.years]<-1  ## alive from first contact - DIFF FROM CJS where this is firstocc+1
-  }else{
-    zinit[l,firstocc]<-1
-  }
-  if(firstocc>1){zinit[l,1:(firstocc-1)]<-0}  ## sets everything up to first contact to - - DIFF FROM CJS where this is NA
-}
-dim(zinit)
-
-
-
-### NEED TO CREATE 3-DIMENSIONAL ARRAY FOR y FOR EACH COLONY
-### AUGMENT DATA TO HAVE 1000 INDIVIDUALS PER COLONY
-### ARRAY must have identical dimensions
-col.n<-as.numeric(table(colvec))
-
-col.n
-
-potYESH<-1500   #change to 1500 to have more than max number of individuals in biggest colony
-#CHcol<- simplify2array(by(YESH[,4:11], YESH$COLO, as.matrix),USE.NAMES==F)
-#CHcol<- split(YESH[,4:11],f=YESH$COLO)
-
-YESH$COL_NR<-COLEFF$COL_NR[match(YESH$SITE,COLEFF$SITE)]
-YESH$SITE_NR<-COLEFF$SITE_NR[match(YESH$SITE,COLEFF$SITE)]
-
-
-CHcol<-array(0,dim=c(potYESH,n.years,max(COLEFF$COL_NR)))   ## CAPTURE HISTORY FOR EACH INDIVIDUAL IN EACH COLONY
-zinit.arr<-array(0,dim=c(potYESH,n.years,max(COLEFF$COL_NR)))                       # array for the initial values for z states for each individual in each colony
-per.arr<-array(365,dim=c(max(DURMAT$SITE_NR),n.years,max(DURMAT$COL_NR)))						# array for the survival periods between recapture episodes
-eff.arr<-array(0,dim=c(max(COLEFF$SITE_NR),n.years,max(COLEFF$COL_NR)))						# array for the trapping effort
-site.arr<-array(1,dim=c(potYESH,max(COLEFF$COL_NR)))						                  # array for the colony-specific site at which each bird was captured
-
-
-for (col in 1:max(COLEFF$COL_NR)) {
-  
-  ## populate capture history
-  CHcol[1:col.n[col],,col]<-as.matrix(YESH[YESH$COL_NR==col,4:16])
-  
-  ## populate capture effort
-  sitespercol<-max(COLEFF$SITE_NR[COLEFF$COL_NR==col])
-  eff.arr[1:sitespercol,,col]<-as.matrix(COLEFF[COLEFF$COL_NR==col,3:15])
-  
-  ## populate period array for length of survival periods between occasions
-  per.arr[1:sitespercol,,col]<-as.matrix(DURMAT[DURMAT$COL_NR==col,3:15])
-  
-  ## populate array for individual-specific vectors
-  site.arr[1:col.n[col],col]<-as.vector(YESH$SITE_NR[YESH$COL_NR==col])
-  
-  ## populate array for initial states
-  zinit.arr[1:col.n[col],,col]<-zinit[YESH$COL_NR==col,]
-  
-}
-
-
-### TO AVOID LOOPING OVER PARAMETER SPACE WITH NO DATA, WE CREATE A VECTOR THAT SPECIFIES WHEN DATA ARE AVAILABLE
-## FOR EACH COLONY
-col.first<- COLEFF %>% dplyr::select(-SITE, -SITE_NR) %>%
-  gather(key="OCC", value="effort",-COLO,-COL_NR) %>%
-  dplyr::filter(effort!=0) %>%
-  group_by(COLO,COL_NR) %>%
-  summarise(first=min(OCC)) %>%
-  arrange(COL_NR)
-
-
-# Bundle data
-jags.data <- list(y = CHcol, n.years = n.years,col.first=as.numeric(col.first$first),
-                  M = potYESH, sitevec=site.arr, 
-                  periods=per.arr, effmat=eff.arr,
-                  n.sites=max(COLEFF$COL_NR),n.cols=max(DURMAT$SITE_NR))
-
-# Initial values 
-inits <- function(){list(mean.phi = runif(1, 0.95, 1),
-                         mean.p = rbeta(1, 1.5, 4),
-                         z = zinit.arr,
-                         beta.effort = rnorm(4, 0, 10))}
-
-
-# Parameters monitored
-parameters <- c("N", "col.trend")
-
-# MCMC settings
-# no convergence with ni=50,000, which took 760 minutes
-
-ni <- 75000
-nt <- 3
-nb <- 15000
-nc <- 3
-
-# Call JAGS from R
-YESHabund <- jags(jags.data, inits, parameters, "C:\\Users\\rita.matos\\Documents\\CMR\\YESH_JS_abundance_trend_v6.jags",
-                  n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T, n.iter=ni)
-
-
-
-
-#########################################################################
-# PRODUCE OUTPUT TABLE
-#########################################################################
-#setwd("C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan")
-save.image("YESH_JS_trendmodel_output2024.RData")
-
-out<-as.data.frame(YESHabund$summary)
-out$parameter<-row.names(YESHabund$summary)
-export<-out %>% select(c(12,1,5,2,3,7)) %>%
-  setNames(c('Parameter','Mean', 'Median','SD','lcl', 'ucl'))
-fwrite(export,"YESH_Malta_Abundance_trend_estimates2024.csv")
-
-#########################################################################
-# PRODUCE ABUNDANCE GRAPH 
-#########################################################################
-
-abund<-out %>% select(c(12,1,5,2,3,7)) %>%
-  setNames(c('Parameter','Mean', 'Median','SD','lcl', 'ucl')) %>%
-  dplyr::filter(grepl("N",Parameter)) %>%
-  mutate(Colony=substr(Parameter,5,5),Year=as.numeric(substr(Parameter,3,3))+2011) %>%
-  mutate(Colony=COLEFF$COLO[match(Colony,COLEFF$COL_NR)]) %>%
-  dplyr::filter(Year>2012)
-
-###append 2021-2024 data which due to '10' in character vector screws up the substr()above: 
-
-abund21<-out %>% select(c(12,1,5,2,3,7)) %>%
-  setNames(c('Parameter','Mean', 'Median','SD','lcl', 'ucl')) %>%
-  dplyr::filter(grepl("N",Parameter)) %>%
-  mutate(Colony=substr(Parameter,6,6),Year=as.numeric(substr(Parameter,3,4))+2011) %>%
-  mutate(Colony=COLEFF$COLO[match(Colony,COLEFF$COL_NR)]) %>%
-  dplyr::filter(Year>2012)
-
-abund <- rbind(abund, abund21)
-
-### plot output ###
-
-ggplot(data=abund,aes(y=Mean, x=Year)) + geom_point(size=2)+
-  geom_errorbar(aes(ymin=lcl, ymax=ucl), width=.1)+
-  scale_x_continuous(name="Year", limits=c(2014,2024), breaks=seq(2014,2024,2), labels=seq(2014,2024,2))+
-  facet_wrap(~Colony,ncol=2,scales="free_y") +
-  ylab("N of adult Yelkouan Shearwaters") +
-  theme(panel.background=element_rect(fill="white", colour="black"), 
-        axis.text=element_text(size=20, color="black"), 
-        axis.title=element_text(size=22),
-        strip.text.x=element_text(size=20, color="black"), 
-        strip.background=element_rect(fill="white", colour="black"), 
-        panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(), 
-        panel.border = element_blank())
-
-ggsave("YESH_abundance_2014_2024_trendonly.pdf", device = "pdf", width=12, height=10)
 
 

@@ -834,14 +834,14 @@ YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\Vogelwarte\\YESH\\
 #########################################################################
 try(setwd("C:\\Users\\rita.matos\\Documents\\CMR"), silent=T)
 try(setwd("C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan"), silent=T)
-save.image("output/YESH_JS_output2024.RData")
+save.image("output/YESH_JS_output_ring_loss.RData")
 
 out<-as.data.frame(YESHabund$summary)
 out$parameter<-row.names(YESHabund$summary)
 
-export<-out %>% select(c(12,1,5,2,3,7)) %>%
-  setNames(c('Parameter','Mean', 'Median','SD','lcl', 'ucl'))
-fwrite(export,"output/YESH_Malta_Abundance_estimates2024.csv")
+export<-out %>% select(c(12,1,5,2,3,7,8,9)) %>%
+  setNames(c('Parameter','Mean', 'Median','SD','lcl', 'ucl','Rhat','n.eff'))
+fwrite(export,"output/YESH_Malta_Abundance_estimates_with_ring_loss.csv")
 
 #########################################################################
 # PRODUCE SURVIVAL GRAPH 
@@ -862,7 +862,7 @@ ggplot(data=export[53:64,],aes(y=Mean, x=seq(2012.5,2023.5,1))) + geom_point(siz
         panel.grid.minor = element_blank(), 
         panel.border = element_blank())
 
-ggsave("output/YESH_survival_2012_2024.pdf", device = "pdf", width=12, height=9)
+ggsave("output/YESH_survival_2012_2024_ring_loss.pdf", device = "pdf", width=12, height=9)
 
 #########################################################################
 # PRODUCE ABUNDANCE GRAPH 
@@ -902,7 +902,7 @@ ggplot(data=abund,aes(y=Mean, x=Year)) + geom_point(size=2)+
         panel.grid.minor = element_blank(), 
         panel.border = element_blank())
 
-ggsave("output/YESH_abundance_2013_2024.pdf", device = "pdf", width=20, height=14)
+ggsave("output/YESH_abundance_2013_2024_ring_loss.pdf", device = "pdf", width=20, height=14)
 
 
 

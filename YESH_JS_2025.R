@@ -36,11 +36,11 @@ library(tidyr)
 select<-dplyr::select
 filter<-dplyr::filter
 
+
+
 ################################################################################################################
 ###################### LOAD AND MANIPULATE DATA 	  ######################################################
 ################################################################################################################
-
-
 
 ##### LOAD RAW DATA  
 #setwd("C:\\Users\\martin.austad\\Documents\\yesh_cmr_HG_02082021")
@@ -101,6 +101,17 @@ colnames(R2024)[28] <- "remarks"
 colnames(R2024)[27] <- "broodpatch"
 colnames(R2024)[26] <- "tags"
 
+#load 2025 ringing data
+R2025 <- fread("2025_YESH_Biometrics_RingingRecords.csv")
+R2025$ringingDate <- as.Date(R2025$ringingDate, format="%d/%m/%Y")
+R2025$HourTime<-paste(R2025$HourTime,":00", sep="")   ## add missing seconds
+range(R2025$ringingDate)
+colnames(R2025)
+
+colnames(R2025)[28] <- "remarks"
+colnames(R2025)[27] <- "broodpatch"
+colnames(R2025)[26] <- "tags"
+
 #since ringing database extract for 2012-2016 gave time in hour only, :00:00 CONCATENATED onto hour value in excel
 records <- fread("2012_2021_cavestring_ringingrecords_updated.csv")
 
@@ -117,9 +128,9 @@ colnames(records)
 
 records <- records %>%
   dplyr::select(Errors, site, Cave_string, ringingDate,      
-month, Year, Hour, HourTime, type, ringnumber, Replacement, age,            
-sex, winglength, weight, billlength, billheight, tarsus,
-ringer, cave, nest_or_direction, remarks, tags, broodpatch, Prospector)
+                month, Year, Hour, HourTime, type, ringnumber, Replacement, age,            
+                sex, winglength, weight, billlength, billheight, tarsus,
+                ringer, cave, nest_or_direction, remarks, tags, broodpatch, Prospector)
 
 R2022 <- R2022 %>%
   dplyr::select(Errors, site, Cave_string, ringingDate,      
@@ -140,7 +151,13 @@ R2024 <- R2024 %>%
                 sex, winglength, weight, billlength, billheight, tarsus,
                 ringer, cave, nest_or_direction, remarks, tags, broodpatch, Prospector)
 
-records <- rbind(records, R2022, R2023, R2024)
+R2025 <- R2025 %>%
+  dplyr::select(Errors, site, Cave_string, ringingDate,      
+                month, Year, Hour, HourTime, type, ringnumber, Replacement, age,            
+                sex, winglength, weight, billlength, billheight, tarsus,
+                ringer, cave, nest_or_direction, remarks, tags, broodpatch, Prospector)
+
+records <- rbind(records, R2022, R2023, R2024, R2025)
 
 str(records)
 
@@ -153,7 +170,7 @@ records$Errors[is.na(records$Errors)] <- 0
 recordsbackup <- records
 
 records <- records %>%
-  mutate(DateTime=as.POSIXct(paste(ringingDate, HourTime, " "), format="%Y-%m-%d %H:%M:%S", tz="Europe/Berlin"))%>%
+  mutate(DateTime=as.POSIXct(paste(ringingDate, HourTime, " "), format="%Y-%m-%d %H:%M:%S", tz="Europe/Berlin")) %>%
   #mutate(DateTime=ymd(ringingDate) + hms(HourTime), tz = "Europe/Berlin") 
   dplyr::rename(Cave_String=Cave_string) %>%
  # mutate(DateTime=with_tz(DateTime,tz="UTC")) %>% #does not work if using EuropeBerlin tz here
@@ -164,7 +181,7 @@ records <- records %>%
   dplyr::filter(Errors!=1) #handful of records remain. these have been checked but could not be resolved. most likely are errors and should therefore not be included in analysis
 
 
-effort <- fread("Cave_Activity_complete_2012-2024DT.csv")
+effort <- fread("Cave_Activity_complete_2012-2025DT.csv")
 
 
 ##does the start and end time overlap midnight? 
@@ -355,6 +372,10 @@ OCC_lookup<- yesh %>%
   summarise(middate=median(NightStarting)) %>%
   arrange(middate) %>%
   mutate(OCC_NR=seq_along(SEASON))
+
+## temp fix for 2024 season (to accommodate ring loss data in 2025)
+OCC_lookup
+
 # Recognises the numbers as characters so 10 follows 1, to rectify this we tried making then numerical (line227)
 # or by adding 10 (line 229) as then the coloumns would always be correct in the lookup table - neither seem to rectify the error
     #OCC_lookup$OCC_NR<-as.numeric(OCC_lookup$OCC_NR)
@@ -474,10 +495,17 @@ firstringed<-records %>% dplyr::filter(ringnumber %in% ringloss$ringnumber) %>%
 
 ringloss<-ringloss %>%
   mutate(ringnumber=ifelse(ringnumber %in% replist$repl,replist$orig[match(ringnumber,replist$repl)],ringnumber)) %>%
+  mutate(SEASON=ifelse(month(DoubleTagOff)<10,(year(DoubleTagOff)-1),year(DoubleTagOff))) %>% ###define a breeding season from Oct to Jul
+  mutate(OCC_NR=OCC_lookup$OCC_NR[match(SEASON,OCC_lookup$SEASON)]) %>%
   left_join(firstringed, by="ringnumber") %>%
   mutate(marked=if_else(is.na(marked),as.Date(DoubleTagON),
                         if_else(!is.na(DateReplacement) & DateReplacement<DoubleTagOff,as.Date(DateReplacement),marked))) %>%
   mutate(elapsed=as.numeric(difftime(DoubleTagOff,marked,unit="days"))/365)
+
+
+## look at the NAs
+ringloss %>% filter(is.na(OCC_NR))
+
 
 ## find missing records
 missing<-(ringloss %>% filter(is.na(elapsed)) %>% select(ringnumber))$ringnumber
@@ -485,6 +513,12 @@ table(ringloss$LostRing,round(ringloss$elapsed,0))
 summary(glm(LostRing~elapsed,data=ringloss, family=binomial))  ## there is no indication that ring loss is actually increasing with ring age
 
 
+## CREATE RING LOSS ENCOUNTER HISTORY
+RL_CH<-YESH %>% filter(ringnumber %in% ringloss$ringnumber)
+for (i in RL_CH$ringnumber){
+  loss_occ<-ringloss$OCC_NR[ringloss$ringnumber==i]
+  RL_CH[RL_CH$ringnumber==i,loss_occ+3]<-0
+}
 
 
 #########################################################################
@@ -492,7 +526,7 @@ summary(glm(LostRing~elapsed,data=ringloss, family=binomial))  ## there is no in
 #########################################################################
 
 names(YESH)
-CH<-as.matrix(YESH[,4:16], dimnames=F) # changed to  16 to include 2024
+CH<-as.matrix(YESH[,4:dim(YESH)[2]], dimnames=F) # changed to flexible indexing to include all future years
 dim(CH)
 
 ### check that there are contacts in every season
@@ -502,6 +536,7 @@ apply(CH,2,sum)
 # Compute vector with occasion of first capture
 get.first <- function(x) min(which(x==1))
 f <- apply(CH, 1, get.first)
+f.rl<-apply(RL_CH, 1, get.first)
 n.occ<-ncol(CH)
 
 ### CHECK WHETHER IT LOOKS OK ###
@@ -509,6 +544,7 @@ head(CH)
 
 ## PREPARE CONSTANTS
 n.ind<-dim(CH)[1]		## defines the number of individuals
+n.ind.rl<-dim(CH)[1]		## defines the number of individuals
 n.years<-dim(CH)[2]  ## defines the number of years
 n.sites<-length(unique(YESH$SITE))
 n.colonies<-length(unique(YESH$COLO))              
@@ -533,6 +569,8 @@ effmat<-as.matrix(COLEFF[,3:15], dimnames=F)
 head(YESH)
 sitevec<-COLEFF$SITE_NR[match(YESH$SITE,COLEFF$SITE)]
 colvec<-match(YESH$COLO,unique(YESH$COLO))
+colvec.rl<-match(RL_CH$COLO,unique(YESH$COLO))
+sitevec.rl<-COLEFF$SITE_NR[match(RL_CH$SITE,COLEFF$SITE)]
 
 length(f) 
 length(colvec)
@@ -576,7 +614,7 @@ try(setwd("C:\\Users\\rita.matos\\Documents\\CMR"),silent=T)
 try(setwd("C:\\STEFFEN\\OneDrive - THE ROYAL SOCIETY FOR THE PROTECTION OF BIRDS\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\2025"), silent=T)
 try(setwd("C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan\\models"), silent=T)
 
-sink("YESH_JS_abundance_trend_ring_loss.jags")
+sink("YESH_JS_abundance_trend_ring_loss_v2.jags")
 cat("
     
     
@@ -667,14 +705,14 @@ cat("
     
         # State process
         recru[i,t-1,col] <- max(z[i,1:(t-1),col])		# Availability for recruitment - this will be 0 if the bird has never been observed before and 1 otherwise
-        pot.alive[i,t,col] <- phi[sitevec[i,col],t-1,col] * z[i,t-1,col] + gamma[t,col] * (1-recru[i,t-1,col])
+        pot.alive[i,t,col] <- phi[sitevec[i,col],t-1,col] * z[i,t-1,col] + gamma[t,col] * (1-recru[i,t-1,col]) * (1-ring.loss.p[col,i,t])
         z[i,t,col] ~ dbern(pot.alive[i,t,col])
     
         # Observation process
         raneff.ring.loss[col,i,t] ~ dnorm(0,tau.ring.loss)
         logit.ring.loss.p[col,i,t] <- mu.ring.loss + raneff.ring.loss[col,i,t]
         ring.loss.p[col,i,t] <- max(ring.loss.p[col,i,t-1],ilogit(logit.ring.loss.p[col,i,t])) ## to ensure that once a ring is lost it cannot be observed again
-        mu1[i,t,col] <- z[i,t,col] * p[i,t,col]	* (1-ring.loss.p[col,i,t])
+        mu1[i,t,col] <- z[i,t,col] * p[i,t,col]
         y[i,t,col] ~ dbern(mu1[i,t,col])
         } #t
       } #i

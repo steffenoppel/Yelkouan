@@ -1,0 +1,104 @@
+The file "TLoss_GMdata.Rdata" contains all the empirical data utilized in the paper 'Mark loss can strongly bias estimates of demographic rates in multi-state models: a case study with simulated and empirical datasets' by F. Touzalin et al. Please see main text and online supporting information of the paper for full details on the data and analysis.
+
+More precisely, the data consists of several R objects contained in the file 'TLoss_GMdata.Rdata':
+- 'nocc' is the number of capture-recapture occasions (i.e. years).
+- 'nind' is the number of individuals caught.
+- 'ncol' is the number of state = 5 (i.e. colony where breeding).
+- 'f' is a vector of the first capture occasion (1 to 9).
+- 'l' is a vector of last capture occasion, i.e. occasion 10 except in case of known death then last occasion can be lower than 10.
+- 'a' is the alive matrix filled with 1 if an individual is known alive and with NA if not.
+- 'z' is the detection matrix (see main text and supporting informations for detail on detection states).
+- 'dcol' is a matrix describing individual state (i.e. colony location, 1 to 5, and 6 is the dead sate).
+- 'age' is the vector of the age of the individual (i.e. 1 if <=1 year old and 2 if > 1year old)
+- 'sex' is the vector of the sex of the individual (i.e. 1 if female and 2 if male).
+- 'glu' is the matrix indicating if surgical glue was used (2) or not (1) for wound healing after transponder injection.
+- 'TM' is the matrix indicating marking occasion, filled with 1 if individual was marked and 0 if not.
+- 'TR' is the matrix indicating marking occasion, filled with 1 if individual was marked and 0 if not.
+
+The file "GMTL.jags" contains the code used for running the previous data with JAGS.
+
+
+Bellow are the comande lines to run the analysis of the empirical data described in the main text:
+
+# Load dataset
+load(file="TLoss_GMdata.Rdata")
+
+# Create dataset for JAGS
+data <- list(a = a, z = z, f = f, l = l, nocc = 10, nind = length(f), age = age,
+             ncol=6, col = dcol, sex = as.numeric(sex), TR = TR, TM = TM, glu = glu)
+
+
+# Set initial values
+a.ini <- a
+a.ini[is.na(a)] <- 1
+a.ini[!is.na(a)] <- NA
+for(i in 1:nrow(a.ini)){
+  if(f[i]>1)   a.ini[i,1:f[i]] <- NA
+  if(l[i]<10)  a.ini[i,(l[i]+1):10] <- NA
+}
+
+col.ini <- dcol
+for(i in 1:nrow(col.ini)){
+  if(f[i] == l[i]) col.ini[i, ] <- NA else
+  if(any(na.omit(dcol[i, (f[i]+1):l[i]])==6)) col.ini[i, (f[i]+1):l[i]] <- 6 else
+    col.ini[i, (f[i]+1):l[i]] <- dcol[i,f[i]]
+}
+col.ini[!is.na(dcol)] <- NA
+
+tr.ini <- TR+TM
+for(i in 1:nrow(tr.ini)){
+  for(j in 1:ncol(tr.ini)){
+    if(j<(f[i]+1)) next
+    if(j>(f[i]) & is.na(tr.ini[i,j])) tr.ini[i,j] <- 1
+  }
+  if(l[i]<10) tr.ini[i,(l[i]+1):10] <- NA
+}
+tr.ini[!is.na(TR)] <- NA
+
+psi <- array(NA,dim=c(6,2,2,6))
+for(c in 1:ncol){
+  for(s in 1:2){
+    psi[c,s,2,1:6] <- 1/6
+  }
+}
+
+for(c in 1:(ncol-1)){
+  for(s in 1:2){
+    psi[c,s,1,1:6] <- 1/6
+  }
+}
+
+for(c in 1:ncol){
+  for(s in 1:2){
+    psi[6,s,1,c] <- NA
+  }
+}
+
+
+inits <- function(){list(a = a.ini, col = col.ini, TR = tr.ini, alpha = rnorm(ncol,0,1), alpha.c = rnorm((ncol-1),0,1), 
+                         beta = c(NA,rnorm((nocc-2),0,1)), beta.c = c(NA,rnorm((nocc-2),0,1)), 
+                         delta = c(NA,rnorm(1,0,1)), gamma = array(rnorm(ncol*(nocc-1)*2,0,1),dim=c(ncol,(nocc-1),2)), 
+                         gamma.c = matrix(c(rep(NA,(nocc-1)),NA,rnorm((nocc-2),0,1),NA,rnorm((nocc-2),0,1),NA,rnorm((nocc-2),0,1),NA,rnorm((nocc-2),0,1)),nrow=(ncol-1),byrow=T),
+                         pb = runif(1,0,1), sigma.s = runif(1,1,2), eta.s = runif(nind,0,1),
+                         pr = matrix(c(runif(2,0,1),NA,NA,runif(4,0,1)),ncol=2,byrow = T), psi = psi,
+                         p.r = matrix(c(NA,runif(8,0,1),NA,runif(8,0,1), rep(NA,7),runif(2,0,1),rep(NA,15),runif(3,0,1),rep(NA,9)),nrow=ncol,byrow=T))} 
+
+
+# List of parameters to save
+param <- c("alpha", "alpha.c", "beta", "beta.c", "delta", "gamma", "gamma.c",
+           "sigma.s", "pb", "p.r", "pd", "psi","pr")
+
+# MCMC settings
+ni <- 150000
+nt <- 20
+nb <- 50000
+nc <- 4
+
+# Call JAGS from R
+library(jagsUI) # JAGS has to be install first see also https://github.com/kenkellner/jagsui
+start <- as.POSIXlt(Sys.time()); as.POSIXlt(Sys.time())
+tlm <- jags(data, inits, param, "GMTL.jags", n.chains = nc, n.adapt=100, n.iter = ni, n.burnin = nb, n.thin = nt, parallel=T, store.data=T)
+end <- as.POSIXlt(Sys.time())
+end-start # can be long, > 3-4 weeks!
+
+This Rdata files were created with R v3.6.0, and is (expected to be) compatible with all newer R versions (tested under R v4.1.3).

@@ -1,0 +1,205 @@
+
+model{
+  
+  for(i in 1:nind){
+    for(j in (f[i]+1):l[i]){
+      ap[i,j] <- a[i,j] + 1 # indicator variable (1=dead, 2=alive)
+      # This specifies the distribution [a|S]
+      a[i,j] ~ dbern(sv[i,j-1])
+      sv[i,j-1] <- a[i,j-1]*phi[i,j-1]
+      # mvts between colonies
+      col[i,j] ~ dcat(psi[col[i,j-1],sex[i],age[i,j-1],1:ncol])
+      # Detection process
+      z[i,j] ~ dcat(pdet[ap[i,j],i,j-1,1:8])
+      # indicator variable if (1=marked, 2=not marked) 
+      tm[i,j-1] <- 2-TM[i,j-1]
+      # Tag state: 1= retained, 0= lost
+      TR[i,j] ~ dbern(pret[age[i,j-1],tm[i,j-1],i,j-1])
+    }
+  }
+    
+  for(i in 1:nind){
+    # presence or absence of a tag in the individual
+    ts[i,f[i]] <- 1 # indicator variable (1 at first tagging)
+    for(j in (f[i]+1):l[i]){
+      ts[i,j] <- TR[i,j] + TM[i,j]  # indicator variable (1=tag present, 0=tag absent)
+     }
+  }
+
+  for(i in 1:nind){
+    for(j in (f[i]+1):l[i]){
+      # detection probabilities
+      pdet[1,i,j-1,1] <- 0
+      pdet[1,i,j-1,2] <- 0
+      pdet[1,i,j-1,3] <- 0
+      pdet[1,i,j-1,4] <- 0
+      pdet[1,i,j-1,5] <- 0
+      pdet[1,i,j-1,6] <- 0
+      pdet[1,i,j-1,7] <- 0
+      pdet[1,i,j-1,8] <- 1
+
+      pdet[2,i,j-1,1] <- ifelse(col[i,j]==6,0,1)*p.c[col[i,j],j-1]*(1 - ts[i,j]*p.r[col[i,j],j-1])*(1 - pb) # capture only
+      pdet[2,i,j-1,2] <- ifelse(col[i,j]==6,0,1)*ts[i,j]*p.r[col[i,j],j-1]*(1 - p.c[col[i,j],j-1])*(1 - pb) # antenna only
+      pdet[2,i,j-1,3] <- ifelse(col[i,j]==6,0,1)*p.c[col[i,j],j-1]*ts[i,j]*p.r[col[i,j],j-1]*(1 - pb) # capture and antenna
+      pdet[2,i,j-1,4] <- ifelse(col[i,j]==6, pb, (1 - p.c[col[i,j],j-1])*(1 - ts[i,j]*p.r[col[i,j],j-1])*pb) # observed between saison only # observed between saison only
+      pdet[2,i,j-1,5] <- ifelse(col[i,j]==6,0,1)*p.c[col[i,j],j-1]*(1 - ts[i,j]*p.r[col[i,j],j-1])*pb # observed between saison and captured 
+      pdet[2,i,j-1,6] <- ifelse(col[i,j]==6,0,1)*(1- p.c[col[i,j],j-1])*ts[i,j]*p.r[col[i,j],j-1]*pb # observed between saison and with antenna
+      pdet[2,i,j-1,7] <- ifelse(col[i,j]==6,0,1)*p.r[col[i,j],j-1]*ts[i,j]*p.r[col[i,j],j-1]*pb # observed between saison, captred and read
+      pdet[2,i,j-1,8] <- ifelse(col[i,j]==6,1 - pb, (1- p.c[col[i,j],j-1])*(1 - ts[i,j]*p.r[col[i,j],j-1])*(1 - pb)) # not observed
+
+      pret[1,1,i,j-1] <- pr[1, glu[i,j-1]]
+      pret[1,2,i,j-1] <- pr[2, glu[i,j-1]]
+      pret[2,1,i,j-1] <- pr[3, glu[i,j-1]]
+      pret[2,2,i,j-1] <- TR[i,j-1]*pr[4, glu[i,j-1]]
+    }
+
+    for(j in f[i]:(l[i]-1)){
+      # survival probability (indiv. captured as juveniles)
+      logit(phi[i,j]) <- alpha[col[i,j]] + beta[j]  + delta[age[i,j]] + gamma[col[i,j],j,age[i,j]] + eta.s[i]
+    }
+  }
+
+  for(c in 1:(ncol-1)){
+    for(j in 1:(nocc-1)){
+      # mean detection probability in colonies
+      pd[c,j] <- p.c[c,j] + p.r[c,j] - p.c[c,j]*p.r[c,j]
+    }
+  }
+
+  ### Priors and constraints
+  for(j in 1:(nocc-1)){
+    # detcetion and capture probabilities when out of colony is null
+    p.c[6,j] <- 0
+    pd[6,j] <- 0
+    p.r[6,j] <- 0
+  }
+
+  # tag retention probability
+  for(g in 1:2){
+    pr[1,g] ~ dbeta(1,1) # retention for juv. after tagging
+    pr[2,g] <- 0
+    pr[3,g] ~ dbeta(1,1) # retention for adlt. after tagging
+    pr[4,g] ~ dbeta(1,1) # retention for adlt. if retained after tagging
+  }
+  
+  for(c in c(1:3)){
+    for(j in 1:(nocc-1)){
+    logit(p.c[c,j]) <- alpha.c[c] + beta.c[j] + gamma.c[c,j]
+    }
+  }
+
+  # No catch in colony 4 in 2013 & 2014
+  p.c[4,3] <- 0
+  p.c[4,4] <- 0
+  for(j in c(1,2,5:(nocc-1))){
+    logit(p.c[4,j]) <- alpha.c[4] + beta.c[j] + gamma.c[4,j]
+  }
+
+  # No catch in colony 5 before 2013
+  for (j in 1:3){ 
+    p.c[5,j] <- 0
+  }
+  for(j in 4:(nocc-1)){
+    logit(p.c[5,j]) <- alpha.c[5] + beta.c[j] + gamma.c[5,j]
+  }
+
+  # No reader in colony 1 & 2 before 2012
+  p.r[1,1] <- 0
+  p.r[2,1] <- 0
+  for (c in 1:2){
+    for (j in 2:(nocc-1)){
+      p.r[c,j] ~ dbeta(1,1)
+    }
+  }
+
+  # No reader in colony 3 before 2018
+  for (j in 1:7){
+    p.r[3,j] <- 0
+  }
+  p.r[3,8] ~ dbeta(1,1)
+  p.r[3,9] ~ dbeta(1,1)
+
+  # No reader in colony 4
+  for (j in 1:(nocc-1)){
+    p.r[4,j] <- 0
+  }
+
+  # No reader in colony 5 before 2017
+  for (j in 1:6){      
+    p.r[5,j] <- 0
+  }
+  for (j in 7:(nocc-1)){      
+    p.r[5,j] ~ dbeta(1,1)
+  }
+
+  pb ~ dbeta(1,1)
+
+  for(c in 1:ncol){
+    alpha[c] ~ dnorm(0,0.01)T(-10,10)
+  }
+
+  for(c in 1:(ncol-1)){
+    alpha.c[c] ~ dnorm(0,0.01)T(-10,10)
+  }
+
+  beta[1] <- 0
+  beta.c[1] <- 0
+  delta[1] <- 0
+  delta[2] ~ dt(0,0.16,3)
+
+  for(j in 2:(nocc-1)){
+    beta[j] ~ dt(0,0.16,3)
+    beta.c[j] ~ dt(0,0.16,3)
+  }
+
+  for(c in 1:ncol){
+    for(j in 1:(nocc-1)){
+      for(a in 1:2){
+        gamma[c,j,a] ~ dt(0,0.16,3)
+      }
+    }
+  }
+
+  for(c in 1:(ncol-1)){
+    gamma.c[c,1] <- 0
+  }
+
+  for(j in 2:(nocc-1)){
+    gamma.c[1,j] <- 0
+    for(c in 2:(ncol-1)){
+      gamma.c[c,j] ~ dt(0,0.16,3)
+    }
+  }
+
+  tau.s <- pow(sigma.s,-2)
+  sigma.s ~ dunif(0,2)
+
+  for(i in 1:nind){
+    eta.s[i] ~ dnorm(0, tau.s)
+  }
+
+  # movement between colony
+  for(c in 1:ncol){
+    for(s in 1:2){
+      psi[c,s,2,1:6] ~ ddirch(alpha.psi[])
+    }
+  }
+
+  for(c in 1:(ncol-1)){
+    for(s in 1:2){
+      psi[c,s,1,1:6] ~ ddirch(alpha.psi[])
+    }
+  }
+
+  for(c in 1:ncol){
+    for(s in 1:2){
+      psi[6,s,1,c] <- 0
+    }
+  }
+
+  for(c in 1:ncol){
+    alpha.psi[c] <- 1
+  }
+
+}
+

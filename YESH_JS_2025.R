@@ -22,8 +22,10 @@
 ## code checked by steffen oppel on 25 April 2025
 
 
-### NEED TO DO: build capthist for ring loss
-### add ring loss prob into model
+### NEED TO DO: add ring loss prob into abundance part of model
+## JAGS code in: https://peercommunityjournal.org/articles/10.24072/pcjournal.348/
+## effect of 'recycled' individuals fairly small when tag loss is 10% and capture probability is low: https://onlinelibrary.wiley.com/doi/full/10.1002/ece3.6052
+
 
 rm(list = ls())
 library(dplyr)
@@ -506,7 +508,6 @@ ringloss<-ringloss %>%
 ## look at the NAs
 ringloss %>% filter(is.na(OCC_NR))
 
-
 ## find missing records
 missing<-(ringloss %>% filter(is.na(elapsed)) %>% select(ringnumber))$ringnumber
 table(ringloss$LostRing,round(ringloss$elapsed,0))
@@ -514,11 +515,20 @@ summary(glm(LostRing~elapsed,data=ringloss, family=binomial))  ## there is no in
 
 
 ## CREATE RING LOSS ENCOUNTER HISTORY
-RL_CH<-YESH %>% filter(ringnumber %in% ringloss$ringnumber)
-for (i in RL_CH$ringnumber){
-  loss_occ<-ringloss$OCC_NR[ringloss$ringnumber==i]
-  RL_CH[RL_CH$ringnumber==i,loss_occ+3]<-0
+RL_CH<-YESH %>% dplyr::filter(ringnumber %in% ringloss$ringnumber)
+rl.cols<-unique(RL_CH$COLO)
+indvec.rl<-as.numeric(rep(0,dim(RL_CH)[1]))
+for (col in 1:length(rl.cols)){
+  YESH_col<-YESH %>% dplyr::filter(COLO==rl.cols[col])
+  RL_CH_col<-RL_CH %>% dplyr::filter(COLO==rl.cols[col])  
+  for (i in RL_CH_col$ringnumber){
+    loss_occ<-ringloss$OCC_NR[ringloss$ringnumber==i]
+    RL_CH[RL_CH$ringnumber==i,loss_occ+3]<-0
+    if(rowSums(RL_CH[RL_CH$ringnumber==i,4:(dim(RL_CH)[2])])==0){RL_CH[RL_CH$ringnumber==i,loss_occ+3]<-1} # prevent error in function first when only 0s in CH
+    indvec.rl[match(i,RL_CH$ringnumber)]<-match(i,YESH_col$ringnumber)
+  }
 }
+
 
 
 #########################################################################
@@ -539,12 +549,17 @@ f <- apply(CH, 1, get.first)
 f.rl<-apply(RL_CH, 1, get.first)
 n.occ<-ncol(CH)
 
+# CHECK RING LOSSES IN SAME YEAR
+# RL_CH[match(Inf,f.rl),]
+# RL_CH[104,]
+# ringloss %>% filter(ringnumber %in% c('EE03337','EE06632'))
+
 ### CHECK WHETHER IT LOOKS OK ###
 head(CH)
 
 ## PREPARE CONSTANTS
 n.ind<-dim(CH)[1]		## defines the number of individuals
-n.ind.rl<-dim(CH)[1]		## defines the number of individuals
+n.ind.rl<-dim(RL_CH)[1]		## defines the number of ring-loss individuals (doubletagged for assessment of ring loss)
 n.years<-dim(CH)[2]  ## defines the number of years
 n.sites<-length(unique(YESH$SITE))
 n.colonies<-length(unique(YESH$COLO))              
@@ -593,9 +608,6 @@ periods[1,3]<-periods[1,3]/2
 
 
 
-
-
-
 ##########################################################################################################
 # Specify JS model with colony-specific ABUNDANCE TREND
 ##########################################################################################################
@@ -612,9 +624,9 @@ periods[1,3]<-periods[1,3]/2
 
 try(setwd("C:\\Users\\rita.matos\\Documents\\CMR"),silent=T)
 try(setwd("C:\\STEFFEN\\OneDrive - THE ROYAL SOCIETY FOR THE PROTECTION OF BIRDS\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\2025"), silent=T)
-try(setwd("C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan\\models"), silent=T)
+try(setwd("C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan"), silent=T)
 
-sink("YESH_JS_abundance_trend_ring_loss_v2.jags")
+sink("models/YESH_JS_abundance_trend_ring_loss_v2.jags")
 cat("
     
     
@@ -662,13 +674,13 @@ cat("
     
     ## RING LOSS PROBABILITY FOR SUBSAMPLE OF BIRDS
       mu.ring.loss ~ dnorm(0,0.01)
-     #beta.ring.age ~ dexp(50)
-      for (i in 1:n.doubleringed){
-          eps.ring.loss[i] ~ dnorm(0, tau.ring.loss)
-          logit(lp.ring.loss[i]) <- mu.ring.loss + eps.ring.loss[i]
-          ring.loss[i] ~ dbern(lp.ring.loss[i])
+      for (i in 1:n.ind.rl){
+        for (t in f.rl[i]:n.years){
+          eps.ring.loss[i,t] ~ dnorm(0, tau.ring.loss)
+          logit(lp.ring.loss[i,t]) <- mu.ring.loss + eps.ring.loss[i,t]
+          ring.loss[i,t] ~ dbern((1-lp.ring.loss[i,t])*p[indvec.rl[i],t,colvec.rl[i]]*z[indvec.rl[i],t,colvec.rl[i]])
         }
-
+    }
 
     ### PRIORS FOR RANDOM EFFECTS
     sigma.capt ~ dunif(0, 10)                     # Prior for standard deviation of capture
@@ -705,14 +717,14 @@ cat("
     
         # State process
         recru[i,t-1,col] <- max(z[i,1:(t-1),col])		# Availability for recruitment - this will be 0 if the bird has never been observed before and 1 otherwise
-        pot.alive[i,t,col] <- phi[sitevec[i,col],t-1,col] * z[i,t-1,col] + gamma[t,col] * (1-recru[i,t-1,col]) * (1-ring.loss.p[col,i,t])
+        pot.alive[i,t,col] <- phi[sitevec[i,col],t-1,col] * z[i,t-1,col] + gamma[t,col] * (1-recru[i,t-1,col])
         z[i,t,col] ~ dbern(pot.alive[i,t,col])
     
         # Observation process
         raneff.ring.loss[col,i,t] ~ dnorm(0,tau.ring.loss)
         logit.ring.loss.p[col,i,t] <- mu.ring.loss + raneff.ring.loss[col,i,t]
         ring.loss.p[col,i,t] <- max(ring.loss.p[col,i,t-1],ilogit(logit.ring.loss.p[col,i,t])) ## to ensure that once a ring is lost it cannot be observed again
-        mu1[i,t,col] <- z[i,t,col] * p[i,t,col]
+        mu1[i,t,col] <- z[i,t,col] * p[i,t,col] * (1-ring.loss.p[col,i,t])
         y[i,t,col] ~ dbern(mu1[i,t,col])
         } #t
       } #i
@@ -787,14 +799,14 @@ site.arr<-array(1,dim=c(potYESH,max(COLEFF$COL_NR)))						                  # ar
 for (col in 1:max(COLEFF$COL_NR)) {
   
   ## populate capture history
-  CHcol[1:col.n[col],,col]<-as.matrix(YESH[YESH$COL_NR==col,4:16]) 
+  CHcol[1:col.n[col],,col]<-as.matrix(YESH[YESH$COL_NR==col,4:(dim(YESH)[2]-2)]) 
   
   ## populate capture effort
   sitespercol<-max(COLEFF$SITE_NR[COLEFF$COL_NR==col])
-  eff.arr[1:sitespercol,,col]<-as.matrix(COLEFF[COLEFF$COL_NR==col,3:15]) 
+  eff.arr[1:sitespercol,,col]<-as.matrix(COLEFF[COLEFF$COL_NR==col,3:(dim(COLEFF)[2]-2)]) 
   
   ## populate period array for length of survival periods between occasions
-  per.arr[1:sitespercol,,col]<-as.matrix(DURMAT[DURMAT$COL_NR==col,3:15])  
+  per.arr[1:sitespercol,,col]<-as.matrix(DURMAT[DURMAT$COL_NR==col,3:(dim(COLEFF)[2]-2)])  
   
   ## populate array for individual-specific vectors
   site.arr[1:col.n[col],col]<-as.vector(YESH$SITE_NR[YESH$COL_NR==col])
@@ -826,11 +838,18 @@ jags.data <- list(y = CHcol,
                   n.years = n.years,
                   col.first=as.numeric(col.first$first),
                   n.doubleringed=dim(ringloss)[1],
-                  ring.loss=ringloss$LostRing,
-                  #elapsed=ringloss$elapsed,
                   M = potYESH, sitevec=site.arr, 
                   periods=per.arr, effmat=eff.arr,
-                  n.sites=max(COLEFF$COL_NR),n.cols=max(DURMAT$SITE_NR)) 
+                  n.sites=max(COLEFF$COL_NR),
+                  n.cols=max(DURMAT$SITE_NR),
+                  
+                  ## RING LOSS INPUT
+                  n.ind.rl=n.ind.rl,
+                  colvec.rl=colvec.rl, # this vector allows the doublemarked individuals to be matched to the correct value of capture probability
+                  indvec.rl=indvec.rl, # this vector allows the doublemarked individuals to be matched to the correct value of capture probability
+                  ring.loss=as.matrix(RL_CH[,4:dim(RL_CH)[2]]),
+                  f.rl=f.rl
+                  ) 
 
 # Initial values 
 inits <- function(){list(mean.phi = runif(1, 0.95, 1),
@@ -843,17 +862,17 @@ inits <- function(){list(mean.phi = runif(1, 0.95, 1),
 parameters <- c("N", "ann.surv","mu.ring.loss","tau.ring.loss") # changed parameters to see if it could extract any data
 
 # clean up workspace
-save.image("YESH_prepared_data_2025.RData")
+save.image("data/YESH_prepared_data_2025.RData")
+load("data/YESH_prepared_data_2025.RData")
 rm(list=setdiff(ls(), c('jags.data','inits','parameters','zinit.arr','COLEFF')))
 gc()
 
 
 # MCMC settings
-# no convergence with ni=50,000, which took 760 minutes
 
-ni <- 7500
+ni <- 15000
 nt <- 3 
-nb <- 1500
+nb <- 5000
 nc <- 3
 
 
@@ -861,7 +880,7 @@ nc <- 3
 
 
 # Call JAGS from R
-YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan\\models\\YESH_JS_abundance_trend_ring_loss.jags",  #C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_trend_v6.jags
+YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan\\models\\YESH_JS_abundance_trend_ring_loss_v2.jags",  #C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_trend_v6.jags
                   n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T, n.iter=ni)
 
 

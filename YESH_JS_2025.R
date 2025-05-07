@@ -22,9 +22,10 @@
 ## code checked by steffen oppel on 25 April 2025
 
 
-### NEED TO DO: add ring loss prob into abundance part of model
+### NEED TO DO: add ring loss prob into abundance part of model - revert ring loss probability
 ## JAGS code in: https://peercommunityjournal.org/articles/10.24072/pcjournal.348/
 ## effect of 'recycled' individuals fairly small when tag loss is 10% and capture probability is low: https://onlinelibrary.wiley.com/doi/full/10.1002/ece3.6052
+
 
 
 rm(list = ls())
@@ -52,16 +53,16 @@ filter<-dplyr::filter
 
 try(setwd("C:\\Users\\martin.austad\\Documents\\PanPuffinus\\CMR"), silent=T)
 try(setwd("C:\\STEFFEN\\OneDrive - THE ROYAL SOCIETY FOR THE PROTECTION OF BIRDS\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\2025\\CMR_data"), silent=T)
-try(setwd("C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan\\data"), silent=T)
+try(setwd("C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan"), silent=T)
 
 # yesh<-read_excel("YESH_2012_2018_cavestring_replacedrings.xlsx", sheet="with cave string")
 # effort<-read_excel("Cave_Activity_complete_2012-2018.xlsx", sheet="Sheet1")
 
 ###read in CMR subsites
-caves<-fread("Cave_ID.csv")
+caves<-fread("data/Cave_ID.csv")
 
 # to get list of all rings deployed, in the source file only original rings present and not their replacements
-rings <- fread("2012_2024_replacement_and_tags.csv")
+rings <- fread("data/2012_2024_replacement_and_tags.csv")
 
 #####IMP. NOTE: All times in records and effort are in Malta time.
 
@@ -70,7 +71,7 @@ midday<-as.POSIXct("12:00:00", format="%H:%M:%S",tz = "UTC")   # create a refere
 midday<-format(midday, format="%H:%M:%S",tz = "UTC") 
 
 
-R2022 <- fread("2022_YESH_Biometrics_RingingRecords.csv")
+R2022 <- fread("data/2022_YESH_Biometrics_RingingRecords.csv")
 
 R2022$ringingDate <- as.Date(R2022$ringingDate, format="%d/%m/%Y")
   range(R2022$ringingDate)
@@ -81,7 +82,7 @@ R2022$ringingDate <- as.Date(R2022$ringingDate, format="%d/%m/%Y")
   colnames(R2022)[27] <- "broodpatch"
   colnames(R2022)[26] <- "tags"
 
-R2023 <- fread("2023_YESH_Biometrics_RingingRecords.csv") 
+R2023 <- fread("data/2023_YESH_Biometrics_RingingRecords.csv") 
 
 R2023$ringingDate <- as.Date(R2023$ringingDate, format="%d/%m/%Y")
 range(R2023$ringingDate)
@@ -93,7 +94,7 @@ colnames(R2023)[27] <- "broodpatch"
 colnames(R2023)[26] <- "tags"
 
 #load 2024 ringing data
-R2024 <- fread("2024_YESH_Biometrics_RingingRecords.csv")
+R2024 <- fread("data/2024_YESH_Biometrics_RingingRecords.csv")
 
 R2024$ringingDate <- as.Date(R2024$ringingDate, format="%d/%m/%Y")
 range(R2024$ringingDate)
@@ -104,7 +105,7 @@ colnames(R2024)[27] <- "broodpatch"
 colnames(R2024)[26] <- "tags"
 
 #load 2025 ringing data
-R2025 <- fread("2025_YESH_Biometrics_RingingRecords.csv")
+R2025 <- fread("data/2025_YESH_Biometrics_RingingRecords.csv")
 R2025$ringingDate <- as.Date(R2025$ringingDate, format="%d/%m/%Y")
 R2025$HourTime<-paste(R2025$HourTime,":00", sep="")   ## add missing seconds
 range(R2025$ringingDate)
@@ -115,7 +116,7 @@ colnames(R2025)[27] <- "broodpatch"
 colnames(R2025)[26] <- "tags"
 
 #since ringing database extract for 2012-2016 gave time in hour only, :00:00 CONCATENATED onto hour value in excel
-records <- fread("2012_2021_cavestring_ringingrecords_updated.csv")
+records <- fread("data/2012_2021_cavestring_ringingrecords_updated.csv")
 
 #error in date format: two formats due to upload to onedrive
 records <- records %>%
@@ -183,7 +184,7 @@ records <- records %>%
   dplyr::filter(Errors!=1) #handful of records remain. these have been checked but could not be resolved. most likely are errors and should therefore not be included in analysis
 
 
-effort <- fread("Cave_Activity_complete_2012-2025DT.csv")
+effort <- fread("data/Cave_Activity_complete_2012-2025DT.csv")
 
 
 ##does the start and end time overlap midnight? 
@@ -891,22 +892,22 @@ YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\Vogelwarte\\YESH\\
 #########################################################################
 try(setwd("C:\\Users\\rita.matos\\Documents\\CMR"), silent=T)
 try(setwd("C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan"), silent=T)
-save.image("output/YESH_JS_output_ring_loss.RData")
+save.image("output/YESH_JS_output_ring_loss_v2.RData")
 
 out<-as.data.frame(YESHabund$summary)
 out$parameter<-row.names(YESHabund$summary)
 
 export<-out %>% select(c(12,1,5,2,3,7,8,9)) %>%
   setNames(c('Parameter','Mean', 'Median','SD','lcl', 'ucl','Rhat','n.eff'))
-fwrite(export,"output/YESH_Malta_Abundance_estimates_with_ring_loss.csv")
+fwrite(export,"output/YESH_Malta_Abundance_estimates_with_ring_loss_v2.csv")
 
 #########################################################################
 # PRODUCE SURVIVAL GRAPH 
 #########################################################################
 
-ggplot(data=export[53:64,],aes(y=Mean, x=seq(2012.5,2023.5,1))) + geom_point(size=2)+
+ggplot(data=export[57:69,],aes(y=Mean, x=seq(2012.5,2024.5,1))) + geom_point(size=2)+
   geom_errorbar(aes(ymin=lcl, ymax=ucl), width=.1)+
-  scale_x_continuous(name="Year", limits=c(2012,2024), breaks=seq(2012,2024,1), labels=seq(2012,2024,1))+
+  scale_x_continuous(name="Year", limits=c(2012,2025), breaks=seq(2012,2025,1), labels=seq(2012,2025,1))+
   scale_y_continuous(name="Annual survival probability", limits=c(0.5,1), breaks=seq(0.5,1,0.1), labels=seq(0.5,1,0.1))+
   #ggtitle(COLEFF$Colony)+
   theme(panel.background=element_rect(fill="white", colour="black"), 
@@ -919,7 +920,9 @@ ggplot(data=export[53:64,],aes(y=Mean, x=seq(2012.5,2023.5,1))) + geom_point(siz
         panel.grid.minor = element_blank(), 
         panel.border = element_blank())
 
-ggsave("output/YESH_survival_2012_2024_ring_loss.pdf", device = "pdf", width=12, height=9)
+ggsave("output/YESH_survival_2012_2025_ring_loss_v2.pdf", device = "pdf", width=12, height=9)
+
+
 
 #########################################################################
 # PRODUCE ABUNDANCE GRAPH 
@@ -947,7 +950,7 @@ abund <- rbind(abund, abund21)
 
 ggplot(data=abund,aes(y=Mean, x=Year)) + geom_point(size=2)+
   geom_errorbar(aes(ymin=lcl, ymax=ucl), width=.1)+
-  scale_x_continuous(name="Year", limits=c(2013,2024), breaks=seq(2013,2024), labels=seq(2013,2024))+
+  scale_x_continuous(name="Year", limits=c(2013,2025), breaks=seq(2013,2025), labels=seq(2013,2025))+
   facet_wrap(~Colony,ncol=2,scales="free_y") +
   ylab("N of adult Yelkouan Shearwaters") +
   theme(panel.background=element_rect(fill="white", colour="black"), 
@@ -959,7 +962,8 @@ ggplot(data=abund,aes(y=Mean, x=Year)) + geom_point(size=2)+
         panel.grid.minor = element_blank(), 
         panel.border = element_blank())
 
-ggsave("output/YESH_abundance_2013_2024_ring_loss.pdf", device = "pdf", width=20, height=14)
+ggsave("output/YESH_abundance_2013_2025_ring_loss_v2.pdf", device = "pdf", width=20, height=14)
+
 
 
 

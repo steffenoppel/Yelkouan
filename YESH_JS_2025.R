@@ -489,7 +489,7 @@ survPeriods$surv_int[survPeriods$surv_int<0]<-NA
 #########################################################################
 
 
-ringloss<-fread("YESH_doublemarks.csv") %>%
+ringloss<-fread("data/YESH_doublemarks.csv") %>%
   rename(ringnumber=Original_ring)
 
 firstringed<-records %>% dplyr::filter(ringnumber %in% ringloss$ringnumber) %>%
@@ -512,23 +512,26 @@ ringloss %>% filter(is.na(OCC_NR))
 ## find missing records
 missing<-(ringloss %>% filter(is.na(elapsed)) %>% select(ringnumber))$ringnumber
 table(ringloss$LostRing,round(ringloss$elapsed,0))
-summary(glm(LostRing~elapsed,data=ringloss, family=binomial))  ## there is no indication that ring loss is actually increasing with ring age
-
+summary(glm(LostRing~elapsed+I(elapsed^2),data=ringloss, family=binomial))  ## there is no indication that ring loss is actually increasing with ring age
+summary(glm(LostRing~1,data=ringloss, family=binomial))
+mean(ringloss$LostRing)
+hist(plogis(-2.5337+rnorm(1000,0,0.1)))  ## reasonable spread of ring loss probabilities
 
 ## CREATE RING LOSS ENCOUNTER HISTORY
-RL_CH<-YESH %>% dplyr::filter(ringnumber %in% ringloss$ringnumber)
-rl.cols<-unique(RL_CH$COLO)
-indvec.rl<-as.numeric(rep(0,dim(RL_CH)[1]))
-for (col in 1:length(rl.cols)){
-  YESH_col<-YESH %>% dplyr::filter(COLO==rl.cols[col])
-  RL_CH_col<-RL_CH %>% dplyr::filter(COLO==rl.cols[col])  
-  for (i in RL_CH_col$ringnumber){
-    loss_occ<-ringloss$OCC_NR[ringloss$ringnumber==i]
-    RL_CH[RL_CH$ringnumber==i,loss_occ+3]<-0
-    if(rowSums(RL_CH[RL_CH$ringnumber==i,4:(dim(RL_CH)[2])])==0){RL_CH[RL_CH$ringnumber==i,loss_occ+3]<-1} # prevent error in function first when only 0s in CH
-    indvec.rl[match(i,RL_CH$ringnumber)]<-match(i,YESH_col$ringnumber)
-  }
-}
+# abandoned because the occasion-specific probability is very low
+# RL_CH<-YESH %>% dplyr::filter(ringnumber %in% ringloss$ringnumber)
+# rl.cols<-unique(RL_CH$COLO)
+# indvec.rl<-as.numeric(rep(0,dim(RL_CH)[1]))
+# for (col in 1:length(rl.cols)){
+#   YESH_col<-YESH %>% dplyr::filter(COLO==rl.cols[col])
+#   RL_CH_col<-RL_CH %>% dplyr::filter(COLO==rl.cols[col])  
+#   for (i in RL_CH_col$ringnumber){
+#     loss_occ<-ringloss$OCC_NR[ringloss$ringnumber==i]
+#     RL_CH[RL_CH$ringnumber==i,loss_occ+3]<-0
+#     if(rowSums(RL_CH[RL_CH$ringnumber==i,4:(dim(RL_CH)[2])])==0){RL_CH[RL_CH$ringnumber==i,loss_occ+3]<-1} # prevent error in function first when only 0s in CH
+#     indvec.rl[match(i,RL_CH$ringnumber)]<-match(i,YESH_col$ringnumber)
+#   }
+# }
 
 
 
@@ -547,7 +550,7 @@ apply(CH,2,sum)
 # Compute vector with occasion of first capture
 get.first <- function(x) min(which(x==1))
 f <- apply(CH, 1, get.first)
-f.rl<-apply(RL_CH, 1, get.first)
+#f.rl<-apply(RL_CH, 1, get.first)
 n.occ<-ncol(CH)
 
 # CHECK RING LOSSES IN SAME YEAR
@@ -560,7 +563,7 @@ head(CH)
 
 ## PREPARE CONSTANTS
 n.ind<-dim(CH)[1]		## defines the number of individuals
-n.ind.rl<-dim(RL_CH)[1]		## defines the number of ring-loss individuals (doubletagged for assessment of ring loss)
+n.ind.rl<-dim(ringloss)[1]		## defines the number of ring-loss individuals (doubletagged for assessment of ring loss)
 n.years<-dim(CH)[2]  ## defines the number of years
 n.sites<-length(unique(YESH$SITE))
 n.colonies<-length(unique(YESH$COLO))              
@@ -585,8 +588,8 @@ effmat<-as.matrix(COLEFF[,3:15], dimnames=F)
 head(YESH)
 sitevec<-COLEFF$SITE_NR[match(YESH$SITE,COLEFF$SITE)]
 colvec<-match(YESH$COLO,unique(YESH$COLO))
-colvec.rl<-match(RL_CH$COLO,unique(YESH$COLO))
-sitevec.rl<-COLEFF$SITE_NR[match(RL_CH$SITE,COLEFF$SITE)]
+# colvec.rl<-match(RL_CH$COLO,unique(YESH$COLO))
+# sitevec.rl<-COLEFF$SITE_NR[match(RL_CH$SITE,COLEFF$SITE)]
 
 length(f) 
 length(colvec)
@@ -627,7 +630,7 @@ try(setwd("C:\\Users\\rita.matos\\Documents\\CMR"),silent=T)
 try(setwd("C:\\STEFFEN\\OneDrive - THE ROYAL SOCIETY FOR THE PROTECTION OF BIRDS\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\2025"), silent=T)
 try(setwd("C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan"), silent=T)
 
-sink("models/YESH_JS_abundance_trend_ring_loss_v2.jags")
+sink("models/YESH_JS_abundance_trend_ring_loss_v3.jags")
 cat("
     
     
@@ -674,20 +677,18 @@ cat("
     
     
     ## RING LOSS PROBABILITY FOR SUBSAMPLE OF BIRDS
-      mu.ring.loss ~ dnorm(0,0.01)
+      mu.ring.loss ~ dnorm(-2.5,0.01)   ## informative prior
       for (i in 1:n.ind.rl){
-        for (t in f.rl[i]:n.years){
-          eps.ring.loss[i,t] ~ dnorm(0, tau.ring.loss)
-          logit(lp.ring.loss[i,t]) <- mu.ring.loss + eps.ring.loss[i,t]
-          ring.loss[i,t] ~ dbern((1-lp.ring.loss[i,t])*p[indvec.rl[i],t,colvec.rl[i]]*z[indvec.rl[i],t,colvec.rl[i]])
+          eps.ring.loss[i] ~ dnorm(0, 100)  ## fixed to sd=0.1 because variance is not separately estimable
+          logit(lp.ring.loss[i]) <- mu.ring.loss + eps.ring.loss[i]
+          ring.loss[i] ~ dbern(lp.ring.loss[i])
         }
-    }
 
     ### PRIORS FOR RANDOM EFFECTS
     sigma.capt ~ dunif(0, 10)                     # Prior for standard deviation of capture
     tau.capt <- pow(sigma.capt, -2)
-    sigma.ring.loss ~ dunif(0,10)
-    tau.ring.loss  <- pow(sigma.ring.loss, -2)
+    # sigma.ring.loss ~ dunif(0,5)
+    # tau.ring.loss  <- pow(sigma.ring.loss, -2)
     
     
     ### RECRUITMENT PROBABILITY INTO THE MARKED POPULATION
@@ -711,7 +712,10 @@ cat("
       ring.loss.p[col,i,1]<-0
       mu1[i,1,col] <- z[i,1,col] * p[i,1,col]
       y[i,1,col] ~ dbern(mu1[i,1,col])
-    
+      
+      # Ring loss probability
+      raneff.ring.loss[col,i] ~ dnorm(0,100)
+      logit(ring.loss.ind[col,i]) <- mu.ring.loss + raneff.ring.loss[col,i]
     
       # Subsequent occasions
         for (t in 2:n.years){
@@ -722,9 +726,9 @@ cat("
         z[i,t,col] ~ dbern(pot.alive[i,t,col])
     
         # Observation process
-        raneff.ring.loss[col,i,t] ~ dnorm(0,tau.ring.loss)
-        logit.ring.loss.p[col,i,t] <- mu.ring.loss + raneff.ring.loss[col,i,t]
-        ring.loss.p[col,i,t] <- max(ring.loss.p[col,i,t-1],ilogit(logit.ring.loss.p[col,i,t])) ## to ensure that once a ring is lost it cannot be observed again
+        # Ring loss affects observation process
+        ring.loss.pt[col,i,t] ~ dbern(ring.loss.ind[col,i])  ## random binomial draws for individual ring loss probability
+        ring.loss.p[col,i,t] <- max(ring.loss.p[col,i,t-1],ring.loss.pt[col,i,t]) ## to ensure that once a ring is lost it cannot be observed again
         mu1[i,t,col] <- z[i,t,col] * p[i,t,col] * (1-ring.loss.p[col,i,t])
         y[i,t,col] ~ dbern(mu1[i,t,col])
         } #t
@@ -846,10 +850,11 @@ jags.data <- list(y = CHcol,
                   
                   ## RING LOSS INPUT
                   n.ind.rl=n.ind.rl,
-                  colvec.rl=colvec.rl, # this vector allows the doublemarked individuals to be matched to the correct value of capture probability
-                  indvec.rl=indvec.rl, # this vector allows the doublemarked individuals to be matched to the correct value of capture probability
-                  ring.loss=as.matrix(RL_CH[,4:dim(RL_CH)[2]]),
-                  f.rl=f.rl
+                  #colvec.rl=colvec.rl, # this vector allows the doublemarked individuals to be matched to the correct value of capture probability
+                  #indvec.rl=indvec.rl, # this vector allows the doublemarked individuals to be matched to the correct value of capture probability
+                  #ring.loss=as.matrix(RL_CH[,4:dim(RL_CH)[2]]),
+                  #f.rl=f.rl
+                  ring.loss=ringloss$LostRing
                   ) 
 
 # Initial values 
@@ -871,9 +876,9 @@ gc()
 
 # MCMC settings
 
-ni <- 15000
+ni <- 150
 nt <- 3 
-nb <- 5000
+nb <- 50
 nc <- 3
 
 
@@ -881,7 +886,7 @@ nc <- 3
 
 
 # Call JAGS from R
-YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan\\models\\YESH_JS_abundance_trend_ring_loss_v2.jags",  #C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_trend_v6.jags
+YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan\\models\\YESH_JS_abundance_trend_ring_loss_v3.jags",  #C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_trend_v6.jags
                   n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T, n.iter=ni)
 
 

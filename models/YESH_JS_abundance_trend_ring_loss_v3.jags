@@ -1,0 +1,128 @@
+
+    
+    
+    model
+    {
+    
+    ##################### Priors and constraints #################################
+    
+    ### SURVIVAL PROBABILITY
+    for (t in 1:(n.years-1)){
+      ann.surv[t] ~ dunif(0.7, 1)                      # Priors for age-specific ANNUAL survival - this is the basic survival that is scaled to difference between occasions
+      for (col in 1:n.cols) {
+        for (s in 1:n.sites){
+          phi[s,t,col] <- pow(pow(ann.surv[t],(1/365)),periods[s,t,col]) 
+        } #s
+      } #col
+    } #t
+    
+    
+    ### RECAPTURE PROBABILITY
+    mean.p ~ dbeta(1.5, 4)                        # Prior for mean recapture switched to beta from unif
+    logit.p <- log(mean.p / (1-mean.p))           # Logit transformation
+    
+    for (col in 1:n.cols){
+      beta.effort[col] ~ dnorm(0,0.01)                   # Prior for trapping effort offset on capture probability
+    }
+    
+    for (col in 1:n.cols) {
+      for (i in 1:M){  
+        for (t in 1:n.years){
+          logit(p[i,t,col]) <- logit.p + beta.effort[col]*effmat[sitevec[i,col],t,col] + capt.raneff[i,t,col]   ## includes colony-specific effort and random effect for time and individual
+        } # close t
+      } #i
+    } #col
+    
+    ## RANDOM INDIVIDUAL EFFECT ON CAPTURE PROBABILITY
+    for (col in 1:n.cols) {
+      for (i in 1:M){
+        for (t in 1:n.years){
+          capt.raneff[i,t,col] ~ dnorm(0, tau.capt)
+        }
+      }
+    }
+    
+    
+    ## RING LOSS PROBABILITY FOR SUBSAMPLE OF BIRDS
+      mu.ring.loss ~ dnorm(-2.5,0.01)   ## informative prior
+      for (i in 1:n.ind.rl){
+          eps.ring.loss[i] ~ dnorm(0, 100)  ## fixed to sd=0.1 because variance is not separately estimable
+          logit(lp.ring.loss[i]) <- mu.ring.loss + eps.ring.loss[i]
+          ring.loss[i] ~ dbern(lp.ring.loss[i])
+        }
+
+    ### PRIORS FOR RANDOM EFFECTS
+    sigma.capt ~ dunif(0, 10)                     # Prior for standard deviation of capture
+    tau.capt <- pow(sigma.capt, -2)
+    # sigma.ring.loss ~ dunif(0,5)
+    # tau.ring.loss  <- pow(sigma.ring.loss, -2)
+    
+    
+    ### RECRUITMENT PROBABILITY INTO THE MARKED POPULATION
+    for (col in 1:n.cols){    
+      for (t in 1:n.years){
+        gamma[t,col] ~ dunif(0, 1)
+      } #t
+    } #col
+    
+    
+    ##################### LIKELIHOOD #################################
+    
+    for (col in 1:n.cols) {
+      for (i in 1:M){
+    
+      # First occasion
+      # State process
+      z[i,1,col] ~ dbern(gamma[1,col])
+    
+      # Observation process
+      ring.loss.p[col,i,1]<-0
+      mu1[i,1,col] <- z[i,1,col] * p[i,1,col]
+      y[i,1,col] ~ dbern(mu1[i,1,col])
+      
+      # Ring loss probability
+      raneff.ring.loss[col,i] ~ dnorm(0,100)
+      logit(ring.loss.ind[col,i]) <- mu.ring.loss + raneff.ring.loss[col,i]
+    
+      # Subsequent occasions
+        for (t in 2:n.years){
+    
+        # State process
+        recru[i,t-1,col] <- max(z[i,1:(t-1),col])		# Availability for recruitment - this will be 0 if the bird has never been observed before and 1 otherwise
+        pot.alive[i,t,col] <- phi[sitevec[i,col],t-1,col] * z[i,t-1,col] + gamma[t,col] * (1-recru[i,t-1,col])
+        z[i,t,col] ~ dbern(pot.alive[i,t,col])
+    
+        # Observation process
+        # Ring loss affects observation process
+        ring.loss.pt[col,i,t] ~ dbern(ring.loss.ind[col,i])  ## random binomial draws for individual ring loss probability
+        ring.loss.p[col,i,t] <- max(ring.loss.p[col,i,t-1],ring.loss.pt[col,i,t]) ## to ensure that once a ring is lost it cannot be observed again
+        mu1[i,t,col] <- z[i,t,col] * p[i,t,col] * (1-ring.loss.p[col,i,t])
+        y[i,t,col] ~ dbern(mu1[i,t,col])
+        } #t
+      } #i
+    } #col
+    
+    
+    ##################### DERIVED PARAMETERS #################################
+    
+    # POPULATION SIZE
+    for (t in 1:n.years){
+      for (col in 1:n.cols){
+        N[t,col] <- sum(z[1:M,t,col])        # Actual population size per colony
+      } #col
+    } #t
+    
+    ##################### DERIVED TREND #################################
+    
+    for (col in 1:n.cols){
+      col.trend[col]<-mean(trend[,col])
+      for (t in 2:n.years){
+        trend[t-1,col] <- N[t-1,col]/max(N[t,col],1)        # trend estimate, avoid division by 0
+      } #t
+    } #col
+    
+    
+}								#### END OF THE MODEL STATEMENT
+    
+    
+    

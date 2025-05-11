@@ -876,9 +876,9 @@ gc()
 
 # MCMC settings
 
-ni <- 150
-nt <- 3 
-nb <- 50
+ni <- 15000
+nt <- 5 
+nb <- 5000
 nc <- 3
 
 
@@ -897,14 +897,14 @@ YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\Vogelwarte\\YESH\\
 #########################################################################
 try(setwd("C:\\Users\\rita.matos\\Documents\\CMR"), silent=T)
 try(setwd("C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan"), silent=T)
-save.image("output/YESH_JS_output_ring_loss_v2.RData")
+save.image("output/YESH_JS_output_ring_loss_v3.RData")
 
 out<-as.data.frame(YESHabund$summary)
 out$parameter<-row.names(YESHabund$summary)
 
 export<-out %>% select(c(12,1,5,2,3,7,8,9)) %>%
   setNames(c('Parameter','Mean', 'Median','SD','lcl', 'ucl','Rhat','n.eff'))
-fwrite(export,"output/YESH_Malta_Abundance_estimates_with_ring_loss_v2.csv")
+fwrite(export,"output/YESH_Malta_Abundance_estimates_with_ring_loss_v3.csv")
 
 #########################################################################
 # PRODUCE SURVIVAL GRAPH 
@@ -925,7 +925,8 @@ ggplot(data=export[57:69,],aes(y=Mean, x=seq(2012.5,2024.5,1))) + geom_point(siz
         panel.grid.minor = element_blank(), 
         panel.border = element_blank())
 
-ggsave("output/YESH_survival_2012_2025_ring_loss_v2.pdf", device = "pdf", width=12, height=9)
+ggsave("output/YESH_survival_2012_2025_ring_loss_v3.pdf", device = "pdf", width=12, height=9)
+
 
 
 
@@ -967,7 +968,7 @@ ggplot(data=abund,aes(y=Mean, x=Year)) + geom_point(size=2)+
         panel.grid.minor = element_blank(), 
         panel.border = element_blank())
 
-ggsave("output/YESH_abundance_2013_2025_ring_loss_v2.pdf", device = "pdf", width=20, height=14)
+ggsave("output/YESH_abundance_2013_2025_ring_loss_v3.pdf", device = "pdf", width=20, height=14)
 
 
 

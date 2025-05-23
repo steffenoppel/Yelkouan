@@ -471,29 +471,39 @@ ringloss<-fread("data/YESH_doublemarks.csv") %>%
   rename(ringnumber=Original_ring) %>%
   filter(ringnumber %in% unique(YESH$ringnumber)) %>%
   group_by(ringnumber) %>%
-  summarise(LAST=max(DoubleTagOff), LostRing=max(LostRing),n=length(unique(DoubleTagOff))) %>%
-  mutate(SEASON=ifelse(month(LAST)<10,(year(LAST)-1),year(LAST))) %>% ###define a breeding season from Oct to Jul
-  mutate(OCC_NR=OCC_lookup$OCC_NR[match(SEASON,OCC_lookup$SEASON)]) %>%
+  summarise(DRstart=min(DoubleTagON),DRend=max(DoubleTagOff), LostRing=max(LostRing),n=length(unique(DoubleTagOff))) %>%
+  mutate(SEASONstart=ifelse(month(DRstart)<10,(year(DRstart)-1),year(DRstart))) %>% ###define a breeding season from Oct to Jul
+  mutate(OCC_start=OCC_lookup$OCC_NR[match(SEASONstart,OCC_lookup$SEASON)]) %>%
+  mutate(SEASONend=ifelse(month(DRend)<10,(year(DRend)-1),year(DRend))) %>% ###define a breeding season from Oct to Jul
+  mutate(OCC_end=OCC_lookup$OCC_NR[match(SEASONend,OCC_lookup$SEASON)]) %>%
   arrange(ringnumber)
 
 ## CREATE RING LOSS ENCOUNTER HISTORY WITH STATES 1,2,3
 # abandoned because the occasion-specific probability is very low
 RL_CH<-YESH %>% #dplyr::filter(ringnumber %in% ringloss$ringnumber) %>%
   arrange(ringnumber)
+DR_CH<-YESH %>% arrange(ringnumber)
 get.first <- function(x) min(which(x==1))
 f <- apply(as.matrix(RL_CH[4:dim(RL_CH)[2]]), 1, get.first)
-for (i in unique(ringloss$ringnumber)){
-  if(ringloss$LostRing[ringloss$ringnumber==i]==1){
-      loss_occ<-ringloss$OCC_NR[ringloss$ringnumber==i]
+for (i in unique(RL_CH$ringnumber)){
+  DR_CH[DR_CH$ringnumber==i,(4):(dim(DR_CH)[2])]<-0
+  if(i %in% unique(ringloss$ringnumber)){
+    strt<-ringloss$OCC_start[ringloss$ringnumber==i]
+    end<-ringloss$OCC_end[ringloss$ringnumber==i]
+    DR_CH[DR_CH$ringnumber==i,strt:end]<-1
+ 
+    if(ringloss$LostRing[ringloss$ringnumber==i]==1){
+      loss_occ<-ringloss$OCC_end[ringloss$ringnumber==i]
       loss_occ<-ifelse(loss_occ==f[which(RL_CH$ringnumber==i)], loss_occ+1,loss_occ) # avoid loss on first occasion
       RL_CH[RL_CH$ringnumber==i,loss_occ+3]<-2
       if((loss_occ+3)<(dim(RL_CH)[2])){
         RL_CH[RL_CH$ringnumber==i,((loss_occ+4):(dim(RL_CH)[2]))]<-ifelse(RL_CH[RL_CH$ringnumber==i,((loss_occ+4):(dim(RL_CH)[2]))]==0,3,2)  ## birds cannot be seen with ring after ring loss
       }
     }
+  }
 }
 RL_CH[100:105,]
-
+DR_CH[100:105,]
 
 
 
@@ -505,6 +515,9 @@ names(RL_CH)
 CH<-as.matrix(RL_CH[,4:dim(RL_CH)[2]], dimnames=F) # changed to flexible indexing to include all future years
 CH<-ifelse(CH==0,3,CH)
 dim(CH)
+
+CHDR<-as.matrix(DR_CH[,4:dim(DR_CH)[2]], dimnames=F) # changed to flexible indexing to include all future years
+
 
 # Compute vector with occasion of first capture
 get.first <- function(x) min(which(x==1))
@@ -539,8 +552,7 @@ model {
 # Parameters:
 # phi: survival probability 
 # loss: ring loss probability
-# pr: resight probability with ring
-# pl: resight probability without ring
+# p: resight probability
 # -------------------------------------------------
 # States (S):
 # 1 alive with ring
@@ -570,16 +582,20 @@ model {
       ps[3,2] <- 0
       ps[3,3] <- 1
       
-      # Define probabilities of O(t) [last dim] given S(t)  [first dim]
-      po[1,1] <- pr
-      po[1,2] <- 0
-      po[1,3] <- 1 - pr
-      po[2,1] <- 0
-      po[2,2] <- pl
-      po[2,3] <- 1 - pl
-      po[3,1] <- 0
-      po[3,2] <- 0
-      po[3,3] <- 1
+      # Define probabilities of O(t) [last dim] given S(t)  [first dim]¨
+  for (i in 1:nind){
+   for (t in (f[i]+1):n.occasions){
+      po[1,i,t,1] <- p
+      po[1,i,t,2] <- 0
+      po[1,i,t,3] <- 1 - p
+      po[2,i,t,1] <- 0
+      po[2,i,t,2] <- p*dr[i,t]
+      po[2,i,t,3] <- 1 - pl*dr[i,t]
+      po[3,i,t,1] <- 0
+      po[3,i,t,2] <- 0
+      po[3,i,t,3] <- 1
+   }
+  }
 
 # Likelihood 
 for (i in 1:nind){
@@ -589,7 +605,7 @@ for (i in 1:nind){
       # State process: draw S(t) given S(t-1)
       z[i,t] ~ dcat(ps[z[i,t-1], 1:3])
       # Observation process: draw O(t) given S(t)
-      y[i,t] ~ dcat(po[z[i,t], 1:3])
+      y[i,t] ~ dcat(po[z[i,t],i,t, 1:3])
       } #t
    } #i
 }
@@ -597,7 +613,8 @@ for (i in 1:nind){
 
 
 # Bundle data 
-jags.data <- list(y = CH, 
+jags.data <- list(y = CH,
+                  dr=CHDR,
                   f = f, 
                   n.occasions = ncol(CH), 
                   nind = nrow(CH))
@@ -621,15 +638,13 @@ ms.init.z <- function(ch, f){
 inits <- function(){list(phi = runif(1, 0.8, 1),
                          z = ms.init.z(CH, f),
                          loss = runif(1, 0, 0.11), 
-                         pr = runif(1, 0, 1), 
-                         pl = runif(1, 0, 0.4)
+                         p = runif(1, 0, 1)
                          )}  
 
 # 1.4. Parameters monitored
 parameters <- c("phi", 
                 "loss", 
-                "pr", 
-                "pl")
+                "p")
 
 # 1.5. MCMC settings
 ni <- 4000

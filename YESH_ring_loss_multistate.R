@@ -488,16 +488,17 @@ f <- apply(as.matrix(RL_CH[4:dim(RL_CH)[2]]), 1, get.first)
 for (i in unique(RL_CH$ringnumber)){
   DR_CH[DR_CH$ringnumber==i,(4):(dim(DR_CH)[2])]<-0
   if(i %in% unique(ringloss$ringnumber)){
-    strt<-ringloss$OCC_start[ringloss$ringnumber==i]
-    end<-ringloss$OCC_end[ringloss$ringnumber==i]
+    strt<-ringloss$OCC_start[ringloss$ringnumber==i]+3
+    end<-ringloss$OCC_end[ringloss$ringnumber==i]+3
     DR_CH[DR_CH$ringnumber==i,strt:end]<-1
- 
+
     if(ringloss$LostRing[ringloss$ringnumber==i]==1){
       loss_occ<-ringloss$OCC_end[ringloss$ringnumber==i]
       loss_occ<-ifelse(loss_occ==f[which(RL_CH$ringnumber==i)], loss_occ+1,loss_occ) # avoid loss on first occasion
       RL_CH[RL_CH$ringnumber==i,loss_occ+3]<-2
       if((loss_occ+3)<(dim(RL_CH)[2])){
         RL_CH[RL_CH$ringnumber==i,((loss_occ+4):(dim(RL_CH)[2]))]<-ifelse(RL_CH[RL_CH$ringnumber==i,((loss_occ+4):(dim(RL_CH)[2]))]==0,3,2)  ## birds cannot be seen with ring after ring loss
+        DR_CH[DR_CH$ringnumber==i,((loss_occ+4):(dim(DR_CH)[2]))]<-ifelse(RL_CH[RL_CH$ringnumber==i,((loss_occ+4):(dim(RL_CH)[2]))]==0,3,1)  ## double ringing must be ON for birds to be recorded that had lost their ring previously
       }
     }
   }
@@ -511,25 +512,63 @@ DR_CH[100:105,]
 # PREPARE DATA FOR INPUT INTO JAGS
 #########################################################################
 
+
+## MAIN MATRIX OF RESIGHTINGS AND DOUBLE RINGING EFFORT
 names(RL_CH)
-CH<-as.matrix(RL_CH[,4:dim(RL_CH)[2]], dimnames=F) # changed to flexible indexing to include all future years
+CH<-as.matrix(RL_CH[,4:dim(RL_CH)[2]], dimnames=F) 
+CHDR<-as.matrix(DR_CH[,4:dim(DR_CH)[2]], dimnames=F)
 CH<-ifelse(CH==0,3,CH)
 dim(CH)
-
-CHDR<-as.matrix(DR_CH[,4:dim(DR_CH)[2]], dimnames=F) # changed to flexible indexing to include all future years
-
 
 # Compute vector with occasion of first capture
 get.first <- function(x) min(which(x==1))
 f <- apply(CH, 1, get.first)
-n.occ<-ncol(CH)
+
 
 ### CHECK WHETHER IT LOOKS OK ###
 head(CH)
 
 ## PREPARE CONSTANTS
+## unlike the JS model we do not need sites structured within colonies - we just list 8 sites and loop over each site
 n.ind<-dim(CH)[1]		## defines the number of individuals
-n.years<-dim(CH)[2]  ## defines the number of years
+n.occ<-ncol(CH)  ## defines the number of years
+
+## PREPARE CONSTANTS
+n.sites<-length(unique(YESH$SITE))
+
+
+## CREATE MATRIX TO LOOK UP OBSERVATION EFFORT
+## STANDARDISE HOURS TO AVOID INVALID PARENT ERROR IN JAGS
+COLEFF<- eff %>% group_by(COLO,SITE, OCC_NR) %>%
+  summarise(effort=sum(effort)) %>%
+  mutate(effort=scale(effort, center=T, scale=T)) %>% #mean(effort))/sd(effort)) %>%
+  spread(key=OCC_NR, value=effort) %>%
+  replace(is.na(.), 0) %>%
+  ungroup() %>%
+  mutate(SITE_NR=seq_along(COLO))
+
+effmat<-as.matrix(COLEFF[,3:16], dimnames=F)
+
+## CREATE LOOKUP VECTOR FOR WHICH COLONY BIRDS WERE CAUGHT IN
+head(YESH)
+sitevec<-COLEFF$SITE_NR[match(YESH$SITE,COLEFF$SITE)]
+
+length(f) 
+length(sitevec)
+
+
+## CREATE MATRIX FOR THE DURATION OF THE PERIODS BETWEEN TRAPPING SESSIONS
+DURMAT<- survPeriods %>% group_by(COLO,SITE, OCC_NR) %>%
+  summarise(int=sum(surv_int)) %>%
+  spread(key=OCC_NR, value=int) %>%
+  replace(is.na(.), 0) %>%
+  ungroup() %>%
+  mutate(SITE_NR=seq_along(COLO))
+periods<-as.matrix(DURMAT[,3:16], dimnames=F)
+
+### JAGS CRASHES WHEN period==0, so we need to remove intermittent 0 and split survival interval over two years
+periods[1,4]<-periods[1,3]/2 #2020 sites
+periods[1,3]<-periods[1,3]/2
   
 
 
@@ -537,7 +576,6 @@ n.years<-dim(CH)[2]  ## defines the number of years
 ##########################################################################################################
 # MULTISTATE MODEL WITH RING LOSS PROBABILITY
 ##########################################################################################################
-# A simple multistate model is shown (corresponding to chapter 9.2. in BPA)
 
 try(setwd("C:\\Users\\rita.matos\\Documents\\CMR"),silent=T)
 try(setwd("C:\\STEFFEN\\OneDrive - THE ROYAL SOCIETY FOR THE PROTECTION OF BIRDS\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\2025"), silent=T)
@@ -545,14 +583,14 @@ try(setwd("C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan"), silent=T)
 
 
 # Specify model in JAGS language
-cat(file = "YESH_ring_loss.jags", "
+cat(file = "YESH_ring_loss_temp_var.jags", "
 model {
 
 # -------------------------------------------------
 # Parameters:
-# phi: survival probability 
+# ann.surv: annual apparent survival probability 
 # loss: ring loss probability
-# p: resight probability
+# p: recapture probability
 # -------------------------------------------------
 # States (S):
 # 1 alive with ring
@@ -560,37 +598,64 @@ model {
 # 3 dead
 # Observations (O):  
 # 1 seen with ring 
-# 2 seen without ring
+# 2 seen without ring (only possible if individual was doubleringed as specified in CHDR)
 # 3 not seen
 # -------------------------------------------------
 
 # Priors and constraints
-   phi ~ dunif(0.7, 1)    # Priors for state-spec. survival
-   loss ~ dunif(0, 0.2)    # Priors for ring loss
-   pr ~ dunif(0, 1)      # Priors for mean state-spec. recapture
-   pl ~ dunif(0, 0.4)      # Priors for mean state-spec. recapture
+   # phi ~ dunif(0.7, 1)    # Priors for state-spec. survival
+   loss ~ dnorm(0.068, 10)    # Prior for ring loss informed by actual data
+   # p ~ dunif(0, 1)      # Priors for mean recapture
+
+    ### SURVIVAL PROBABILITY
+    for (t in 1:(n.occasions-1)){
+      ann.surv[t] ~ dunif(0.7, 1)                      # Priors for age-specific ANNUAL survival - this is the basic survival that is scaled to difference between occasions
+        for (s in 1:n.sites){
+          phi[s,t] <- pow(pow(ann.surv[t],(1/365)),periods[s,t]) 
+        } #s
+    } #t
+    
+    
+    ### SITE-SPECIFIC RECAPTURE PROBABILITY
+    mean.p ~ dbeta(1.5, 4)                        # Prior for mean recapture switched to beta from unif
+    logit.p <- log(mean.p / (1-mean.p))           # Logit transformation
+    
+    for (s in 1:n.sites){
+      beta.effort[s] ~ dnorm(0,0.01)                   # Prior for trapping effort offset on capture probability
+         for (t in 1:n.occasions){
+          logit(p[s,t]) <- logit.p + beta.effort[s]*effmat[s,t]    ## includes colony-specific effort and random effect for time and individual
+        } # close t
+    } #s
+
+
+
+
+
 
 # Define state-transition and observation matrices
-   # Define probabilities of state S(t+1) [last dim] given S(t) [first dim]
-      ps[1,1] <- phi * (1 - loss)
-      ps[1,2] <- phi * loss
-      ps[1,3] <- 1 - phi
-      ps[2,1] <- 0
-      ps[2,2] <- phi
-      ps[2,3] <- 1 - phi
-      ps[3,1] <- 0
-      ps[3,2] <- 0
-      ps[3,3] <- 1
-      
-      # Define probabilities of O(t) [last dim] given S(t)  [first dim]¨
+
   for (i in 1:nind){
+   for (t in (f[i]):(n.occasions-1)){
+   
+   # Define probabilities of state S(t+1) [last dim] given S(t) [first dim]
+      ps[1,i,t,1] <- phi[sitevec[i],t] * (1 - loss)
+      ps[1,i,t,2] <- phi[sitevec[i],t] * loss
+      ps[1,i,t,3] <- 1 - phi[sitevec[i],t]
+      ps[2,i,t,1] <- 0
+      ps[2,i,t,2] <- phi[sitevec[i],t]
+      ps[2,i,t,3] <- 1 - phi[sitevec[i],t]
+      ps[3,i,t,1] <- 0
+      ps[3,i,t,2] <- 0
+      ps[3,i,t,3] <- 1
+   }
+      # Define probabilities of O(t) [last dim] given S(t)  [first dim]¨
    for (t in (f[i]+1):n.occasions){
-      po[1,i,t,1] <- p
+      po[1,i,t,1] <- p[sitevec[i],t]
       po[1,i,t,2] <- 0
-      po[1,i,t,3] <- 1 - p
+      po[1,i,t,3] <- 1 - p[sitevec[i],t]
       po[2,i,t,1] <- 0
-      po[2,i,t,2] <- p*dr[i,t]
-      po[2,i,t,3] <- 1 - pl*dr[i,t]
+      po[2,i,t,2] <- p[sitevec[i],t]*dr[i,t]
+      po[2,i,t,3] <- 1 - p[sitevec[i],t]*dr[i,t]
       po[3,i,t,1] <- 0
       po[3,i,t,2] <- 0
       po[3,i,t,3] <- 1
@@ -603,9 +668,9 @@ for (i in 1:nind){
    z[i,f[i]] <- y[i,f[i]]
    for (t in (f[i]+1):n.occasions){
       # State process: draw S(t) given S(t-1)
-      z[i,t] ~ dcat(ps[z[i,t-1], 1:3])
+      z[i,t] ~ dcat(ps[z[i,t-1],i,t-1,1:3])
       # Observation process: draw O(t) given S(t)
-      y[i,t] ~ dcat(po[z[i,t],i,t, 1:3])
+      y[i,t] ~ dcat(po[z[i,t],i,t,1:3])
       } #t
    } #i
 }
@@ -615,12 +680,16 @@ for (i in 1:nind){
 # Bundle data 
 jags.data <- list(y = CH,
                   dr=CHDR,
-                  f = f, 
+                  f = f,
+                  n.sites=n.sites,
+                  sitevec=sitevec,
+                  periods=periods,
+                  effmat=effmat,
                   n.occasions = ncol(CH), 
                   nind = nrow(CH))
 
 
-# 1.3. Initial values
+# SET Initial values
 # Function to create initial values for unknown z
 # Input: ch: multistate capture-recapture data (where "not seen" is not 0); f: vector with the occasion of marking
 ms.init.z <- function(ch, f){
@@ -635,35 +704,37 @@ ms.init.z <- function(ch, f){
   return(ch)
 }
 
-inits <- function(){list(phi = runif(1, 0.8, 1),
+inits <- function(){list(ann.surv = runif((n.occ-1), 0.8, 1),
                          z = ms.init.z(CH, f),
-                         loss = runif(1, 0, 0.11), 
-                         p = runif(1, 0, 1)
+                         loss = 0.068,
+                         beta.effort=rnorm(n.sites,0,0.01),
+                         mean.p = rbeta(1,1.5,4)
                          )}  
 
-# 1.4. Parameters monitored
-parameters <- c("phi", 
-                "loss", 
-                "p")
+# SPECIFY Parameters monitored
+parameters <- c("ann.surv", 
+                "loss",
+                "beta.effort",
+                "mean.p")
 
-# 1.5. MCMC settings
-ni <- 4000
+# DEFINE MCMC settings
+ni <- 40000
 nt <- 10
-nb <- 2000
+nb <- 20000
 nc <- 3
 
-# 1.6. Call JAGS from R
+# Call JAGS from R
 ms <- jags(data = jags.data, 
            inits = inits, 
            parameters.to.save = parameters, 
-           model.file = "YESH_ring_loss.jags", 
+           model.file = "YESH_ring_loss_temp_var.jags", 
            n.chains = nc, 
            n.thin = nt, 
            n.iter = ni, 
            n.burnin = nb,
            parallel = TRUE)
 
-# 1.7. Inspect results
+# Inspect results
 print(ms, digits = 3)
 
 par(mfrow = c(3,3))
@@ -671,4 +742,43 @@ traceplot(ms)
 
 
 #
+
+#########################################################################
+# PRODUCE OUTPUT TABLE
+#########################################################################
+try(setwd("C:\\Users\\rita.matos\\Documents\\CMR"), silent=T)
+try(setwd("C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan"), silent=T)
+saveRDS(ms, "output/YESH_output_mutistate_ring_loss.rds")
+
+out<-as.data.frame(ms$summary)
+out$parameter<-row.names(ms$summary)
+
+export<-out %>% select(c(12,1,5,2,3,7,8,9)) %>%
+  setNames(c('Parameter','Mean', 'Median','SD','lcl', 'ucl','Rhat','n.eff'))
+fwrite(export,"output/YESH_Malta_survival_estimates_with_ring_loss_multistate.csv")
+
+
+
+
+#########################################################################
+# PRODUCE SURVIVAL GRAPH 
+#########################################################################
+
+ggplot(data=export[1:13,],aes(y=Mean, x=seq(2012.5,2024.5,1))) + geom_point(size=2)+
+  geom_errorbar(aes(ymin=lcl, ymax=ucl), width=.1)+
+  scale_x_continuous(name="Year", limits=c(2012,2025), breaks=seq(2012,2025,1), labels=seq(2012,2025,1))+
+  scale_y_continuous(name="Annual survival probability", limits=c(0.5,1), breaks=seq(0.5,1,0.1), labels=seq(0.5,1,0.1))+
+  theme(panel.background=element_rect(fill="white", colour="black"), 
+        axis.text=element_text(size=20, color="black", margin=6), 
+        axis.title=element_text(size=22),
+        plot.title=element_text(size=22), 
+        strip.text.x=element_text(size=20, color="black", margin=6), 
+        strip.background=element_rect(fill="white", colour="black"), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.border = element_blank())
+
+ggsave("output/YESH_survival_2012_2025_ring_loss_multistate.pdf", device = "pdf", width=12, height=9)
+
+
 

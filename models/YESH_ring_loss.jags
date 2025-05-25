@@ -20,8 +20,7 @@ model {
 # Priors and constraints
    phi ~ dunif(0.7, 1)    # Priors for state-spec. survival
    loss ~ dunif(0, 0.2)    # Priors for ring loss
-   pr ~ dunif(0, 1)      # Priors for mean state-spec. recapture
-   pl ~ dunif(0, 0.4)      # Priors for mean state-spec. recapture
+   p ~ dunif(0, 1)      # Priors for mean recapture
 
 # Define state-transition and observation matrices
    # Define probabilities of state S(t+1) [last dim] given S(t) [first dim]
@@ -43,7 +42,7 @@ model {
       po[1,i,t,3] <- 1 - p
       po[2,i,t,1] <- 0
       po[2,i,t,2] <- p*dr[i,t]
-      po[2,i,t,3] <- 1 - pl*dr[i,t]
+      po[2,i,t,3] <- 1 - p*dr[i,t]
       po[3,i,t,1] <- 0
       po[3,i,t,2] <- 0
       po[3,i,t,3] <- 1

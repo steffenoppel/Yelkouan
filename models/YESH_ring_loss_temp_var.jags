@@ -1,0 +1,91 @@
+
+model {
+
+# -------------------------------------------------
+# Parameters:
+# ann.surv: annual apparent survival probability 
+# loss: ring loss probability
+# p: recapture probability
+# -------------------------------------------------
+# States (S):
+# 1 alive with ring
+# 2 alive without ring
+# 3 dead
+# Observations (O):  
+# 1 seen with ring 
+# 2 seen without ring (only possible if individual was doubleringed as specified in CHDR)
+# 3 not seen
+# -------------------------------------------------
+
+# Priors and constraints
+   # phi ~ dunif(0.7, 1)    # Priors for state-spec. survival
+   loss ~ dnorm(0.068, 10)    # Prior for ring loss informed by actual data
+   # p ~ dunif(0, 1)      # Priors for mean recapture
+
+    ### SURVIVAL PROBABILITY
+    for (t in 1:(n.occasions-1)){
+      ann.surv[t] ~ dunif(0.7, 1)                      # Priors for age-specific ANNUAL survival - this is the basic survival that is scaled to difference between occasions
+        for (s in 1:n.sites){
+          phi[s,t] <- pow(pow(ann.surv[t],(1/365)),periods[s,t]) 
+        } #s
+    } #t
+    
+    
+    ### SITE-SPECIFIC RECAPTURE PROBABILITY
+    mean.p ~ dbeta(1.5, 4)                        # Prior for mean recapture switched to beta from unif
+    logit.p <- log(mean.p / (1-mean.p))           # Logit transformation
+    
+    for (s in 1:n.sites){
+      beta.effort[s] ~ dnorm(0,0.01)                   # Prior for trapping effort offset on capture probability
+         for (t in 1:n.occasions){
+          logit(p[s,t]) <- logit.p + beta.effort[s]*effmat[s,t]    ## includes colony-specific effort and random effect for time and individual
+        } # close t
+    } #s
+
+
+
+
+
+
+# Define state-transition and observation matrices
+
+  for (i in 1:nind){
+   for (t in (f[i]):(n.occasions-1)){
+   
+   # Define probabilities of state S(t+1) [last dim] given S(t) [first dim]
+      ps[1,i,t,1] <- phi[sitevec[i],t] * (1 - loss)
+      ps[1,i,t,2] <- phi[sitevec[i],t] * loss
+      ps[1,i,t,3] <- 1 - phi[sitevec[i],t]
+      ps[2,i,t,1] <- 0
+      ps[2,i,t,2] <- phi[sitevec[i],t]
+      ps[2,i,t,3] <- 1 - phi[sitevec[i],t]
+      ps[3,i,t,1] <- 0
+      ps[3,i,t,2] <- 0
+      ps[3,i,t,3] <- 1
+   }
+      # Define probabilities of O(t) [last dim] given S(t)  [first dim]¨
+   for (t in (f[i]+1):n.occasions){
+      po[1,i,t,1] <- p[sitevec[i],t]
+      po[1,i,t,2] <- 0
+      po[1,i,t,3] <- 1 - p[sitevec[i],t]
+      po[2,i,t,1] <- 0
+      po[2,i,t,2] <- p[sitevec[i],t]*dr[i,t]
+      po[2,i,t,3] <- 1 - p[sitevec[i],t]*dr[i,t]
+      po[3,i,t,1] <- 0
+      po[3,i,t,2] <- 0
+      po[3,i,t,3] <- 1
+   }
+  }
+
+# Likelihood 
+for (i in 1:nind){
+   # Define latent state at first capture
+   z[i,f[i]] <- y[i,f[i]]
+   for (t in (f[i]+1):n.occasions){
+      # State process: draw S(t) given S(t-1)
+      z[i,t] ~ dcat(ps[z[i,t-1],i,t-1,1:3])
+      # Observation process: draw O(t) given S(t)
+      y[i,t] ~ dcat(po[z[i,t],i,t,1:3])
+      } #t
+   } #i
+}

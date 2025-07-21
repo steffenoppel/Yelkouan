@@ -62,7 +62,7 @@ try(setwd("C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan"), silent=T)
 caves<-fread("data/Cave_ID.csv")
 
 # to get list of all rings deployed, in the source file only original rings present and not their replacements
-rings <- fread("data/2012_2024_replacement_and_tags.csv")
+rings <- fread("data/2012_2025_replacement_and_tags.csv")
 
 #####IMP. NOTE: All times in records and effort are in Malta time.
 
@@ -321,10 +321,10 @@ replist[replist$repl %in% doublerep,]
 
 
 ## UPDATE RECORDS
-length(unique(records$ringnumber)) #2480
+length(unique(records$ringnumber)) #2621
 yesh<- records %>%
   mutate(ringnumber=ifelse(ringnumber %in% replist$repl,replist$orig[match(ringnumber,replist$repl)],ringnumber))
-length(unique(yesh$ringnumber))  ## 2339
+length(unique(yesh$ringnumber))  ## 2463
 
 #########################################################################
 # MAKE SURE THAT EACH Resighting is preceded by a New capture
@@ -487,7 +487,7 @@ survPeriods$surv_int[survPeriods$surv_int<0]<-NA
 #########################################################################
 # READ IN RING LOSS DATA
 #########################################################################
-
+#section not run
 
 ringloss<-fread("data/YESH_doublemarks.csv") %>%
   rename(ringnumber=Original_ring)
@@ -563,7 +563,7 @@ head(CH)
 
 ## PREPARE CONSTANTS
 n.ind<-dim(CH)[1]		## defines the number of individuals
-n.ind.rl<-dim(ringloss)[1]		## defines the number of ring-loss individuals (doubletagged for assessment of ring loss)
+#n.ind.rl<-dim(ringloss)[1]		## defines the number of ring-loss individuals (doubletagged for assessment of ring loss)
 n.years<-dim(CH)[2]  ## defines the number of years
 n.sites<-length(unique(YESH$SITE))
 n.colonies<-length(unique(YESH$COLO))              
@@ -580,7 +580,7 @@ COLEFF<- eff %>% group_by(COLO,SITE, OCC_NR) %>%
   #mutate(COL_NR=seq_along(COLO),SITE_NR=row_number())
   mutate(COL_NR=c(1,2,2,3,3,3,3,4),SITE_NR=c(1,1,2,1,2,3,4,1)) #mutate(COL_NR=c(1,2,3,3,3,3,4),SITE_NR=c(1,1,1,2,3,4,1)) 2020 grouping
 
-effmat<-as.matrix(COLEFF[,3:15], dimnames=F)
+effmat<-as.matrix(COLEFF[,3:16], dimnames=F)
 
 #COLEFF<-as.numeric(colnames(COLEFF)) # again to organise the seasons
 
@@ -615,12 +615,8 @@ periods[1,3]<-periods[1,3]/2
 ##########################################################################################################
 # Specify JS model with colony-specific ABUNDANCE TREND
 ##########################################################################################################
-## GOAL IS TO CALCULATE TREND FOR FIVE MAIN COLONIES
-#Cominotto
-#StPauls
-#Majjistral: Majjistral_main & Majjistral_south
-#Rdum tal-Madonna: RM01 & RM03 & RM04 & RM05
-#weid babu
+## GOAL IS TO CALCULATE ABUNDANCE & TREND FOR FOUR MAIN COLONIES
+
 #setwd("C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan")
 #setwd("C:\\Users\\martin.austad\\Documents\\yesh_cmr_HG_17082021\\trend")
 #setwd("C:\\Users\\hannah.greetham\\Documents\\yesh_cmr_HG_17082021\\trend")
@@ -839,23 +835,10 @@ col.first$OCC<-as.numeric(col.first$OCC) ##changed OCC to numeric so that first 
 
 
 # Bundle data
-jags.data <- list(y = CHcol,
-                  n.years = n.years,
-                  col.first=as.numeric(col.first$first),
-                  n.doubleringed=dim(ringloss)[1],
-                  M = potYESH, sitevec=site.arr, 
-                  periods=per.arr, effmat=eff.arr,
-                  n.sites=max(COLEFF$COL_NR),
-                  n.cols=max(DURMAT$SITE_NR),
-                  
-                  ## RING LOSS INPUT
-                  n.ind.rl=n.ind.rl,
-                  #colvec.rl=colvec.rl, # this vector allows the doublemarked individuals to be matched to the correct value of capture probability
-                  #indvec.rl=indvec.rl, # this vector allows the doublemarked individuals to be matched to the correct value of capture probability
-                  #ring.loss=as.matrix(RL_CH[,4:dim(RL_CH)[2]]),
-                  #f.rl=f.rl
-                  ring.loss=ringloss$LostRing
-                  ) 
+ jags.data <- list(y = CHcol, n.years = n.years,col.first=as.numeric(col.first$first),
+                   M = potYESH, sitevec=site.arr, 
+                   periods=per.arr, effmat=eff.arr,
+                   n.sites=max(COLEFF$COL_NR),n.cols=max(DURMAT$SITE_NR))
 
 # Initial values 
 inits <- function(){list(mean.phi = runif(1, 0.95, 1),
@@ -865,8 +848,8 @@ inits <- function(){list(mean.phi = runif(1, 0.95, 1),
 
 
 # Parameters monitored
-parameters <- c("N", "ann.surv","mu.ring.loss","tau.ring.loss") # changed parameters to see if it could extract any data
-
+#parameters <- c("N", "ann.surv","mu.ring.loss","tau.ring.loss") # changed parameters to see if it could extract any data
+parameters <- c("N", "ann.surv") #changed paramaters 
 # clean up workspace
 save.image("data/YESH_prepared_data_2025.RData")
 load("data/YESH_prepared_data_2025.RData")
@@ -886,8 +869,9 @@ nc <- 3
 
 
 # Call JAGS from R
-YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan\\models\\YESH_JS_abundance_trend_ring_loss_v3.jags",  #C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_trend_v6.jags
-                  n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T, n.iter=ni)
+#YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan\\models\\YESH_JS_abundance_trend_ring_loss_v3.jags",  #C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_trend_v6.jags
+YESHabund <- jags(jags.data, inits, parameters, "C:\\Users\\rita.matos\\Documents\\CMR\\models\\YESH_JS_abundance_trend_v2025.jags", 
+n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T, n.iter=ni)
 
 
 
@@ -897,7 +881,7 @@ YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\Vogelwarte\\YESH\\
 #########################################################################
 try(setwd("C:\\Users\\rita.matos\\Documents\\CMR"), silent=T)
 try(setwd("C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan"), silent=T)
-save.image("output/YESH_JS_output_ring_loss_v3.RData")
+save.image("output/YESH_JS_output.RData")
 
 out<-as.data.frame(YESHabund$summary)
 out$parameter<-row.names(YESHabund$summary)
@@ -925,7 +909,7 @@ ggplot(data=export[57:69,],aes(y=Mean, x=seq(2012.5,2024.5,1))) + geom_point(siz
         panel.grid.minor = element_blank(), 
         panel.border = element_blank())
 
-ggsave("output/YESH_survival_2012_2025_ring_loss_v3.pdf", device = "pdf", width=12, height=9)
+ggsave("output/YESH_survival_2012_2025.pdf", device = "pdf", width=12, height=9)
 
 
 
@@ -968,7 +952,7 @@ ggplot(data=abund,aes(y=Mean, x=Year)) + geom_point(size=2)+
         panel.grid.minor = element_blank(), 
         panel.border = element_blank())
 
-ggsave("output/YESH_abundance_2013_2025_ring_loss_v3.pdf", device = "pdf", width=20, height=14)
+ggsave("output/YESH_abundance_2013_2025.pdf", device = "pdf", width=20, height=14)
 
 
 

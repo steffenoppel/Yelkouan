@@ -285,6 +285,23 @@ all_lut<-data.frame(orig=as.character(c(RM01,RM03,RM04,RM05,Cominotto,StPauls,Ma
                     
                     maincol=as.character(c(rep("RdumTalMadonna",16),rep("Cominotto",5),rep("StPauls",2),rep("Majjistral",6))))
 
+###for trend estimation exclude subsites added in 2018:
+#run one or the other 
+
+RM01 <- c("MT09_RM01")
+RM03 <- c("MT09_RM03", "MT09_RM03_North", "MT09_RM03_South") # "MT09_RM03_18to22" - removed no effort in 2019 and 2020 for adults
+RM05 <- c("MT09_RM05", "MT09_RM05BT", "MT09_RM05GC_Central", "MT09_RM05GC", "MT09_RM05GC_South", "MT09_RM05BT_Lower", "MT09_RM05BT_Upper") #"MT09_RM05GC_North"
+RM04 <- c("MT09_RM04A", "MT09_RM04B", "MT09_RM04D", "MT09_RM04C")
+Cominotto <- c("MT17_Cominotto_2", "MT17_Cominotto_1", "MT17_Cominotto_3", "MT17_Cominotto_4") 
+StPauls <- c("MT22_StPauls_MainCave", "MT22_StPauls_WestCave")
+Majjistral_main <- c("MT24_Majjistral_Eggshell", "MT24_Majjistral_Thomas", "MT24_Majjistral_Subt", "MT24_Majjistral_NS2_NS3")             
+
+all_lut<-data.frame(orig=as.character(c(RM01,RM03,RM04,RM05,Cominotto,StPauls,Majjistral_main)),
+                    
+                    poolloc=as.character(c("RM01",rep("RM03",3),rep("RM04",4),rep("RM05",7),rep("Cominotto",4),rep("StPauls",2),rep("Majjistral_main",4))),
+                    
+                    maincol=as.character(c(rep("RdumTalMadonna",15),rep("Cominotto",4),rep("StPauls",2),rep("Majjistral",4))))
+
 
 effort <- effort %>%
   mutate(SITE=all_lut$poolloc[match(as.character(Cave_String),all_lut$orig)]) %>%
@@ -578,7 +595,7 @@ COLEFF<- eff %>% group_by(COLO,SITE, OCC_NR) %>%
   replace(is.na(.), 0) %>%
   ungroup() %>%
   #mutate(COL_NR=seq_along(COLO),SITE_NR=row_number())
-  mutate(COL_NR=c(1,2,2,3,3,3,3,4),SITE_NR=c(1,1,2,1,2,3,4,1)) #mutate(COL_NR=c(1,2,3,3,3,3,4),SITE_NR=c(1,1,1,2,3,4,1)) 2020 grouping
+  mutate(COL_NR=c(1,2,2,3,3,3,3,4),SITE_NR=c(1,1,2,1,2,3,4,1)) #for trend estimation: mutate(COL_NR=c(1,2,3,3,3,3,4),SITE_NR=c(1,1,1,2,3,4,1)) 
 
 effmat<-as.matrix(COLEFF[,3:16], dimnames=F)
 
@@ -602,9 +619,9 @@ DURMAT<- survPeriods %>% group_by(COLO,SITE, OCC_NR) %>%
   spread(key=OCC_NR, value=int) %>%
   replace(is.na(.), 0) %>%
   ungroup() %>%
-  mutate(COL_NR=c(1,2,2,3,3,3,3,4),SITE_NR=c(1,1,2,1,2,3,4,1))# edited to 2021 sites
+  mutate(COL_NR=c(1,2,2,3,3,3,3,4),SITE_NR=c(1,1,2,1,2,3,4,1)) #for trend estimation: mutate(COL_NR=c(1,2,3,3,3,3,4),SITE_NR=c(1,1,1,2,3,4,1)) 
 
-periods<-as.matrix(DURMAT[,3:15], dimnames=F)
+periods<-as.matrix(DURMAT[,3:16], dimnames=F)
 
 ### JAGS CRASHES WHEN period==0, so we need to remove intermittent 0 and split survival interval over two years
 periods[1,4]<-periods[1,3]/2 #2020 sites
@@ -850,6 +867,7 @@ inits <- function(){list(mean.phi = runif(1, 0.95, 1),
 # Parameters monitored
 #parameters <- c("N", "ann.surv","mu.ring.loss","tau.ring.loss") # changed parameters to see if it could extract any data
 parameters <- c("N", "ann.surv") #changed paramaters 
+#parameters <- c("N", "col.trend") #for trend model
 # clean up workspace
 save.image("data/YESH_prepared_data_2025.RData")
 load("data/YESH_prepared_data_2025.RData")
@@ -868,12 +886,14 @@ nc <- 3
 
 
 
-# Call JAGS from R
+# Call JAGS from R #FOR Survival and total abundance model output
 #YESHabund <- jags(jags.data, inits, parameters, "C:\\STEFFEN\\Vogelwarte\\YESH\\Yelkouan\\models\\YESH_JS_abundance_trend_ring_loss_v3.jags",  #C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_trend_v6.jags
 YESHabund <- jags(jags.data, inits, parameters, "C:\\Users\\rita.matos\\Documents\\CMR\\models\\YESH_JS_abundance_trend_v2025.jags", 
 n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T, n.iter=ni)
 
-
+# Call JAGS from R #For abundance and trend model output (based on less subsites)
+#YESHabund <- jags(jags.data, inits, parameters, "C:\\Users\\rita.matos\\Documents\\CMR\\models\\YESH_JS_abundance_trend_v7.jags",  #C:\\STEFFEN\\RSPB\\Malta\\Analysis\\Survival_analysis\\Yelkouan\\YESH_JS_abundance_trend_v6.jags
+                #  n.chains = nc, n.thin = nt, n.burnin = nb,parallel=T, n.iter=ni)
 
 
 #########################################################################

@@ -302,7 +302,26 @@ all_lut<-data.frame(orig=as.character(c(RM01,RM03,RM04,RM05,Cominotto,StPauls,Ma
                     
                     maincol=as.character(c(rep("RdumTalMadonna",15),rep("Cominotto",4),rep("StPauls",2),rep("Majjistral",4))))
 
+##further refinement for 2018-2025 abundance estimation #added Aug 2026
+records <- records %>%
+  filter(!cave %in% c("Above Big Crack MN","MN above Big Crack")) # mist net set up only in 2019 and 2020, and location not otherwise surveyed
 
+RM01 <- c("MT09_RM01")
+RM03 <- c("MT09_RM03_North", "MT09_RM03_South") 
+RM05 <- c("MT09_RM05GC_Central", "MT09_RM05GC_South", "MT09_RM05BT_Lower", "MT09_RM05BT_Upper") 
+RM04 <- c("MT09_RM04A", "MT09_RM04D", "MT09_RM04C") 
+Cominotto <- c("MT17_Cominotto_2", "MT17_Cominotto_1", "MT17_Cominotto_3", "MT17_Cominotto_4","MT17_Cominotto_9") 
+StPauls <- c("MT22_StPauls_MainCave", "MT22_StPauls_WestCave")
+Majjistral_main <- c("MT24_Majjistral_Eggshell", "MT24_Majjistral_Thomas") #"MT24_Majjistral_Subt" removed due to difficult access since 2020 
+Majjistral_south <-c("MT24_Majjistral_South_4", "MT24_Majjistral_South_1") 
+
+all_lut<-data.frame(orig=as.character(c(RM01,RM03,RM04,RM05,Cominotto,StPauls,Majjistral_main,Majjistral_south)),
+                    
+                    poolloc=as.character(c("RM01",rep("RM03",2),rep("RM04",3),rep("RM05",4),rep("Cominotto",5),rep("StPauls",2),rep("Majjistral_main",2), rep("Majjistral_south", 2))), # number of subsites per location
+                    
+                    maincol=as.character(c(rep("RdumTalMadonna",10),rep("Cominotto",5),rep("StPauls",2),rep("Majjistral",4))))
+
+##
 effort <- effort %>%
   mutate(SITE=all_lut$poolloc[match(as.character(Cave_String),all_lut$orig)]) %>%
   mutate(COLO=all_lut$maincol[match(as.character(Cave_String),all_lut$orig)]) %>%
